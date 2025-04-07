@@ -7,6 +7,10 @@ from typing import Literal
 from src.tools import BaseCustomSettings
 
 
+# /**/4_el/src
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
 class CustomSettings(BaseCustomSettings):
     pass
 
@@ -17,8 +21,7 @@ CustomSettings.set_app_name_as_source(
 
 
 class AppSettings(CustomSettings):
-    # /**/4_el/src
-    APP_BASE_DIR: str = str(Path(__file__).resolve().parent.parent)
+    APP_BASE_DIR: str = str(BASE_DIR)
     APP_TITLE: str
     APP_VERSION: str
     APP_DESCRIPTION: str
@@ -42,6 +45,26 @@ class AppRunConfig(CustomSettings):
         if self.APP_HOST_SERVER_TO_PLACE:
             return f"{self.APP_HOST_PROTOCOL_TO_PLACE}://{self.APP_HOST_SERVER_TO_PLACE}"
         return f"{self.APP_HOST_PROTOCOL_TO_PLACE}://{self.APP_HOST}:{self.APP_PORT}"
+
+
+class Auth(CustomSettings):
+    AUTH_TOKEN_LIFETIME: int
+
+    AUTH_PRIVATE_KEY: Path = BASE_DIR / "core" / "certs" / "jwt-private.pem"
+    AUTH_PUBLIC_KEY: Path = BASE_DIR / "core" / "certs" / "jwt-public.pem"
+
+    AUTH_RESET_PASSWORD_TOKEN_SECRET: str
+    AUTH_VERIFICATION_TOKEN_SECRET: str
+
+
+    def get_transport_token_url(self, version: str = "v1") -> str:
+        if version == "v1":
+            SECOND_PARAM = settings.app.API_V1_PREFIX
+        return "{}{}{}/login".format(
+            settings.app.API_PREFIX,
+            SECOND_PARAM,
+            settings.tags.AUTH_PREFIX,
+        )
 
 
 class DB(CustomSettings):
@@ -94,6 +117,13 @@ class Tags(CustomSettings):
     USERS_PREFIX: str
     USERS_TAG: str
 
+    AUTH_PREFIX: str
+    AUTH_TAG: str
+
+
+class Users(CustomSettings):
+    USERS_PASSWORD_MIN_LENGTH: int
+
 
 class Settings(CustomSettings):
     app: AppSettings = AppSettings()
@@ -101,6 +131,8 @@ class Settings(CustomSettings):
     run: RunConfig = RunConfig()
     tags: Tags = Tags()
     db: DB = DB()
+    auth: Auth = Auth()
+    users: Users = Users()
 
 
 settings = Settings()
