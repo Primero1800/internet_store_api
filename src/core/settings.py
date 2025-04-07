@@ -1,4 +1,6 @@
 import logging
+import os
+import sys
 from pathlib import Path
 from typing import Literal
 
@@ -45,7 +47,7 @@ class AppRunConfig(CustomSettings):
 class DB(CustomSettings):
 
     # DB_NAME: str = os.getenv('DB_NAME_TEST') if 'pytest' in sys.modules else os.getenv('DB_NAME')
-    # DB_NAME_TEST: str
+    DB_NAME_TEST: str
     DB_NAME: str
     DB_ENGINE: str
     DB_USER: str
@@ -99,3 +101,18 @@ class Settings(CustomSettings):
 
 
 settings = Settings()
+
+
+def get_db_connection(db_name: str) -> str:
+    return '{}://{}:{}@{}:{}/{}'.format(
+        settings.db.DB_ENGINE,
+        settings.db.DB_USER,
+        settings.db.DB_PASSWORD,
+        settings.db.DB_HOST,
+        settings.db.DB_PORT,
+        db_name,
+    )
+
+
+settings.db.DB_URL = get_db_connection(settings.db.DB_NAME)
+settings.db.DB_TEST_URL = get_db_connection(settings.db.DB_NAME_TEST)
