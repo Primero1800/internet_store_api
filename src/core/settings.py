@@ -1,6 +1,4 @@
 import logging
-import os
-import sys
 from pathlib import Path
 from typing import Literal
 
@@ -17,7 +15,7 @@ CustomSettings.set_app_name_as_source(
 
 
 class AppSettings(CustomSettings):
-    # /home/primero/Python/python_codes/fastapi/4_el/src
+    # /**/4_el/src
     APP_BASE_DIR: str = str(Path(__file__).resolve().parent.parent)
     APP_TITLE: str
     APP_VERSION: str
