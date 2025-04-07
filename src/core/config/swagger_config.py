@@ -38,7 +38,6 @@ class SwaggerConfigurer:
 
     @staticmethod
     def config_swagger(app: FastAPI, app_title='Unknown application'):
-        print(f"!!!!!!!!!!!!!!!!!  {BASE_DIR}/static/swagger/js/swagger-ui-bundle.js")
         @app.get('/docs/', status_code=status.HTTP_200_OK, tags=[settings.tags.SWAGGER_TAG])
         async def custom_swagger_ui_html():
             return get_swagger_ui_html(
