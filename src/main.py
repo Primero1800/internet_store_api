@@ -2,9 +2,13 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
+from starlette.staticfiles import StaticFiles
 
 from src.core.settings import settings
-from src.core.config import AppConfigurer
+from src.core.config import (
+    AppConfigurer,
+    SwaggerConfigurer,
+)
 
 
 @asynccontextmanager
@@ -20,35 +24,42 @@ app = AppConfigurer.create_app(
     redoc_url=None,
     lifespan=lifespan,
 )
+app.webhooks = []
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.openapi = AppConfigurer.get_custom_openapi(app)
+SwaggerConfigurer.config_swagger(app, settings.app.APP_TITLE)
+
+
+
+######################################################################
+
+SwaggerConfigurer.delete_router_tag(app)
 
 
 # ROUTES
 
 @app.get("/", tags=[settings.tags.ROOT_TAG,],)
-@app.get("", tags=[settings.tags.ROOT_TAG,], include_in_schema=False,)
 def top():
     return f"top here"
 
 
 @app.get("/echo/{thing}/", tags=[settings.tags.TECH_TAG,],)
-@app.get("/echo/{thing}", tags=[settings.tags.TECH_TAG,], include_in_schema=False,)
 def echo(thing):
     return " ".join([thing for _ in range(3)])
 
 
-# @app.get("/routes/", tags=[settings.tags.TECH_TAG,],)
-# @app.get("/routes",  tags=[settings.tags.TECH_TAG,], include_in_schema=False,)
-# async def get_routes_endpoint():
-#     return await SwaggerConfigurer.get_routes(
-#         application=app,
-#     )
+@app.get("/routes/", tags=[settings.tags.TECH_TAG,],)
+async def get_routes_endpoint():
+    return await SwaggerConfigurer.get_routes(
+        application=app,
+    )
 
 
 if __name__ == "__main__":
-    # gunicorn app1.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
-    # uvicorn app1.main:app --host 0.0.0.0 --reload
+    # gunicorn src.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+    # uvicorn src.main:app --host 0.0.0.0 --reload
     uvicorn.run(
         app=settings.run.app1.APP_PATH,
         host=settings.run.app1.APP_HOST,
