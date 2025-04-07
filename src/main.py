@@ -8,6 +8,7 @@ from src.core.settings import settings
 from src.core.config import (
     AppConfigurer,
     SwaggerConfigurer,
+    DBConfigurer,
 )
 
 
@@ -16,7 +17,7 @@ async def lifespan(application: FastAPI):
     # startup
     yield
     # shutdown
-    # await DBConfigurer.dispose() TODO
+    await DBConfigurer.dispose()
 
 
 app = AppConfigurer.create_app(
