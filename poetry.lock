@@ -495,6 +495,7 @@ files = [
 [package.dependencies]
 email-validator = ">=1.1.0,<2.3"
 fastapi = ">=0.65.2"
+fastapi-users-db-sqlalchemy = {version = ">=7.0.0", optional = true, markers = "extra == \"sqlalchemy\""}
 makefun = ">=1.11.2,<2.0.0"
 pwdlib = {version = "0.2.1", extras = ["argon2", "bcrypt"]}
 pyjwt = {version = "2.10.1", extras = ["crypto"]}
@@ -505,6 +506,22 @@ beanie = ["fastapi-users-db-beanie (>=4.0.0)"]
 oauth = ["httpx-oauth (>=0.13)"]
 redis = ["redis (>=4.3.3,<6.0.0)"]
 sqlalchemy = ["fastapi-users-db-sqlalchemy (>=7.0.0)"]
+
+[[package]]
+name = "fastapi-users-db-sqlalchemy"
+version = "7.0.0"
+description = "FastAPI Users database adapter for SQLAlchemy"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "fastapi_users_db_sqlalchemy-7.0.0-py3-none-any.whl", hash = "sha256:5fceac018e7cfa69efc70834dd3035b3de7988eb4274154a0dbe8b14f5aa001e"},
+    {file = "fastapi_users_db_sqlalchemy-7.0.0.tar.gz", hash = "sha256:6823eeedf8a92f819276a2b2210ef1dcfd71fe8b6e37f7b4da8d1c60e3dfd595"},
+]
+
+[package.dependencies]
+fastapi-users = ">=10.0.0"
+sqlalchemy = {version = ">=2.0.0,<2.1.0", extras = ["asyncio"]}
 
 [[package]]
 name = "greenlet"
@@ -1555,4 +1572,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "c1faf2d32ad036f2ed595e93448d672c6ccefde04810fda5afc2172dc70ce244"
+content-hash = "643c5c0f5c1597a965c0ecb49d106c125979083b94cbd0a38bb395ba1969f21d"
