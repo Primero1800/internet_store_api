@@ -10,6 +10,7 @@ from src.core.config import (
     SwaggerConfigurer,
     DBConfigurer,
 )
+from src.api import router as router_api
 
 
 @asynccontextmanager
@@ -30,6 +31,14 @@ app.webhooks = []
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.openapi = AppConfigurer.get_custom_openapi(app)
+
+# ROUTERS
+
+app.include_router(
+    router_api,
+    prefix=settings.app.API_PREFIX,
+)
+
 SwaggerConfigurer.config_swagger(app, settings.app.APP_TITLE)
 
 
