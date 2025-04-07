@@ -59,6 +59,7 @@ class RunConfig(CustomSettings):
 class Tags(CustomSettings):
     TECH_TAG: str
     ROOT_TAG: str
+    SWAGGER_TAG: str
 
 
 class Settings(CustomSettings):
