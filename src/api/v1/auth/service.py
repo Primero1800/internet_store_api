@@ -1,11 +1,16 @@
 import logging
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from fastapi.responses import ORJSONResponse
 from fastapi_users import BaseUserManager, models, exceptions, schemas
 from fastapi import Request, status
 from fastapi_users.router import ErrorCode
-from pydantic import EmailStr, BaseModel
+from pydantic import EmailStr
+from sqlalchemy.exc import IntegrityError
+
+if TYPE_CHECKING:
+    from src.core.models import User
+    from src.api.v1.users.schemas import UserUpdate
 
 
 class AuthService:
@@ -78,5 +83,27 @@ class AuthService:
                 content={
                     "message": "Handled by Service exception handler",
                     "detail": ErrorCode.VERIFY_USER_ALREADY_VERIFIED
+                }
+            )
+
+    async def update_last_login(
+            self,
+            schema_update: "UserUpdate",
+            user: "User",
+            request: Request,
+    ):
+        try:
+            return await self.user_manager.update(
+                user_update=schema_update,
+                user=user,
+                request=request
+            )
+        except IntegrityError as exc:
+            self.logger.error("Error while updating last loging information for user %r" % user.email, exc_info=exc)
+            return ORJSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={
+                    "message": "Handled by Service exception handler",
+                    "detail": "Internal server error while changing db data."
                 }
             )

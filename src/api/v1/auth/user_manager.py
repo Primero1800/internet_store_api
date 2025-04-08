@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Optional, Dict, Any, Union, TYPE_CHECKING
 
 from fastapi_users import BaseUserManager, IntegerIDMixin, schemas, models, exceptions, InvalidPasswordException
@@ -98,11 +99,25 @@ class UserManager(IntegerIDMixin, BaseUserManager["User", Integer]):
                  f" the link: {settings.run.app_src.APP_HOST_SERVER_URL}{settings.auth.get_url(purpose='verify-hook', version='v1')}/?path={token}"
         )
 
-        # from app1.scripts.mail_sender.utils import send_mail
-        # await send_mail(schema=schema)
-
         from src.api.v1.celery_tasks.tasks import task_send_mail
         task_send_mail.apply_async(args=(schema.model_dump(),))
+
+    async def on_after_login(
+            self, user: "User",
+            request: Optional["Request"] = None,
+            response: Optional["Response"] = None,
+    ):
+        logger.info("%r logged in." % (user,))
+        from src.api.v1.auth.service import AuthService
+        from src.api.v1.users.schemas import UserUpdate
+        service = AuthService(
+            user_manager=self
+        )
+        await service.update_last_login(
+            user=user,
+            schema_update=UserUpdate(last_login=datetime.now()),
+            request=request,
+        )
 
 
     async def on_after_forgot_password(
@@ -123,13 +138,6 @@ class UserManager(IntegerIDMixin, BaseUserManager["User", Integer]):
     async def on_after_delete(
             self, user: "User", request: Optional["Request"] = None):
         logger.info("%r is successfully deleted" % (user, ))
-
-    async def on_after_login(
-            self, user: "User",
-            request: Optional["Request"] = None,
-            response: Optional["Response"] = None,
-    ):
-        logger.info("%r logged in." % (user,))
 
     async def validate_password(
         self, password: str, user: Union[schemas.UC, models.UP]
