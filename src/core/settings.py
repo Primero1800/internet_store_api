@@ -98,6 +98,14 @@ class DB(CustomSettings):
     }
 
 
+class Email(CustomSettings):
+    MAIL_HOST: str
+    MAIL_USERNAME: str
+    MAIL_PASSWORD: str
+    MAIL_PORT: int
+    MAIL_FROM: str
+
+
 class LoggingConfig(CustomSettings):
     LOGGING_LEVEL: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
     LOGGING_FORMAT: str
@@ -136,6 +144,7 @@ class Settings(CustomSettings):
     db: DB = DB()
     auth: Auth = Auth()
     users: Users = Users()
+    email: Email = Email()
 
 
 settings = Settings()
