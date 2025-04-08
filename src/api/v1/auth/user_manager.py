@@ -1,11 +1,10 @@
 import logging
 from typing import Optional, Dict, Any, Union, TYPE_CHECKING
 
-from fastapi import Depends
 from fastapi_users import BaseUserManager, IntegerIDMixin, schemas, models, exceptions, InvalidPasswordException
 from sqlalchemy import Integer
 
-from src.core.auth.users_db import get_user_db
+from src.api.v1.email_sender.schemas import CustomMessageSchema
 from src.core.settings import settings
 
 if TYPE_CHECKING:
@@ -19,7 +18,9 @@ logger = logging.getLogger(__name__)
 class UserManager(IntegerIDMixin, BaseUserManager["User", Integer]):
 
     reset_password_token_secret = settings.auth.AUTH_RESET_PASSWORD_TOKEN_SECRET
+    reset_password_token_lifetime_seconds = settings.auth.AUTH_RESET_PASSWORD_TOKEN_LIFETIME_SECONDS
     verification_token_secret = settings.auth.AUTH_VERIFICATION_TOKEN_SECRET
+    verification_token_lifetime_seconds = settings.auth.AUTH_VERIFICATION_TOKEN_LIFETIME_SECONDS
 
     async def create(
         self,
@@ -70,6 +71,40 @@ class UserManager(IntegerIDMixin, BaseUserManager["User", Integer]):
     ):
         logger.warning("%r has registered." % (user, ))
 
+        if not user.is_verified:
+            from src.api.v1.auth.service import AuthService
+            service = AuthService(
+                user_manager=self
+            )
+            await service.request_verify_token(
+                request=request,
+                email=user.email,
+            )
+
+    async def on_after_request_verify(
+        self,
+        user: "User",
+        token: str,
+        request: Optional["Request"] = None
+    ):
+        logger.warning("Verification requested for %r. Verification token: %r" % (user, token))
+
+        schema = CustomMessageSchema(
+            recipients=[user.email, ],
+            subject=settings.app.APP_TITLE + '. Registration',
+            body=f"You have been registered on {settings.app.APP_TITLE}. "
+                 f"To finish registration, please, use this token in "
+                 f"{settings.auth.VERIFICATION_TOKEN_LIFETIME_SECONDS // 60} min: {token}   /n or just follow"
+                 f" the link: {settings.run.app1.APP_HOST_SERVER_URL}{settings.auth.VERIFY_HOOK_TOKEN_URL}/?token={token}"
+        )
+
+        # from app1.scripts.mail_sender.utils import send_mail
+        # await send_mail(schema=schema)
+
+        from src.api.v1.celery_tasks.tasks import task_send_mail
+        task_send_mail.apply_async(args=(schema.model_dump(),))
+
+
     async def on_after_forgot_password(
         self, user: "User", token: str, request: Optional["Request"] = None
     ):
@@ -78,11 +113,6 @@ class UserManager(IntegerIDMixin, BaseUserManager["User", Integer]):
     async def on_after_reset_password(
             self, user: "User", request: Optional["Request"] = None):
         logger.warning("%r has reset his password." % (user, ))
-
-    async def on_after_request_verify(
-        self, user: "User", token: str, request: Optional["Request"] = None
-    ):
-        logger.warning("Verification requested for %r. Verification token: %r" % (user, token))
 
     async def on_after_update(
             self, user: "User", update_dict: Dict[str, Any],
