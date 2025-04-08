@@ -7,7 +7,7 @@ from src.core.settings import settings
 
 
 bearer_transport = BearerTransport(
-    tokenUrl=settings.auth.get_transport_token_url(version="v1")
+    tokenUrl=settings.auth.get_url(purpose="transport-token", version="v1")
 )
 
 
