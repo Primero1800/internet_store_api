@@ -94,8 +94,8 @@ class UserManager(IntegerIDMixin, BaseUserManager["User", Integer]):
             subject=settings.app.APP_TITLE + '. Registration',
             body=f"You have been registered on {settings.app.APP_TITLE}. "
                  f"To finish registration, please, use this token in "
-                 f"{settings.auth.VERIFICATION_TOKEN_LIFETIME_SECONDS // 60} min: {token}   /n or just follow"
-                 f" the link: {settings.run.app1.APP_HOST_SERVER_URL}{settings.auth.VERIFY_HOOK_TOKEN_URL}/?token={token}"
+                 f"{settings.auth.AUTH_VERIFICATION_TOKEN_LIFETIME_SECONDS // 60} min: {token}   /n or just follow"
+                 f" the link: {settings.run.app_src.APP_HOST_SERVER_URL}{settings.auth.get_url(purpose='verify-hook', version='v1')}/?path={token}"
         )
 
         # from app1.scripts.mail_sender.utils import send_mail
