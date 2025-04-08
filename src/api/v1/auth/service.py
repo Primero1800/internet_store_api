@@ -1,9 +1,11 @@
 import logging
+from typing import Any
 
 from fastapi.responses import ORJSONResponse
-from fastapi_users import BaseUserManager, models, exceptions
+from fastapi_users import BaseUserManager, models, exceptions, schemas
 from fastapi import Request, status
-from pydantic import EmailStr
+from fastapi_users.router import ErrorCode
+from pydantic import EmailStr, BaseModel
 
 
 class AuthService:
@@ -50,3 +52,31 @@ class AuthService:
         return {
             "message": f"Token was successfully send to email {user.email!r}"
         }
+
+    async def verify(
+            self,
+            request: Request,
+            token: str,
+            schema: Any
+    ):
+
+        try:
+            user = await self.user_manager.verify(request=request, token=token)
+            return schema(**user.to_dict())
+
+        except (exceptions.InvalidVerifyToken, exceptions.UserNotExists):
+            return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "message": "Handled by Service exception handler",
+                    "detail": ErrorCode.VERIFY_USER_BAD_TOKEN
+                }
+            )
+        except exceptions.UserAlreadyVerified:
+            return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "message": "Handled by Service exception handler",
+                    "detail": ErrorCode.VERIFY_USER_ALREADY_VERIFIED
+                }
+            )
