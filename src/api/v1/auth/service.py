@@ -4,6 +4,7 @@ from typing import Any, TYPE_CHECKING
 from fastapi.responses import ORJSONResponse
 from fastapi_users import BaseUserManager, models, exceptions, schemas
 from fastapi import Request, status
+from fastapi_users.exceptions import InvalidResetPasswordToken
 from fastapi_users.router import ErrorCode
 from pydantic import EmailStr
 from sqlalchemy.exc import IntegrityError
@@ -105,5 +106,27 @@ class AuthService:
                 content={
                     "message": "Handled by Service exception handler",
                     "detail": "Internal server error while changing db data."
+                }
+            )
+
+    async def reset_password(
+            self,
+            token: str,
+            password: str,
+            request: Request,
+    ):
+        try:
+            return await self.user_manager.reset_password(
+                token=token,
+                password=password,
+                request=request,
+            )
+        except InvalidResetPasswordToken as exc:
+            self.logger.error("Error while changing password", exc_info=exc)
+            return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "message": "Handled by Service exception handler",
+                    "detail": f"Error while changing password: {exc}"
                 }
             )

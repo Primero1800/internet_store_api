@@ -9,6 +9,7 @@ from fastapi import (
 from fastapi_users import BaseUserManager, models, exceptions
 from fastapi_users.router import ErrorCode
 from fastapi_users.router.common import ErrorModel
+from fastapi_users.router.reset import RESET_PASSWORD_RESPONSES
 from pydantic import EmailStr
 
 from src.api.v1.auth.backend import (
@@ -105,11 +106,6 @@ async def verify(
     )
 
 
-# router.include_router(
-#     fastapi_users.get_verify_router(UserRead),
-# )
-
-
 # /forgot-password
 # /reset-password
 router.include_router(
@@ -120,12 +116,13 @@ router.include_router(
 @router.get(
     "/verify-hook",
     name="verify:verify-token-hook",
-    response_model=UserRead
+    response_model=UserRead,
+    include_in_schema=False,
 )
 async def hook_verify(
-    request: Request,
-    path: str,
-    user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+        request: Request,
+        path: str,
+        user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
 ) -> UserRead:
 
     logger.warning("In verify-hook: got token from outer link")
@@ -137,4 +134,27 @@ async def hook_verify(
         request=request,
         token=path,
         schema=UserRead,
+    )
+
+
+@router.post(
+    "/reset-password-hook",
+    name="verify:reset-password-hook",
+    responses=RESET_PASSWORD_RESPONSES,
+    include_in_schema=False
+)
+async def reset_password_hook(
+        request: Request,
+        path: str,
+        password: str = Body(...),
+        user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+):
+    logger.warning("In reset-password-hook: got token from outer link")
+    service = AuthService(
+        user_manager=user_manager
+    )
+    return await service.reset_password(
+        request=request,
+        token=path,
+        password=password,
     )

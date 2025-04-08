@@ -72,6 +72,7 @@ class Auth(CustomSettings):
             "verify",
             "verify-hook",
             "reset-password",
+            "reset-password-hook"
         ):
             PURPOSE = purpose
         return "{}{}{}/{}".format(
