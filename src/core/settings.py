@@ -56,6 +56,9 @@ class Auth(CustomSettings):
     AUTH_RESET_PASSWORD_TOKEN_SECRET: str
     AUTH_VERIFICATION_TOKEN_SECRET: str
 
+    AUTH_VERIFICATION_TOKEN_LIFETIME_SECONDS: int
+    AUTH_RESET_PASSWORD_TOKEN_LIFETIME_SECONDS: int
+
 
     def get_transport_token_url(self, version: str = "v1") -> str:
         if version == "v1":
