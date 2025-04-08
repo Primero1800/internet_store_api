@@ -49,8 +49,7 @@ class User(Base, IDIntPkMixin, SQLAlchemyBaseUserTable[int]):
     def __str__(self):
         return (f"{self.__class__.__name__}("
                 f"id={self.id}, "
-                f"email={self.email}, "
-                f")")
+                f"email={self.email})")
 
     def __repr__(self):
         return str(self)
