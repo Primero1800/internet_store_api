@@ -10,8 +10,8 @@ class RateLimiterConfigurer:
 
     @staticmethod
     def rate_limit(
-            max_calls: int,
-            period: int,
+            max_calls: int = 60,
+            period: int = 60,
     ):
         def decorator(
                 func: Callable[[Request, Any], Any]
