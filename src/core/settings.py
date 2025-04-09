@@ -83,40 +83,6 @@ class Auth(CustomSettings):
         )
 
 
-    # def REQUEST_VERIFY_TOKEN_URL(self) -> str:
-    #     return "{}{}{}/request-verify-token".format(
-    #         settings.app.API_PREFIX,
-    #         settings.app.API_V1_PREFIX,
-    #         settings.tags.AUTH_PREFIX,
-    #     )
-
-    def get_verify_token_url(self, version: str = "v1") -> str:
-        if version == "v1":
-            SECOND_PARAM = settings.app.API_V1_PREFIX
-        return "{}{}{}/verify".format(
-            settings.app.API_PREFIX,
-            SECOND_PARAM,
-            settings.tags.AUTH_PREFIX,
-        )
-
-    def get_verify_hook_token_url(self, version: str = "v1") -> str:
-        if version == "v1":
-            SECOND_PARAM = settings.app.API_V1_PREFIX
-        return "{}{}{}/verify-hook".format(
-            settings.app.API_PREFIX,
-            SECOND_PARAM,
-            settings.tags.AUTH_PREFIX,
-        )
-
-    # @property
-    # def RESET_PASSWORD_TOKEN_URL(self) -> str:
-    #     return "{}{}{}/reset-password".format(
-    #         settings.app.API_PREFIX,
-    #         settings.app.API_V1_PREFIX,
-    #         settings.tags.AUTH_PREFIX,
-    #     )
-
-
 class DB(CustomSettings):
 
     # DB_NAME: str = os.getenv('DB_NAME_TEST') if 'pytest' in sys.modules else os.getenv('DB_NAME')
