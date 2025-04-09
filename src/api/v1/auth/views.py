@@ -106,6 +106,27 @@ async def verify(
     )
 
 
+@router.post(
+        "/reset-password",
+        name="reset:reset_password",
+        responses=RESET_PASSWORD_RESPONSES,
+        response_model=UserRead,
+)
+async def reset_password(
+    request: Request,
+    token: str = Body(...),
+    password: str = Body(...),
+    user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+):
+    service = AuthService(
+        user_manager=user_manager
+    )
+    return await service.reset_password(
+        token=token,
+        password=password,
+        request=request
+    )
+
 # /forgot-password
 # /reset-password
 router.include_router(
@@ -137,16 +158,17 @@ async def hook_verify(
     )
 
 
-@router.post(
+@router.get(
     "/reset-password-hook",
     name="verify:reset-password-hook",
     responses=RESET_PASSWORD_RESPONSES,
-    include_in_schema=False
+    response_model=UserRead,
+    include_in_schema=False,
 )
 async def reset_password_hook(
         request: Request,
         path: str,
-        password: str = Body(...),
+        # password: str = Body(...),
         user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
 ):
     logger.warning("In reset-password-hook: got token from outer link")
@@ -156,5 +178,8 @@ async def reset_password_hook(
     return await service.reset_password(
         request=request,
         token=path,
-        password=password,
+        password='87654321',
     )
+
+
+

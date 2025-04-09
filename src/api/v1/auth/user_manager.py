@@ -128,10 +128,10 @@ class UserManager(IntegerIDMixin, BaseUserManager["User", Integer]):
             subject=settings.app.APP_TITLE + '. Password changing.',
             body=f"You have been requested on {settings.app.APP_TITLE} "
                  f"for password restoring, please, use this token in "
-                 f"{settings.auth.AUTH_RESET_PASSWORD_TOKEN_LIFETIME_SECONDS // 60} min: {token}   /n or just follow"
-                 f" the link: {settings.run.app_src.APP_HOST_SERVER_URL}"
-                 f"{settings.auth.get_url(purpose='reset-password-hook', version='v1')}"
-                 f"/?path={token}"
+                 f"{settings.auth.AUTH_RESET_PASSWORD_TOKEN_LIFETIME_SECONDS // 60} min: {token}   "
+                 # f"or just follow the link: {settings.run.app_src.APP_HOST_SERVER_URL}"
+                 # f"{settings.auth.get_url(purpose='reset-password-hook', version='v1')}"
+                 # f"/?path={token}"
         )
         from src.api.v1.celery_tasks.tasks import task_send_mail
         task_send_mail.apply_async(args=(schema.model_dump(),))
