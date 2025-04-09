@@ -22,7 +22,9 @@ dependencies = [
     "fastapi-mail (>=1.4.2,<2.0.0)",
     "celery (>=5.5.1,<6.0.0)",
     "redis (>=5.2.1,<6.0.0)",
-    "flower (>=2.0.1,<3.0.0)"
+    "flower (>=2.0.1,<3.0.0)",
+    "fastapi-filters (>=0.3.0,<0.4.0)",
+    "fastapi-filter (>=2.0.1,<3.0.0)"
 ]
 
 

@@ -645,6 +645,50 @@ all = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>
 standard = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>=0.23.0)", "jinja2 (>=3.1.5)", "python-multipart (>=0.0.18)", "uvicorn[standard] (>=0.12.0)"]
 
 [[package]]
+name = "fastapi-filter"
+version = "2.0.1"
+description = "FastAPI filter"
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["main"]
+files = [
+    {file = "fastapi_filter-2.0.1-py3-none-any.whl", hash = "sha256:711d48707ec62f7c9e12a7713fc0f6a99858a9e3741b4d108102d5599e77197d"},
+    {file = "fastapi_filter-2.0.1.tar.gz", hash = "sha256:cffda370097af7e404f1eb188aca58b199084bfaf7cec881e40b404adf12566e"},
+]
+
+[package.dependencies]
+fastapi = ">=0.100.0,<1.0"
+pydantic = ">=2.0.0,<3.0.0"
+
+[package.extras]
+all = ["SQLAlchemy (>=1.4.36,<2.1.0)", "beanie (>=1.26.0,<1.30.0)", "mongoengine (>=0.24.1,<0.28.0)"]
+beanie = ["beanie (>=1.26.0,<1.30.0)"]
+mongoengine = ["mongoengine (>=0.24.1,<0.28.0)"]
+sqlalchemy = ["SQLAlchemy (>=1.4.36,<2.1.0)"]
+
+[[package]]
+name = "fastapi-filters"
+version = "0.3.0"
+description = "fastapi-filters"
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["main"]
+files = [
+    {file = "fastapi_filters-0.3.0-py3-none-any.whl", hash = "sha256:b6af5b9862319893f744b9fc677d737c1c26d1132fbf70dc2069f9355513b74b"},
+    {file = "fastapi_filters-0.3.0.tar.gz", hash = "sha256:bc63b6c607e7bf26a80580c2c80464f77120f772869333e919984299e7dc748d"},
+]
+
+[package.dependencies]
+fastapi = ">=0.100.0"
+pydantic = ">=2.0.0,<3.0.0"
+typing-extensions = ">=4.4.0,<5.0.0"
+
+[package.extras]
+all = ["sqlalchemy (>=2.0.0,<3.0.0)", "tortoise-orm (>=0.20,<0.25)"]
+sqlalchemy = ["sqlalchemy (>=2.0.0,<3.0.0)"]
+tortoise-orm = ["tortoise-orm (>=0.20,<0.25)"]
+
+[[package]]
 name = "fastapi-mail"
 version = "1.4.2"
 description = "Simple lightweight mail library for FastApi"
@@ -1990,4 +2034,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "b8f0b582397ef238c310a1cf0b34dac376e97534cdc285f0396ec76a147ef51d"
+content-hash = "1654bde0336dd02f89b96c1aa1346ba2a12c66fbf11ce4c54dc933693a2cf771"
