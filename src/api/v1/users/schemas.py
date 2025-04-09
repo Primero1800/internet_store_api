@@ -37,7 +37,7 @@ class BaseUser():
 
 class UserRead(BaseUser, schemas.BaseUser[int]):
     data_joined: base_data_joined
-    last_login: base_last_login
+    last_login: Optional[base_last_login]
 
 
 class UserCreate(BaseUser, schemas.BaseUserCreate):
