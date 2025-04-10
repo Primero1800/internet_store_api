@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.openapi.docs import (
     get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html, get_redoc_html
 )
@@ -38,8 +38,18 @@ class SwaggerConfigurer:
 
     @staticmethod
     def config_swagger(app: FastAPI, app_title='Unknown application'):
-        @app.get('/docs/', status_code=status.HTTP_200_OK, tags=[settings.tags.SWAGGER_TAG])
-        async def custom_swagger_ui_html():
+
+        from src.core.config import RateLimiter
+
+        @app.get(
+            '/docs/',
+            status_code=status.HTTP_200_OK,
+            tags=[settings.tags.SWAGGER_TAG],
+        )
+        @RateLimiter.rate_limit()
+        async def custom_swagger_ui_html(
+                request: Request,
+        ):
             return get_swagger_ui_html(
                 openapi_url=app.openapi_url,
                 title=app_title + ' Swagger UI',
@@ -50,12 +60,25 @@ class SwaggerConfigurer:
                 swagger_css_url=f"/static/swagger/css/swagger-ui.css"
             )
 
-        @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
-        async def swagger_ui_redirect():
+        @app.get(
+            app.swagger_ui_oauth2_redirect_url,
+            include_in_schema=False
+        )
+        @RateLimiter.rate_limit()
+        async def swagger_ui_redirect(
+                request: Request
+        ):
             return get_swagger_ui_oauth2_redirect_html()
 
-        @app.get("/redoc/", status_code=status.HTTP_200_OK, tags=[settings.tags.SWAGGER_TAG])
-        async def redoc_html():
+        @app.get(
+            "/redoc/",
+            status_code=status.HTTP_200_OK,
+            tags=[settings.tags.SWAGGER_TAG]
+        )
+        @RateLimiter.rate_limit()
+        async def redoc_html(
+                request: Request
+        ):
             return get_redoc_html(
                 openapi_url=app.openapi_url,
                 title=app.title + " - ReDoc",

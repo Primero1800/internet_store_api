@@ -1,14 +1,15 @@
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Depends
 from starlette.staticfiles import StaticFiles
 
+from src.api.v1.users.dependencies import current_superuser
 from src.core.settings import settings
 from src.core.config import (
     AppConfigurer,
     SwaggerConfigurer,
-    DBConfigurer,
+    DBConfigurer, RateLimiter,
 )
 from src.api import router as router_api
 
@@ -50,18 +51,32 @@ SwaggerConfigurer.delete_router_tag(app)
 
 # ROUTES
 
-@app.get("/", tags=[settings.tags.ROOT_TAG,],)
-def top():
+
+@app.get(
+    "/",
+    tags=[settings.tags.ROOT_TAG,],
+)
+@RateLimiter.rate_limit()
+async def top(request: Request):
     return f"top here"
 
 
-@app.get("/echo/{thing}/", tags=[settings.tags.TECH_TAG,],)
-def echo(thing):
+@app.get(
+    "/echo/{thing}/",
+    tags=[settings.tags.TECH_TAG,],
+)
+@RateLimiter.rate_limit()
+def echo(request: Request, thing: str):
     return " ".join([thing for _ in range(3)])
 
 
-@app.get("/routes/", tags=[settings.tags.TECH_TAG,],)
-async def get_routes_endpoint():
+@app.get(
+    "/routes/",
+    tags=[settings.tags.TECH_TAG,],
+    dependencies=[Depends(current_superuser)]
+)
+# no rate limit for superuser
+async def get_routes_endpoint(request: Request):
     return await SwaggerConfigurer.get_routes(
         application=app,
     )
