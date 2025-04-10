@@ -14,7 +14,6 @@ from fastapi_users.router.reset import RESET_PASSWORD_RESPONSES
 from pydantic import EmailStr
 
 from src.api.v1.auth.backend import (
-    fastapi_users,
     auth_backend,
 )
 from src.api.v1.auth.dependencies import get_user_manager
@@ -194,9 +193,9 @@ async def reset_password(
 
 # /forgot-password
 # /reset-password
-router.include_router(
-    fastapi_users.get_reset_password_router(),
-)
+# router.include_router(
+#     fastapi_users.get_reset_password_router(),
+# )
 
 
 @router.get(
@@ -247,6 +246,3 @@ async def reset_password_hook(
         token=path,
         password='87654321',
     )
-
-
-
