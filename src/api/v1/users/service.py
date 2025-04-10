@@ -1,14 +1,15 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from fastapi import status
+from fastapi import status, Request
 from fastapi.responses import ORJSONResponse
-from fastapi_users import BaseUserManager, models
+from fastapi_users import BaseUserManager, models, schemas, exceptions
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .repository import UsersRepository
-from .exceptions import NoSessionException
+from .exceptions import NoSessionException, Errors
+from src.api.v1.auth.exceptions import Errors as Auth_Errors
 
 if TYPE_CHECKING:
     from .filters import UserFilter
@@ -41,7 +42,7 @@ class UsersService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": "Handled by Service exception handler",
+                    "message": Errors.HANDLER_MESSAGE,
                     "detail": exc.msg,
                 }
             )
@@ -50,7 +51,37 @@ class UsersService:
             return ORJSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content={
-                    "message": "Handled by Service exception handler",
-                    "detail": "Internal server error while working with database",
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": Errors.DATABASE_ERROR,
+                }
+            )
+
+    async def update_me(
+            self,
+            request: Request,
+            user_update: Any,
+            user: models.UP,
+    ):
+        try:
+            user = await self.user_manager.update(
+                user_update, user, safe=True, request=request
+            )
+            return user
+
+        except exceptions.InvalidPasswordException as e:
+            return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": Auth_Errors.invalid_password_reasoned(e.reason),
+                }
+            )
+
+        except exceptions.UserAlreadyExists:
+            return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": Auth_Errors.user_already_exists_emailed(user_update.email),
                 }
             )

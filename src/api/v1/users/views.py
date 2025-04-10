@@ -41,6 +41,29 @@ async def me(
     return schemas.model_validate(UserRead, user)
 
 
+@router.patch(
+    "/me",
+    response_model=UserRead,
+    status_code=status.HTTP_200_OK,
+    name="users:patch_current_user",
+)
+@RateLimiter.rate_limit()
+async def update_me(
+    request: Request,
+    user_update: UserUpdate,
+    user: models.UP = Depends(current_user),
+    user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+):
+    service: UsersService = UsersService(
+        user_manager=user_manager
+    )
+    return await service.update_me(
+        request=request,
+        user_update=user_update,
+        user=user,
+    )
+
+
 # /api/v1/users/me GET
 # /api/v1/users/me PATCH
 # /api/v1/users/{id} GET
