@@ -6,7 +6,7 @@ from fastapi import Request, status
 from fastapi.responses import ORJSONResponse
 
 
-class RateLimiterConfigurer:
+class RateLimiter:
 
     @staticmethod
     def rate_limit(

@@ -1,10 +1,8 @@
 from datetime import datetime, date
 from typing import Optional
 
-from fastapi import HTTPException, status
-from pydantic import Field, field_validator
+from pydantic import Field
 from fastapi_filter.contrib.sqlalchemy import Filter
-from pydantic_core.core_schema import ValidationInfo
 
 from src.core.models import User
 
