@@ -95,8 +95,9 @@ class UserManager(IntegerIDMixin, BaseUserManager["User", Integer]):
             subject=settings.app.APP_TITLE + '. Registration',
             body=f"You have been registered on {settings.app.APP_TITLE}. "
                  f"To finish registration, please, use this token in "
-                 f"{settings.auth.AUTH_VERIFICATION_TOKEN_LIFETIME_SECONDS // 60} min: {token}   /n or just follow"
-                 f" the link: {settings.run.app_src.APP_HOST_SERVER_URL}{settings.auth.get_url(purpose='verify-hook', version='v1')}/?path={token}"
+                 f"{settings.auth.AUTH_VERIFICATION_TOKEN_LIFETIME_SECONDS // 60} min: {token}   "
+                 f"or just follow the link: {settings.run.app_src.APP_HOST_SERVER_URL}"
+                 f"{settings.auth.get_url(purpose='verify-hook', version='v1')}/?path={token}"
         )
 
         from src.api.v1.celery_tasks.tasks import task_send_mail
@@ -109,13 +110,13 @@ class UserManager(IntegerIDMixin, BaseUserManager["User", Integer]):
     ):
         logger.info("%r logged in." % (user,))
         from src.api.v1.auth.service import AuthService
-        from src.api.v1.users.schemas import UserUpdate
+        from src.api.v1.users.schemas import UserUpdateExtended
         service = AuthService(
             user_manager=self
         )
         await service.update_last_login(
             user=user,
-            schema_update=UserUpdate(last_login=datetime.now()),
+            schema_update=UserUpdateExtended(last_login=datetime.now()),
             request=request,
         )
 

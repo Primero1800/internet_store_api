@@ -45,6 +45,11 @@ class UserCreate(BaseUser, schemas.BaseUserCreate):
 
 
 class UserUpdate(BaseUser, schemas.BaseUserUpdate):
+    firstname: Optional[base_firstname] = None
+    lastname: Optional[base_lastname] = None
+
+
+class UserUpdateExtended(BaseUser, schemas.BaseUserUpdate):
     last_login: Optional[base_last_login] = None
     firstname: Optional[base_firstname] = None
     lastname: Optional[base_lastname] = None
