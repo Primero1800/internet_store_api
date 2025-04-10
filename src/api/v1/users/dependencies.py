@@ -21,6 +21,13 @@ current_user_or_none = fastapi_users.current_user(
     verified=True,
 )
 
+current_user_token = fastapi_users.authenticator.current_user_token(
+    optional=False,
+    active=False,
+    verified=False,
+    superuser=False,
+)
+
 
 async def get_user_or_404(
         id: str,

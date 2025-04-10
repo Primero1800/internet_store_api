@@ -1,17 +1,18 @@
-from typing import Optional
-
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi_filter import FilterDepends
-from fastapi_users import BaseUserManager, models
+from fastapi_users import BaseUserManager, models, schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.v1.auth.backend import fastapi_users
-from src.api.v1.users.dependencies import current_superuser
+from src.api.v1.auth.backend import fastapi_users as fastapi_users_custom
+from src.api.v1.users.dependencies import (
+    current_superuser,
+    current_user,
+)
 from src.api.v1.users.schemas import (
     UserRead,
     UserUpdate,
 )
-from src.core.config import DBConfigurer
+from src.core.config import DBConfigurer, RateLimiter
 from src.scrypts.pagination import paginate_result
 
 from .service import UsersService
@@ -22,13 +23,31 @@ from ..auth.dependencies import get_user_manager
 router = APIRouter()
 
 
+@router.get(
+    "/me",
+    response_model=UserRead,
+    name="users:current_user",
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": "Missing token or inactive user.",
+        },
+    },
+)
+@RateLimiter.rate_limit()
+async def me(
+        request: Request,
+        user: models.UP = Depends(current_user),
+):
+    return schemas.model_validate(UserRead, user)
+
+
 # /api/v1/users/me GET
 # /api/v1/users/me PATCH
 # /api/v1/users/{id} GET
 # /api/v1/users/{id} PATCH
 # /api/v1/users/{id} DELETE
 router.include_router(
-    fastapi_users.get_users_router(
+    fastapi_users_custom.get_users_router(
         UserRead, UserUpdate
     ),
 )
@@ -39,7 +58,9 @@ router.include_router(
     response_model=list[UserRead],
     dependencies=[Depends(current_superuser),],
 )
+# No rate limit for superuser
 async def get_users(
+        request: Request,
         page: int = Query(1, gt=0),
         size: int = Query(10, gt=0),
         user_filter: UserFilter = FilterDepends(UserFilter),
@@ -60,5 +81,3 @@ async def get_users(
         page=page,
         size=size,
     )
-
-
