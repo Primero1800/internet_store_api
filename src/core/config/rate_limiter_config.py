@@ -1,17 +1,23 @@
 import hashlib
+import logging
 import time
 from functools import wraps
 from typing import Callable, Any
 from fastapi import Request, status
 from fastapi.responses import ORJSONResponse
 
+from src.core.settings import settings
+
+
+logger = logging.getLogger(__name__)
+
 
 class RateLimiter:
 
     @staticmethod
     def rate_limit(
-            max_calls: int = 60,
-            period: int = 60,
+            max_calls: int = settings.rate_limiter.RATE_LIMITER_CALLS,
+            period: int = settings.rate_limiter.RATE_LIMITER_PERIOD,
     ):
         def decorator(
                 func: Callable[[Request, Any], Any]
@@ -22,6 +28,7 @@ class RateLimiter:
             @wraps(func)
             async def wrapper(request: Request, *args, **kwargs) -> Any:
                 if not request.client:
+                    logger.warning("Request has no client information")
                     return ORJSONResponse(
                         status_code=status.HTTP_406_NOT_ACCEPTABLE,
                         content={
@@ -45,6 +52,7 @@ class RateLimiter:
                     return await func(request, *args, **kwargs)
 
                 wait: float = period - (now - timestamps[0])
+                logger.warning("Too many requests from %r" % request.client.host)
                 return ORJSONResponse(
                     status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                     content={

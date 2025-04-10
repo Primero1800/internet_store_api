@@ -129,6 +129,11 @@ class LoggingConfig(CustomSettings):
         return logging.getLevelNamesMapping()[self.LOGGING_LEVEL]
 
 
+class RateLimiter(CustomSettings):
+    RATE_LIMITER_CALLS: int
+    RATE_LIMITER_PERIOD: int
+
+
 class RunConfig(CustomSettings):
     app_src: AppRunConfig = AppRunConfig()
 
@@ -158,6 +163,7 @@ class Settings(CustomSettings):
     auth: Auth = Auth()
     users: Users = Users()
     email: Email = Email()
+    rate_limiter: RateLimiter = RateLimiter()
 
 
 settings = Settings()
