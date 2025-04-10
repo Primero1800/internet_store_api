@@ -1,8 +1,11 @@
 import hashlib
+import json
 import logging
 import time
 from functools import wraps
 from typing import Callable, Any
+
+import redis
 from fastapi import Request, status
 from fastapi.responses import ORJSONResponse
 
@@ -23,8 +26,6 @@ class RateLimiter:
                 func: Callable[[Request, Any], Any]
         ) -> Callable[[Request, Any], Any]:
 
-            usage: dict[str, list[float]] = {}
-
             @wraps(func)
             async def wrapper(request: Request, *args, **kwargs) -> Any:
                 if not request.client:
@@ -41,15 +42,28 @@ class RateLimiter:
                 unique_id: str = hashlib.sha256(ip_address.encode()).hexdigest()
                 now = time.time()
 
-                if unique_id not in usage:
-                    usage[unique_id] = []
+                async with redis.asyncio.Redis(
+                    host=settings.redis.REDIS_HOST,
+                    port=settings.redis.REDIS_PORT,
+                    db=settings.redis.REDIS_DATABASE,
+                ) as client:
+                    redis_key = f"rate_limit:{unique_id}"
+                    timestamps = await client.get(redis_key)
+                    if timestamps is None:
+                        timestamps = []
+                    else:
+                        timestamps = json.loads(timestamps)
 
-                timestamps = usage[unique_id]
-                timestamps[:] = [t for t in timestamps if now - t < period]
+                    timestamps = [t for t in timestamps if now - t < period]
 
-                if len(timestamps) < max_calls:
-                    timestamps.append(now)
-                    return await func(request, *args, **kwargs)
+                    if len(timestamps) < max_calls:
+                        timestamps.append(now)
+                        await client.set(
+                            redis_key,
+                            json.dumps(timestamps),
+                            ex=settings.redis.REDIS_CACHE_LIFETIME_SECONDS
+                        )
+                        return await func(request, *args, **kwargs)
 
                 wait: float = period - (now - timestamps[0])
                 logger.warning("Too many requests from %r" % request.client.host)
