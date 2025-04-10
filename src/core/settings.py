@@ -134,6 +134,16 @@ class RateLimiter(CustomSettings):
     RATE_LIMITER_PERIOD: int
 
 
+class RedisConf(CustomSettings):
+    REDIS_HOST: str
+    REDIS_DATABASE: int
+    REDIS_PORT: int = 6379
+    REDIS_CACHE_LIFETIME_SECONDS: int = 3600 * 24
+
+    def REDIS_URL(self):
+        return f"redis://{self.REDIS_HOST}:6379/{self.REDIS_DATABASE}"
+
+
 class RunConfig(CustomSettings):
     app_src: AppRunConfig = AppRunConfig()
 
@@ -164,6 +174,7 @@ class Settings(CustomSettings):
     users: Users = Users()
     email: Email = Email()
     rate_limiter: RateLimiter = RateLimiter()
+    redis: RedisConf = RedisConf()
 
 
 settings = Settings()
