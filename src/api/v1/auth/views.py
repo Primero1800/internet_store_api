@@ -4,11 +4,12 @@ from fastapi import (
     APIRouter,
     status,
     Request,
-    Response, Depends, Body,
+    Depends,
+    Body,
 )
-from fastapi_users import BaseUserManager, models, exceptions
-from fastapi_users.router import ErrorCode
-from fastapi_users.router.common import ErrorModel
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi_users import BaseUserManager, models
+from fastapi_users.authentication import Strategy
 from fastapi_users.router.reset import RESET_PASSWORD_RESPONSES
 from pydantic import EmailStr
 
@@ -17,8 +18,9 @@ from src.api.v1.auth.backend import (
     auth_backend,
 )
 from src.api.v1.auth.dependencies import get_user_manager
-from src.core.settings import settings
+from src.core.config import RateLimiter
 from .service import AuthService
+from ..users.dependencies import current_user_token
 from ..users.schemas import (
     UserRead,
     UserCreate,
@@ -30,17 +32,79 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+@router.post(
+        "/login",
+        name=f"auth:{auth_backend.name}.login",
+)
+@RateLimiter.rate_limit()
+async def login(
+    request: Request,
+    credentials: OAuth2PasswordRequestForm = Depends(),
+    user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+    strategy: Strategy[models.UP, models.ID] = Depends(auth_backend.get_strategy),
+):
+    service = AuthService(
+        user_manager=user_manager,
+        backend=auth_backend,
+    )
+    return await service.login(
+        request=request,
+        credentials=credentials,
+        strategy=strategy,
+    )
+
+
+@router.post(
+    "/logout",
+    name=f"auth:{auth_backend.name}.logout",
+)
+@RateLimiter.rate_limit()
+async def logout(
+        request: Request,
+        user_token: tuple[models.UP, str] = Depends(current_user_token),
+        strategy: Strategy[models.UP, models.ID] = Depends(auth_backend.get_strategy),
+):
+    service: AuthService = AuthService(
+        backend=auth_backend,
+    )
+    return await service.logout(
+        token=user_token,
+        strategy=strategy,
+    )
+
+
 # /login [POST]
 # /logout [POST]
-router.include_router(
-    fastapi_users.get_auth_router(auth_backend),
+# router.include_router(
+#     fastapi_users.get_auth_router(auth_backend),
+# )
+
+
+@router.post(
+        "/register",
+        response_model=UserRead,
+        status_code=status.HTTP_201_CREATED,
+        name="register:register",
 )
+@RateLimiter.rate_limit()
+async def register(
+    request: Request,
+    user_create: UserCreate,
+    user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+):
+    service: AuthService = AuthService(
+        user_manager=user_manager
+    )
+    return await service.register(
+        request=request,
+        user_create_schema=user_create,
+    )
 
 
 # /register
-router.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),
-)
+# router.include_router(
+#     fastapi_users.get_register_router(UserRead, UserCreate),
+# )
 
 
 # /request-verify-token
@@ -49,7 +113,8 @@ router.include_router(
         "/request-verify-token",
         status_code=status.HTTP_202_ACCEPTED,
         name="verify:request-token",
-    )
+)
+@RateLimiter.rate_limit()
 async def request_verify_token(
     request: Request,
     email: EmailStr = Body(..., embed=True),
@@ -68,29 +133,8 @@ async def request_verify_token(
     "/verify",
     response_model=UserRead,
     name="verify:verify",
-    responses={
-        status.HTTP_400_BAD_REQUEST: {
-            "model": ErrorModel,
-            "content": {
-                "application/json": {
-                    "examples": {
-                        ErrorCode.VERIFY_USER_BAD_TOKEN: {
-                            "summary": "Bad token, not existing user or"
-                            "not the e-mail currently set for the user.",
-                            "value": {"detail": ErrorCode.VERIFY_USER_BAD_TOKEN},
-                        },
-                        ErrorCode.VERIFY_USER_ALREADY_VERIFIED: {
-                            "summary": "The user is already verified.",
-                            "value": {
-                                "detail": ErrorCode.VERIFY_USER_ALREADY_VERIFIED
-                            },
-                        },
-                    }
-                }
-            },
-        }
-    },
 )
+@RateLimiter.rate_limit()
 async def verify(
     request: Request,
     token: str = Body(..., embed=True),
@@ -107,11 +151,31 @@ async def verify(
 
 
 @router.post(
+        "/forgot-password",
+        status_code=status.HTTP_202_ACCEPTED,
+        name="reset:forgot_password",
+)
+async def forgot_password(
+    request: Request,
+    email: EmailStr = Body(..., embed=True),
+    user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+):
+    service: AuthService = AuthService(
+        user_manager=user_manager
+    )
+    return await service.forgot_password(
+        request=request,
+        email=email,
+    )
+
+
+@router.post(
         "/reset-password",
         name="reset:reset_password",
         responses=RESET_PASSWORD_RESPONSES,
         response_model=UserRead,
 )
+@RateLimiter.rate_limit()
 async def reset_password(
     request: Request,
     token: str = Body(...),
@@ -127,6 +191,7 @@ async def reset_password(
         request=request
     )
 
+
 # /forgot-password
 # /reset-password
 router.include_router(
@@ -140,6 +205,7 @@ router.include_router(
     response_model=UserRead,
     include_in_schema=False,
 )
+@RateLimiter.rate_limit()
 async def hook_verify(
         request: Request,
         path: str,
@@ -165,6 +231,7 @@ async def hook_verify(
     response_model=UserRead,
     include_in_schema=False,
 )
+@RateLimiter.rate_limit()
 async def reset_password_hook(
         request: Request,
         path: str,
