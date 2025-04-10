@@ -49,7 +49,5 @@ class UserUpdate(BaseUser, schemas.BaseUserUpdate):
     lastname: Optional[base_lastname] = None
 
 
-class UserUpdateExtended(BaseUser, schemas.BaseUserUpdate):
+class UserUpdateExtended(UserUpdate):
     last_login: Optional[base_last_login] = None
-    firstname: Optional[base_firstname] = None
-    lastname: Optional[base_lastname] = None
