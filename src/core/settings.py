@@ -148,6 +148,11 @@ class RunConfig(CustomSettings):
     app_src: AppRunConfig = AppRunConfig()
 
 
+class Sessions(CustomSettings):
+    SESSIONS_MAX_AGE: int
+    SESSIONS_SECRET_KEY: str
+
+
 class Tags(CustomSettings):
     TECH_TAG: str
     ROOT_TAG: str
@@ -175,6 +180,7 @@ class Settings(CustomSettings):
     email: Email = Email()
     rate_limiter: RateLimiter = RateLimiter()
     redis: RedisConf = RedisConf()
+    sessions: Sessions = Sessions()
 
 
 settings = Settings()
