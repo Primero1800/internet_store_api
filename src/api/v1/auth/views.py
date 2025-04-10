@@ -145,7 +145,6 @@ async def verify(
     return await service.verify(
         request=request,
         token=token,
-        schema=UserRead,
     )
 
 
@@ -209,7 +208,7 @@ async def hook_verify(
         request: Request,
         path: str,
         user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
-) -> UserRead:
+):
 
     logger.warning("In verify-hook: got token from outer link")
 
@@ -219,7 +218,6 @@ async def hook_verify(
     return await service.verify(
         request=request,
         token=path,
-        schema=UserRead,
     )
 
 

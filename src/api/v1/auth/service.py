@@ -6,7 +6,6 @@ from fastapi_users import BaseUserManager, models, exceptions
 from fastapi import Request, status
 from fastapi_users.authentication import Strategy, AuthenticationBackend
 from fastapi_users.exceptions import InvalidResetPasswordToken
-from fastapi_users.router import ErrorCode
 from pydantic import EmailStr
 from sqlalchemy.exc import IntegrityError
 
@@ -14,7 +13,7 @@ from .exceptions import Errors
 
 if TYPE_CHECKING:
     from src.core.models import User
-    from src.api.v1.users.schemas import UserUpdate
+    from src.api.v1.users.schemas import UserUpdateExtended
 
 
 class AuthService:
@@ -133,12 +132,10 @@ class AuthService:
             self,
             request: Request,
             token: str,
-            schema: Any
     ):
 
         try:
-            user = await self.user_manager.verify(request=request, token=token)
-            return schema(**user.to_dict())
+            return await self.user_manager.verify(request=request, token=token)
 
         except (exceptions.InvalidVerifyToken, exceptions.UserNotExists):
             return ORJSONResponse(
@@ -160,7 +157,7 @@ class AuthService:
 
     async def update_last_login(
             self,
-            schema_update: "UserUpdate",
+            schema_update: "UserUpdateExtended",
             user: "User",
             request: Request,
     ):
