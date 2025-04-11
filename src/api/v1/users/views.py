@@ -77,7 +77,7 @@ router.include_router(
 
 
 @router.get(
-    '/',
+    '',
     response_model=list[UserRead],
     dependencies=[Depends(current_superuser),],
 )

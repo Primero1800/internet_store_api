@@ -42,7 +42,7 @@ class SwaggerConfigurer:
         from src.core.config import RateLimiter
 
         @app.get(
-            '/docs/',
+            '/docs',
             status_code=status.HTTP_200_OK,
             tags=[settings.tags.SWAGGER_TAG],
         )
@@ -71,7 +71,7 @@ class SwaggerConfigurer:
             return get_swagger_ui_oauth2_redirect_html()
 
         @app.get(
-            "/redoc/",
+            "/redoc",
             status_code=status.HTTP_200_OK,
             tags=[settings.tags.SWAGGER_TAG]
         )

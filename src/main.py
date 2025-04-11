@@ -53,7 +53,7 @@ SwaggerConfigurer.delete_router_tag(app)
 
 
 @app.get(
-    "/",
+    "",
     tags=[settings.tags.ROOT_TAG,],
 )
 @RateLimiter.rate_limit()
@@ -62,7 +62,7 @@ async def top(request: Request):
 
 
 @app.get(
-    "/echo/{thing}/",
+    "/echo/{thing}",
     tags=[settings.tags.TECH_TAG,],
 )
 @RateLimiter.rate_limit()
@@ -71,7 +71,7 @@ def echo(request: Request, thing: str):
 
 
 @app.get(
-    "/routes/",
+    "/routes",
     tags=[settings.tags.TECH_TAG,],
     dependencies=[Depends(current_superuser)]
 )
