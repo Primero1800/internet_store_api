@@ -44,7 +44,7 @@ cookie = SessionCookie(
 
 # SESSION BACKEND #############################
 
-BACKEND = InMemoryBackend[UUID, SessionData]()
+BACKEND = InRedisBackend[UUID, SessionData]()
 
 
 # SESSION VERIFIER ################################
@@ -87,7 +87,7 @@ class BasicVerifier(SessionVerifier[UUID, SessionData]):
 verifier = BasicVerifier(
     identifier="general_verifier",
     auto_error=True,
-    backend=backend,
+    backend=BACKEND,
     auth_http_exception=HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
         detail="Invalid session"

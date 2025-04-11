@@ -2,6 +2,7 @@ import json
 from typing import Dict, Generic
 
 import redis
+from fastapi.encoders import jsonable_encoder
 from fastapi_sessions.backends.session_backend import (
     BackendError,
     SessionBackend,
@@ -10,6 +11,7 @@ from fastapi_sessions.backends.session_backend import (
 from fastapi_sessions.frontends.session_frontend import ID
 
 from src.core.settings import settings
+from src.scrypts.conver_dates_back import convert_dates
 
 
 class InRedisBackend(Generic[ID, SessionModel], SessionBackend[ID, SessionModel]):
@@ -36,11 +38,11 @@ class InRedisBackend(Generic[ID, SessionModel], SessionBackend[ID, SessionModel]
             redis_key = self.get_redis_key(session_id)
             redis_data = await client.get(redis_key)
             if redis_data:
-                raise BackendError("Session already exists, Can't overwrite existing session.")
+                raise BackendError()
 
             await client.set(
                 redis_key,
-                json.dumps(data),
+                json.dumps(data.model_dump(), default=jsonable_encoder),
                 ex=self.expired
             )
 
@@ -51,7 +53,8 @@ class InRedisBackend(Generic[ID, SessionModel], SessionBackend[ID, SessionModel]
             redis_data = await client.get(redis_key)
             if not redis_data:
                 return
-            return json.loads(redis_data)
+            raw_result = json.loads(redis_data)
+            return convert_dates(raw_result)
 
     async def update(self, session_id: ID, data: SessionModel) -> None:
         """Update an existing session."""
