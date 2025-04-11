@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Generic
+from typing import Dict, Generic, Any
 
 import redis
 from fastapi.encoders import jsonable_encoder
@@ -17,7 +17,7 @@ from src.scrypts.conver_dates_back import convert_dates
 class InRedisBackend(Generic[ID, SessionModel], SessionBackend[ID, SessionModel]):
     """Stores session data on redis-server."""
 
-    def __init__(self) -> None:
+    def __init__(self, model: Any) -> None:
         """Initialize a new in-memory database."""
 
         # self.data: Dict[ID, SessionModel] = {}
@@ -28,6 +28,7 @@ class InRedisBackend(Generic[ID, SessionModel], SessionBackend[ID, SessionModel]
         )
         self.expired = settings.redis.REDIS_CACHE_LIFETIME_SECONDS
         self.prefix = f"{settings.app.APP_NAME}_session:"
+        self.schema_model = model
 
     def get_redis_key(self, session_id: ID):
         return f"{self.prefix}{session_id}"
@@ -54,7 +55,7 @@ class InRedisBackend(Generic[ID, SessionModel], SessionBackend[ID, SessionModel]
             if not redis_data:
                 return
             raw_result = json.loads(redis_data)
-            return convert_dates(raw_result)
+            return self.schema_model(**convert_dates(raw_result))
 
     async def update(self, session_id: ID, data: SessionModel) -> None:
         """Update an existing session."""
@@ -62,13 +63,13 @@ class InRedisBackend(Generic[ID, SessionModel], SessionBackend[ID, SessionModel]
             redis_key = self.get_redis_key(session_id)
             redis_data = await client.get(redis_key)
             if not redis_data:
-                raise BackendError("Session does not exist, cannot update")
+                raise BackendError()
             redis_data_decoded: dict = json.loads(redis_data)
             redis_data_decoded.update(data)
 
             await client.set(
                 redis_key,
-                json.dumps(redis_data_decoded),
+                json.dumps(redis_data_decoded, default=jsonable_encoder),
                 ex=self.expired
             )
 
