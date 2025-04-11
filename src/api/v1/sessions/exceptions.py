@@ -5,6 +5,11 @@ class Errors:
 
     HANDLER_MESSAGE = "Handled by Sessions exception handler"
 
+    INVALID_SESSION = "Invalid session"
+
+    COOKIE_NO_SESSION = "No session cookie attached to request"
+    COOKIE_SESSION_INVALID_SIGNATURE = "Session cookie has invalid signature"
+
     SESSION_EXISTS = "Session already exists, Can't overwrite existing session."
 
     @staticmethod

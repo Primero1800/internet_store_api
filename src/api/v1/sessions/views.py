@@ -71,7 +71,10 @@ async def whoami(
     request: Request,
     session_data: SessionData = Depends(verifier),
 ):
-    return session_data
+    service: SessionsService = SessionsService()
+    return await service.get_current_session(
+        session_data=session_data,
+    )
 
 
 @router.post(

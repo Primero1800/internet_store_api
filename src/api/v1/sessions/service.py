@@ -9,6 +9,7 @@ from fastapi_sessions.backends.session_backend import BackendError
 
 import logging
 import pytz
+from fastapi_sessions.frontends.session_frontend import FrontendError
 
 from src.core.sessions.fastapi_sessions_config import (
     SessionData,
@@ -25,6 +26,53 @@ class SessionsService:
     @staticmethod
     def get_session_id(user: Any):
         return uuid.uuid5(uuid.NAMESPACE_DNS, str(user.id)) if user and hasattr(user, "id") else uuid4()
+
+    # async def is_invalid_current_session(
+    #         self,
+    #         session_data: Any,
+    # ):
+    #     if not session_data:
+    #         return ORJSONResponse(
+    #             status_code=status.HTTP_403_FORBIDDEN,
+    #             content={
+    #                 "message": Errors.HANDLER_MESSAGE,
+    #                 "detail": Errors.INVALID_SESSION,
+    #             }
+    #         )
+    #     return False
+
+    # async def is_invalid_session_id(
+    #         self,
+    #         session_id: Any
+    # ):
+    #     if isinstance(session_id, FrontendError):
+    #         if str(session_id) == Errors.COOKIE_NO_SESSION:
+    #             status_code = status.HTTP_403_FORBIDDEN
+    #             detail = Errors.COOKIE_NO_SESSION
+    #         elif str(session_id) == Errors.COOKIE_SESSION_INVALID_SIGNATURE:
+    #             status_code = status.HTTP_401_UNAUTHORIZED
+    #             detail = Errors.COOKIE_SESSION_INVALID_SIGNATURE
+    #         else:
+    #             status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    #             detail = str(session_id)
+    #         return ORJSONResponse(
+    #             status_code=status_code,
+    #             content={
+    #                 "message": Errors.HANDLER_MESSAGE,
+    #                 "detail": detail,
+    #             }
+    #         )
+    #     return False
+
+    async def get_current_session(
+            self,
+            session_data: Any,
+    ):
+        # invalid_session_data = await self.is_invalid_current_session(session_data)
+        # if not invalid_session_data:
+        #     return session_data
+        return session_data
+
 
     async def create_session(
             self,
@@ -84,6 +132,10 @@ class SessionsService:
             response: Response,
             session_id: uuid.UUID,
     ):
+        # invalid_cookie = await self.is_invalid_session_id(session_id)
+        # if invalid_cookie:
+        #     return invalid_cookie
+
         await backend.delete(session_id)
         cookie.delete_from_response(response)
         return
@@ -94,6 +146,10 @@ class SessionsService:
             data_to_update: dict,
             session_id: uuid.UUID,
     ):
+
+        # invalid_session_data = await self.is_invalid_current_session(session_data)
+        # if invalid_session_data:
+        #     return invalid_session_data
 
         session_data.data.update(data_to_update)
         try:
@@ -114,6 +170,10 @@ class SessionsService:
             session_data: Any,
             session_id: Any,
     ):
+        # invalid_session_data = await self.is_invalid_current_session(session_data)
+        # if invalid_session_data:
+        #     return invalid_session_data
+
         session_data.data.clear()
         try:
             await backend.update(session_id, session_data)
