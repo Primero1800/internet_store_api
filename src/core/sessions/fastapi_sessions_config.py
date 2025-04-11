@@ -2,7 +2,10 @@
 from typing import Annotated, Optional, Dict, Any
 from uuid import UUID
 
-from fastapi_sessions.backends.implementations import InMemoryBackend
+from .backends import (
+    InMemoryBackend,
+    InRedisBackend,
+)
 from fastapi_sessions.frontends.implementations import CookieParameters, SessionCookie
 from fastapi_sessions.session_verifier import SessionVerifier
 
@@ -41,7 +44,7 @@ cookie = SessionCookie(
 
 # SESSION BACKEND #############################
 
-backend = InMemoryBackend[UUID, SessionData]()
+BACKEND = InMemoryBackend[UUID, SessionData]()
 
 
 # SESSION VERIFIER ################################
@@ -52,7 +55,7 @@ class BasicVerifier(SessionVerifier[UUID, SessionData]):
         *,
         identifier: str,
         auto_error: bool,
-        backend: InMemoryBackend[UUID, SessionData],
+        backend: BACKEND,
         auth_http_exception: HTTPException,
     ):
         self._identifier = identifier
