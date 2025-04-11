@@ -22,6 +22,7 @@ CustomSettings.set_app_name_as_source(
 
 class AppSettings(CustomSettings):
     APP_BASE_DIR: str = str(BASE_DIR)
+    APP_NAME: str
     APP_TITLE: str
     APP_VERSION: str
     APP_DESCRIPTION: str
@@ -141,7 +142,7 @@ class RedisConf(CustomSettings):
     REDIS_CACHE_LIFETIME_SECONDS: int = 3600 * 24
 
     def REDIS_URL(self):
-        return f"redis://{self.REDIS_HOST}:6379/{self.REDIS_DATABASE}"
+        return f"redis://{self.REDIS_HOST}:6379/{self.REDIS_DATABASE_1}"
 
 
 class RunConfig(CustomSettings):
@@ -163,6 +164,9 @@ class Tags(CustomSettings):
 
     AUTH_PREFIX: str
     AUTH_TAG: str
+
+    SESSIONS_PREFIX: str
+    SESSIONS_TAG: str
 
 
 class Users(CustomSettings):
