@@ -20,6 +20,7 @@ from src.core.settings import settings
 class SessionData(BaseModel):
     user_id: Annotated[Optional[int], None]
     user_email: Annotated[Optional[str], None]
+    session_id: Annotated[Optional[UUID], None]
     data: Annotated[Dict[str, Any], {}]
 
 
@@ -44,7 +45,7 @@ cookie = SessionCookie(
 
 # SESSION BACKEND #############################
 
-BACKEND = InRedisBackend[UUID, SessionData]()
+BACKEND = InRedisBackend[UUID, SessionData](model=SessionData)
 
 
 # SESSION VERIFIER ################################
