@@ -78,6 +78,7 @@ async def whoami(
     "/delete_session",
     status_code=status.HTTP_204_NO_CONTENT
 )
+@RateLimiter.rate_limit()
 async def del_session(
         request: Request,
         response: Response,
@@ -95,6 +96,7 @@ async def del_session(
     dependencies=[Depends(cookie)],
     response_model=SessionData,
 )
+@RateLimiter.rate_limit()
 async def update_session(
         request: Request,
         data: Dict[str, Any],
@@ -107,5 +109,23 @@ async def update_session(
         data_to_update=data,
         session_data=session_data,
         session_id=session_id,
+    )
+
+
+@router.post(
+    "/clear_session",
+    status_code=status.HTTP_200_OK,
+    response_model=SessionData,
+)
+@RateLimiter.rate_limit()
+async def clear_session(
+        request: Request,
+        session_id: UUID = Depends(cookie),
+        session_data: SessionData = Depends(verifier)
+):
+    service: SessionsService = SessionsService()
+    return await service.clear_session(
+        session_id=session_id,
+        session_data=session_data,
     )
 

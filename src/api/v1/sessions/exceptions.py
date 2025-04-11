@@ -23,6 +23,6 @@ class Errors:
     def setting_not_existing_session_emailed(email: str):
         return f"User {email!r} have no existing session yet"
 
-    UPDATING_NOT_EXISTS_SESSION = "Session doesn't exist. Can't update session."
+    UPDATING_NOT_EXISTS_SESSION = "Session doesn't exist. Can't update or cleare session."
 
     DATABASE_ERROR = "Error occurred while changing database data"

@@ -109,6 +109,24 @@ class SessionsService:
             )
         return await self.returning_session_data_after_operation(session_id)
 
+    async def clear_session(
+            self,
+            session_data: Any,
+            session_id: Any,
+    ):
+        session_data.data.clear()
+        try:
+            await backend.update(session_id, session_data)
+        except BackendError as exc:
+            return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": Errors.UPDATING_NOT_EXISTS_SESSION,
+                }
+            )
+        return await self.returning_session_data_after_operation(session_id)
+
     async def returning_session_data_after_operation(
             self,
             session_id: uuid.UUID,
