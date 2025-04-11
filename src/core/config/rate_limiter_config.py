@@ -47,7 +47,7 @@ class RateLimiter:
                     port=settings.redis.REDIS_PORT,
                     db=settings.redis.REDIS_DATABASE,
                 ) as client:
-                    redis_key = f"rate_limit:{unique_id}"
+                    redis_key = f"{settings.app.APP_NAME}_rate_limit:{unique_id}"
                     timestamps = await client.get(redis_key)
                     if timestamps is None:
                         timestamps = []
