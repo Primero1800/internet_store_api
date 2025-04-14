@@ -1,8 +1,8 @@
 """product, rubric, association tables added
 
-Revision ID: f8dd0502b76a
+Revision ID: 1aa469498982
 Revises: 3011b269d1cb
-Create Date: 2025-04-14 13:31:26.129728
+Create Date: 2025-04-14 18:50:18.668345
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f8dd0502b76a'
+revision: str = '1aa469498982'
 down_revision: Union[str, None] = '3011b269d1cb'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
