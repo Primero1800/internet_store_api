@@ -11,6 +11,8 @@ __all__ = (
     "Product",
     "ProductImage",
 
+    "RubricProductAssociation",
+
 
 )
 
@@ -20,3 +22,5 @@ from .users.models import User
 from .store.brand import Brand, BrandImage
 from .store.rubric import Rubric, RubricImage
 from .store.product import Product, ProductImage
+from .store.rubric_product_association import RubricProductAssociation
+
