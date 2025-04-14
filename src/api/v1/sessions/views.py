@@ -6,6 +6,7 @@ from fastapi import APIRouter, Request, Response, status, Depends, Body
 from src.api.v1.users.dependencies import (
     current_user_or_none,
     current_user,
+    current_superuser,
 )
 from src.core.config import RateLimiter
 from src.core.sessions.fastapi_sessions_config import (
@@ -132,3 +133,16 @@ async def clear_session(
         session_data=session_data,
     )
 
+
+@router.get(
+    "/all",
+    status_code=status.HTTP_200_OK,
+    response_model=list[SessionData],
+    dependencies=[Depends(current_superuser),]
+)
+@RateLimiter.rate_limit()
+async def get_all(
+        request: Request,
+):
+    service: SessionsService = SessionsService()
+    return await service.get_all()

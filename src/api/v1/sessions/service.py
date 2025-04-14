@@ -202,3 +202,10 @@ class SessionsService:
                 }
             )
         return result
+
+    async def get_all(
+            self
+    ):
+        self.logger.warning("Requesting all existing sessions from backend")
+        result = await backend.get_all()
+        return result

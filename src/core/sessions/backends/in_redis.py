@@ -49,8 +49,11 @@ class InRedisBackend(Generic[ID, SessionModel], SessionBackend[ID, SessionModel]
 
     async def read(self, session_id: ID):
         """Read an existing session data."""
+        redis_key = self.get_redis_key(session_id)
+        return await self.read_by_key(redis_key)
+
+    async def read_by_key(self, redis_key: str):
         async with self.service as client:
-            redis_key =  self.get_redis_key(session_id)
             redis_data = await client.get(redis_key)
             if not redis_data:
                 return
@@ -78,3 +81,14 @@ class InRedisBackend(Generic[ID, SessionModel], SessionBackend[ID, SessionModel]
         async with self.service as client:
             redis_key = self.get_redis_key(session_id)
             await client.delete(redis_key)
+
+    async def get_all(self) -> list[SessionModel]:
+        """Getting all existing sessions from redis-server, available for superuser"""
+        async with self.service as client:
+            session_keys= await client.keys(pattern=self.prefix + '*')
+            result = []
+            for session_key in session_keys:
+                data = await self.read_by_key(session_key)
+                result.append(data)
+            return result
+
