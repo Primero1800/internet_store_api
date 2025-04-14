@@ -168,6 +168,9 @@ class Tags(CustomSettings):
     SESSIONS_PREFIX: str
     SESSIONS_TAG: str
 
+    BRANDS_PREFIX: str
+    BRANDS_TAG: str
+
 
 class Users(CustomSettings):
     USERS_PASSWORD_MIN_LENGTH: int
