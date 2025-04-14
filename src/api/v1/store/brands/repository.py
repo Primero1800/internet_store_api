@@ -54,9 +54,30 @@ class BrandsRepository:
             )
         return orm_model
 
+    async def get_one(
+            self,
+            id: int
+    ):
+        orm_model = await self.session.get_one(Brand, id)
+        if not orm_model:
+            text_error = f"id={id}"
+            raise CustomException(
+                msg=f"{CLASS} with {text_error} not found"
+            )
+        return orm_model
+
     async def get_all(self) -> Sequence:
         stmt = select(Brand).options(
             joinedload(Brand.image)
+        ).order_by(Brand.id)
+
+        result: Result = await self.session.execute(stmt)
+        return result.unique().scalars().all()
+
+    async def get_all_full(self) -> Sequence:
+        stmt = select(Brand).options(
+            joinedload(Brand.image),
+            joinedload(Brand.products).joinedload(Product.images),
         ).order_by(Brand.id)
 
         result: Result = await self.session.execute(stmt)
@@ -105,7 +126,6 @@ class BrandsRepository:
             raise CustomException(
                 msg=f"Error while {image!r} creating."
             )
-
 
     async def delete_one(
             self,

@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 from fastapi import UploadFile, status
 from fastapi.responses import ORJSONResponse
@@ -10,6 +11,9 @@ from .repository import BrandsRepository
 from .schemas import BrandCreate
 from .exceptions import Errors
 from ..utils.image_utils import save_image
+
+if TYPE_CHECKING:
+    from src.core.models import Brand
 
 
 CLASS = "Brand"
@@ -33,6 +37,64 @@ class BrandsService:
         for orm_model in listed_orm_models:
             result.append(await utils.get_short_schema_from_orm(orm_model=orm_model))
         return result
+
+    async def get_all_full(self):
+        repository: BrandsRepository = BrandsRepository(
+            session=self.session
+        )
+        result = []
+        listed_orm_models = await repository.get_all_full()
+        for orm_model in listed_orm_models:
+            result.append(await utils.get_schema_from_orm(orm_model=orm_model))
+        return result
+
+    async def get_one(
+            self,
+            id: int,
+            to_schema: bool = True
+    ):
+        repository: BrandsRepository = BrandsRepository(
+            session=self.session
+        )
+        try:
+            returned_orm_model = await repository.get_one(
+                id=id,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            await utils.get_short_schema_from_orm(returned_orm_model)
+        return returned_orm_model
+
+    async def get_one_complex(
+            self,
+            id: int = None,
+            slug: str = None,
+    ):
+        repository: BrandsRepository = BrandsRepository(
+            session=self.session
+        )
+        try:
+            returned_orm_model = await repository.get_one_complex(
+                id=id,
+                slug=slug,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+        return await utils.get_schema_from_orm(returned_orm_model)
 
     async def create_one(
             self,
@@ -93,10 +155,20 @@ class BrandsService:
                     "detail": exc.msg,
                 }
             )
+
+        return await self.get_one_complex(
+            id=orm_model.id
+        )
+
+    async def delete_one(
+            self,
+            orm_model: "Brand",
+    ):
+        repository: BrandsRepository = BrandsRepository(
+            session=self.session
+        )
         try:
-            returned_orm_model = await repository.get_one_complex(
-                id=orm_model.id,
-            )
+            return await repository.delete_one(orm_model=orm_model)
         except CustomException as exc:
             return ORJSONResponse(
                 status_code=exc.status_code,
@@ -105,5 +177,3 @@ class BrandsService:
                     "detail": exc.msg,
                 }
             )
-
-        return await utils.get_schema_from_orm(returned_orm_model)
