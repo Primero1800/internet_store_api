@@ -141,73 +141,58 @@ async def delete_one(
     return await service.delete_one(orm_model)
 
 
+@router.put(
+        "/{id}/",
+        dependencies=[Depends(current_superuser), ],
+        status_code=status.HTTP_200_OK,
+        response_model=BrandRead
+)
+@RateLimiter.rate_limit()
+async def put_one(
+        request: Request,
+        title: str = Form(),
+        description: str = Form(),
+        image: UploadFile = File(),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+        orm_model: "Brand" = Depends(deps.get_one_simple)
+):
+    service: BrandsService = BrandsService(
+        session=session
+    )
+    return await service.edit_one(
+        title=title,
+        description=description,
+        image_schema=image,
+        orm_model=orm_model,
+    )
+
+
+@router.patch(
+        "/{id}/",
+        dependencies=[Depends(current_superuser), ],
+        status_code=status.HTTP_200_OK,
+        response_model=BrandRead
+)
+@RateLimiter.rate_limit()
+async def patch_one(
+        request: Request,
+        title: Optional[str] = Form(default=None),
+        description: Optional[str] = Form(default=None),
+        image: Optional[UploadFile] = File(default=None),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+        orm_model: "Brand" = Depends(deps.get_one_simple)
+):
+    service: BrandsService = BrandsService(
+        session=session
+    )
+    return await service.edit_one(
+        title=title,
+        description=description,
+        image_schema=image,
+        orm_model=orm_model,
+        is_partial=True
+    )
 
 
 
 
-
-
-
-# @router.put(
-#     "/{id}/",
-#     dependencies=[Depends(current_superuser), ],
-#     status_code=status.HTTP_200_OK,
-#     response_model=BrandRead
-# )
-# async def edit_one(
-#     title: str = Form(),
-#     description: str = Form(),
-#     image: UploadFile = File(),
-#     session: AsyncSession = Depends(DBConfigurer.session_getter),
-#     orm_model: "Brand" = Depends(deps.get_one_simple)
-# ):
-#
-#     # catching ValidationError in exception_handler
-#     instance: BrandUpdate = BrandUpdate(title=title, description=description)
-#
-#     try:
-#         orm_model: "Brand" = await crud.edit_one(
-#             orm_model=orm_model,
-#             instance=instance,
-#             image_schema=image,
-#             session=session,
-#         )
-#         return await utils.get_schema_from_orm(orm_model=orm_model)
-#     except (CustomException, Exception) as exc:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=exc.msg if hasattr(exc, "msg") else str(exc)
-#         )
-#
-#
-# @router.patch(
-#     "/{id}/",
-#     dependencies=[Depends(current_superuser), ],
-#     status_code=status.HTTP_200_OK,
-#     response_model=BrandRead
-# )
-# async def edit_one_partial(
-#     title: Optional[str] = Form(default=None),
-#     description: Optional[str] = Form(default=None),
-#     image: Optional[UploadFile] = File(default=None),
-#     session: AsyncSession = Depends(DBConfigurer.session_getter),
-#     orm_model: "Brand" = Depends(deps.get_one_simple)
-# ):
-#
-#     # catching ValidationError in exception_handler
-#     instance: BrandPartialUpdate = BrandPartialUpdate(title=title, description=description)
-#
-#     try:
-#         orm_model: "Brand" = await crud.edit_one(
-#             orm_model=orm_model,
-#             instance=instance,
-#             image_schema=image,
-#             session=session,
-#             is_partial=True,
-#         )
-#         return await utils.get_schema_from_orm(orm_model=orm_model)
-#     except (CustomException, Exception) as exc:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=exc.msg if hasattr(exc, "msg") else str(exc)
-#         )

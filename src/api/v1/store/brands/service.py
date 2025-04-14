@@ -8,13 +8,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.tools.exceptions import CustomException
 from . import utils
 from .repository import BrandsRepository
-from .schemas import BrandCreate
+from .schemas import (
+    BrandCreate,
+    BrandUpdate,
+    BrandPartialUpdate,
+)
 from .exceptions import Errors
 from ..utils.image_utils import save_image
 
 if TYPE_CHECKING:
     from src.core.models import Brand
-
 
 CLASS = "Brand"
 _CLASS = "brand"
@@ -156,6 +159,8 @@ class BrandsService:
                 }
             )
 
+        self.logger.info("Brand %r was successfully created" % orm_model)
+
         return await self.get_one_complex(
             id=orm_model.id
         )
@@ -164,6 +169,9 @@ class BrandsService:
             self,
             orm_model: "Brand",
     ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
         repository: BrandsRepository = BrandsRepository(
             session=self.session
         )
@@ -177,3 +185,78 @@ class BrandsService:
                     "detail": exc.msg,
                 }
             )
+
+    async def edit_one(
+            self,
+            title: str,
+            description: str,
+            image_schema: UploadFile,
+            orm_model: "Brand",
+            is_partial: bool = False
+    ):
+        repository: BrandsRepository = BrandsRepository(
+            session=self.session,
+        )
+
+        # catching ValidationError in exception_handler
+        if is_partial:
+            instance: BrandPartialUpdate = BrandPartialUpdate(title=title, description=description)
+        else:
+            instance: BrandUpdate = BrandUpdate(title=title, description=description)
+
+        repository: BrandsRepository = BrandsRepository(
+            session=self.session
+        )
+
+        try:
+            await repository.edit_one_empty(
+                instance=instance,
+                orm_model=orm_model,
+                is_partial=is_partial,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+        if image_schema:
+            try:
+                file_path: str = await save_image(
+                    image_object=image_schema,
+                    path=f"media/{_CLASS}s",
+                    folder=f"{orm_model.id}"
+                )
+            except Exception as exc:
+                self.logger.error("Error wile writing file", exc_info=exc)
+                return ORJSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content={
+                        "message": Errors.HANDLER_MESSAGE,
+                        "detail": Errors.IMAGE_SAVING_ERROR,
+                    }
+                )
+
+            self.logger.info("Image %r was successfully written" % image_schema)
+
+            try:
+                await repository.edit_brand_image(
+                    file=file_path,
+                    orm_model=orm_model
+                )
+            except CustomException as exc:
+                return ORJSONResponse(
+                    status_code=exc.status_code,
+                    content={
+                        "message": Errors.HANDLER_MESSAGE,
+                        "detail": exc.msg,
+                    }
+                )
+
+        self.logger.info("Brand %r was successfully edited" % orm_model)
+        return await self.get_one_complex(
+            id=orm_model.id
+        )

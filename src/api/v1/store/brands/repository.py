@@ -58,7 +58,7 @@ class BrandsRepository:
             self,
             id: int
     ):
-        orm_model = await self.session.get_one(Brand, id)
+        orm_model = await self.session.get(Brand, id)
         if not orm_model:
             text_error = f"id={id}"
             raise CustomException(
@@ -110,7 +110,6 @@ class BrandsRepository:
             file: str,
             orm_model: Brand
     ):
-
         try:
             image: BrandImage | None = BrandImage(file=file, brand_id=orm_model.id)
             self.session.add(image)
@@ -127,6 +126,25 @@ class BrandsRepository:
                 msg=f"Error while {image!r} creating."
             )
 
+    async def edit_brand_image(
+            self,
+            file: str,
+            orm_model: Brand
+    ):
+        image: BrandImage | None = BrandImage(file=file, brand_id=orm_model.id)
+        try:
+            stmt = select(BrandImage).where(BrandImage.brand_id == orm_model.id)
+            image = await self.session.scalar(stmt)
+            if image.file != file:
+                image.file = file
+                self.logger.warning("Editing %r in database" % image)
+                await self.session.commit()
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                msg=f"Error while {image!r} editing."
+            )
+
     async def delete_one(
             self,
             orm_model: Brand,
@@ -139,4 +157,26 @@ class BrandsRepository:
             self.logger.error("Error while deleting data from database", exc_info=exc)
             raise CustomException(
                 msg="Error while deleting %r from database" % orm_model
+            )
+
+    async def edit_one_empty(
+            self,
+            instance:  Union["BrandUpdate", "BrandPartialUpdate"],
+            orm_model: Brand,
+            is_partial: bool = False
+    ):
+        for key, val in instance.model_dump(
+                exclude_unset=is_partial,
+                exclude_none=is_partial,
+        ).items():
+            setattr(orm_model, key, val)
+
+        self.logger.warning(f"Editing %r in database" % orm_model)
+        try:
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                msg=Errors.brand_already_exists_titled(orm_model.title)
             )
