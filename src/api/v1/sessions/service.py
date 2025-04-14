@@ -9,12 +9,12 @@ from fastapi_sessions.backends.session_backend import BackendError
 
 import logging
 import pytz
-from fastapi_sessions.frontends.session_frontend import FrontendError
 
 from src.core.sessions.fastapi_sessions_config import (
     SessionData,
     BACKEND as backend,
     cookie,
+    current_timezone,
 )
 from .exceptions import Errors
 
@@ -86,7 +86,7 @@ class SessionsService:
             user_email=user.email if user else None,
             session_id = session_id,
             data={
-                "time": datetime.now(tz=pytz.timezone("Europe/Moscow"))
+                "time": datetime.now(tz=pytz.timezone(current_timezone))
             })
 
         if session_data and isinstance(session_data, dict):

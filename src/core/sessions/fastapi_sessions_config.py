@@ -32,6 +32,8 @@ class CustomCookieParameters(CookieParameters):
 
 cookie_params = CustomCookieParameters()
 
+current_timezone = settings.app.APP_TIMEZONE
+
 
         # Uses UUID
 cookie = SessionCookie(

@@ -53,7 +53,7 @@ SwaggerConfigurer.delete_router_tag(app)
 
 
 @app.get(
-    "",
+    "/",
     tags=[settings.tags.ROOT_TAG,],
 )
 @RateLimiter.rate_limit()
