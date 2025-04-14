@@ -9,10 +9,10 @@ from src.core.models.mixins import (
 from src.core.models.store.image import ImageBase
 from src.core.models import Base
 
-# if TYPE_CHECKING:
-#     from src.core.models import (
-#         Product,
-#     )
+if TYPE_CHECKING:
+    from src.core.models import (
+        Product,
+    )
 
 
 class Brand(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
@@ -23,11 +23,11 @@ class Brand(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
         cascade="all, delete",
     )
 
-    # products: Mapped[List['Product']] = relationship(
-    #     'Product',
-    #     back_populates="brand",
-    #     cascade="all, delete",
-    # )
+    products: Mapped[List['Product']] = relationship(
+        'Product',
+        back_populates="brand",
+        cascade="all, delete",
+    )
 
     def __str__(self):
         return f"Brand(id={self.id}, title={self.title})"
