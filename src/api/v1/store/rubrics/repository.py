@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload
 from src.core.models import Rubric
 
 
-class BrandsRepository:
+class RubricsRepository:
     def __init__(
             self,
             session: AsyncSession,

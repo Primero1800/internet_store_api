@@ -3,6 +3,7 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import utils
+from .repository import RubricsRepository
 
 
 class RubricsService:
