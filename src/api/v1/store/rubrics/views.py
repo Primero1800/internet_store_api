@@ -4,16 +4,23 @@ from fastapi import (
     APIRouter,
     status,
     Request,
-    Depends, Form, UploadFile, File,
+    Depends,
+    Form,
+    UploadFile,
+    File,
+    Query,
 )
+from fastapi_filter import FilterDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.scrypts.pagination import paginate_result
 from .service import RubricsService
 from src.core.config import RateLimiter, DBConfigurer
 from .schemas import (
     RubricShort,
     RubricRead,
 )
+from .filters import RubricFilter
 from ...users.dependencies import current_superuser
 from . import dependencies as deps
 
@@ -31,12 +38,45 @@ router = APIRouter()
 @RateLimiter.rate_limit()
 async def get_all(
         request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        filter_model: RubricFilter = FilterDepends(RubricFilter),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ):
     service: RubricsService = RubricsService(
         session=session
     )
-    return await service.get_all()
+    result_full = await service.get_all(filter_model=filter_model)
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
+
+
+@router.get(
+    "/full/",
+    dependencies=[Depends(current_superuser),],
+    response_model=List[RubricRead],
+    status_code=status.HTTP_200_OK,
+)
+@RateLimiter.rate_limit()
+async def get_all_full(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        filter_model: RubricFilter = FilterDepends(RubricFilter),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: RubricsService = RubricsService(
+        session=session
+    )
+    result_full = await service.get_all_full(filter_model=filter_model)
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
 
 
 @router.get(
@@ -76,23 +116,6 @@ async def get_one(
     return await service.get_one_complex(
         id=id
     )
-
-
-@router.get(
-    "/full/",
-    dependencies=[Depends(current_superuser),],
-    response_model=List[RubricRead],
-    status_code=status.HTTP_200_OK,
-)
-@RateLimiter.rate_limit()
-async def get_all_full(
-        request: Request,
-        session: AsyncSession = Depends(DBConfigurer.session_getter)
-):
-    service: RubricsService = RubricsService(
-        session=session
-    )
-    return await service.get_all_full()
 
 
 @router.post(

@@ -16,6 +16,7 @@ if TYPE_CHECKING:
         RubricUpdate,
         RubricPartialUpdate,
     )
+    from .filters import RubricFilter
 
 
 CLASS = "Rubric"
@@ -55,8 +56,15 @@ class RubricsRepository:
             )
         return orm_model
 
-    async def get_all(self) -> Sequence:
-        stmt = select(Rubric).options(
+    async def get_all(
+            self,
+            filter_model: "RubricFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(Rubric))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.options(
             joinedload(Rubric.image)
         ).order_by(Rubric.id)
 
@@ -75,8 +83,15 @@ class RubricsRepository:
             )
         return orm_model
 
-    async def get_all_full(self) -> Sequence:
-        stmt = select(Rubric).options(
+    async def get_all_full(
+            self,
+            filter_model: "RubricFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(Rubric))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.options(
             joinedload(Rubric.image),
             joinedload(Rubric.products).joinedload(Product.images),
         ).order_by(Rubric.id)

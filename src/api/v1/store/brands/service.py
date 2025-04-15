@@ -18,6 +18,7 @@ from ..utils.image_utils import save_image
 
 if TYPE_CHECKING:
     from src.core.models import Brand
+    from .filters import BrandFilter
 
 CLASS = "Brand"
 _CLASS = "brand"
@@ -31,22 +32,28 @@ class BrandsService:
         self.session = session
         self.logger = logging.getLogger(__name__)
 
-    async def get_all(self):
+    async def get_all(
+            self,
+            filter_model: "BrandFilter",
+    ):
         repository: BrandsRepository = BrandsRepository(
             session=self.session
         )
         result = []
-        listed_orm_models = await repository.get_all()
+        listed_orm_models = await repository.get_all(filter_model=filter_model)
         for orm_model in listed_orm_models:
             result.append(await utils.get_short_schema_from_orm(orm_model=orm_model))
         return result
 
-    async def get_all_full(self):
+    async def get_all_full(
+            self,
+            filter_model: "BrandFilter"
+    ):
         repository: BrandsRepository = BrandsRepository(
             session=self.session
         )
         result = []
-        listed_orm_models = await repository.get_all_full()
+        listed_orm_models = await repository.get_all_full(filter_model=filter_model)
         for orm_model in listed_orm_models:
             result.append(await utils.get_schema_from_orm(orm_model=orm_model))
         return result

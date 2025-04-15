@@ -16,6 +16,7 @@ if TYPE_CHECKING:
         BrandUpdate,
         BrandPartialUpdate,
     )
+    from .filters import BrandFilter
 
 
 CLASS = "Brand"
@@ -66,16 +67,30 @@ class BrandsRepository:
             )
         return orm_model
 
-    async def get_all(self) -> Sequence:
-        stmt = select(Brand).options(
+    async def get_all(
+            self,
+            filter_model: "BrandFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(Brand))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.options(
             joinedload(Brand.image)
         ).order_by(Brand.id)
 
         result: Result = await self.session.execute(stmt)
         return result.unique().scalars().all()
 
-    async def get_all_full(self) -> Sequence:
-        stmt = select(Brand).options(
+    async def get_all_full(
+            self,
+            filter_model: "BrandFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(Brand))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.options(
             joinedload(Brand.image),
             joinedload(Brand.products).joinedload(Product.images),
         ).order_by(Brand.id)
