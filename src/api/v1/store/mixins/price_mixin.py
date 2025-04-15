@@ -8,5 +8,5 @@ class PriceMixin:
     @property
     def price(self) -> Decimal | None:
         if hasattr(self, 'start_price') and hasattr(self, 'discount'):
-            return Decimal(self.start_price * self.discount / 100)
+            return Decimal(self.start_price * (100 - self.discount) / 100)
         return None
