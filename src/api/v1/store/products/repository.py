@@ -41,3 +41,18 @@ class ProductsRepository:
                 msg=f"{CLASS} with {text_error} not found"
             )
         return orm_model
+
+    async def get_all(
+            self,
+            filter_model: "ProductFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(Product))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.options(
+            joinedload(Product.images)
+        ).order_by(Product.id)
+
+        result: Result = await self.session.execute(stmt)
+        return result.unique().scalars().all()
