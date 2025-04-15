@@ -53,3 +53,12 @@ class RubricsRepository:
 
         result: Result = await self.session.execute(stmt)
         return result.unique().scalars().all()
+
+    async def get_all_full(self) -> Sequence:
+        stmt = select(Rubric).options(
+            joinedload(Rubric.image),
+            joinedload(Rubric.products).joinedload(Product.images),
+        ).order_by(Rubric.id)
+
+        result: Result = await self.session.execute(stmt)
+        return result.unique().scalars().all()

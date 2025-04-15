@@ -72,3 +72,20 @@ async def get_one(
     return await service.get_one_complex(
         id=id
     )
+
+
+@router.get(
+    "/full/",
+    dependencies=[Depends(current_superuser),],
+    response_model=List[RubricRead],
+    status_code=status.HTTP_200_OK,
+)
+@RateLimiter.rate_limit()
+async def get_all_full(
+        request: Request,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: RubricsService = RubricsService(
+        session=session
+    )
+    return await service.get_all_full()
