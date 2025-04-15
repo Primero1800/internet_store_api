@@ -1,8 +1,8 @@
 """product, rubric, association tables added
 
-Revision ID: 1aa469498982
+Revision ID: 667d6972a754
 Revises: 3011b269d1cb
-Create Date: 2025-04-14 18:50:18.668345
+Create Date: 2025-04-15 17:24:03.514757
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '1aa469498982'
+revision: str = '667d6972a754'
 down_revision: Union[str, None] = '3011b269d1cb'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -32,11 +32,19 @@ def upgrade() -> None:
     )
     op.create_table('el_product',
     sa.Column('slug', sa.String(), nullable=False),
+    sa.Column('start_price', sa.DECIMAL(precision=8, scale=2), nullable=False),
+    sa.Column('discount', sa.Integer(), nullable=False),
+    sa.Column('price', sa.DECIMAL(precision=8, scale=2), nullable=False),
+    sa.Column('available', sa.Boolean(), server_default='true', nullable=False),
+    sa.Column('quantity', sa.Integer(), server_default='1', nullable=False),
+    sa.Column('published', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('brand_id', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(length=100), nullable=False),
     sa.Column('description', sa.String(length=500), nullable=False),
     sa.CheckConstraint('length(title) >= 3', name=op.f('ck_el_brand_check_title_min_length')),
+    sa.CheckConstraint('quantity >= 0', name=op.f('ck_el_product_check_quantity_min_length')),
+    sa.CheckConstraint('start_price > 0', name=op.f('ck_el_product_check_start_price_min_length')),
     sa.ForeignKeyConstraint(['brand_id'], ['el_brand.id'], name=op.f('fk_el_product_brand_id_el_brand'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_el_product')),
     sa.UniqueConstraint('title', name=op.f('uq_el_product_title'))
