@@ -171,6 +171,9 @@ class Tags(CustomSettings):
     BRANDS_PREFIX: str
     BRANDS_TAG: str
 
+    RUBRICS_PREFIX: str
+    RUBRICS_TAG: str
+
 
 class Users(CustomSettings):
     USERS_PASSWORD_MIN_LENGTH: int
