@@ -14,7 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .service import BrandsService
 from .schemas import (
-    BrandCreate, BrandRead, BrandUpdate, BrandPartialUpdate, BrandShort,
+    BrandRead,
+    BrandShort,
 )
 from src.api.v1.users.dependencies import current_superuser
 from src.core.config import DBConfigurer, RateLimiter
