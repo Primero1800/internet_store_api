@@ -1,6 +1,4 @@
 import logging
-import os
-import sys
 from pathlib import Path
 from typing import Literal
 
@@ -173,6 +171,9 @@ class Tags(CustomSettings):
 
     RUBRICS_PREFIX: str
     RUBRICS_TAG: str
+
+    PRODUCTS_PREFIX: str
+    PRODUCTS_TAG: str
 
 
 class Users(CustomSettings):
