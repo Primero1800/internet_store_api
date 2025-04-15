@@ -102,7 +102,7 @@ class BrandsRepository:
         except IntegrityError as error:
             self.logger.error(f"Error while orm_model creating", exc_info=error)
             raise CustomException(
-                msg=Errors.brand_already_exists_titled(orm_model.title)
+                msg=Errors.already_exists_titled(orm_model.title)
             )
 
     async def create_brand_image(
@@ -178,5 +178,5 @@ class BrandsRepository:
         except IntegrityError as exc:
             self.logger.error("Error occurred while editing data in database", exc_info=exc)
             raise CustomException(
-                msg=Errors.brand_already_exists_titled(orm_model.title)
+                msg=Errors.already_exists_titled(orm_model.title)
             )
