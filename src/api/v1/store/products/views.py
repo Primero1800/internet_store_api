@@ -53,3 +53,28 @@ async def get_all(
         page=page,
         size=size,
     )
+
+
+@router.get(
+    "/full/",
+    dependencies=[Depends(current_superuser),],
+    response_model=List[ProductRead],
+    status_code=status.HTTP_200_OK,
+)
+@RateLimiter.rate_limit()
+async def get_all_full(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        filter_model: ProductFilter = FilterDepends(ProductFilter),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    result_full = await service.get_all_full(filter_model=filter_model)
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )

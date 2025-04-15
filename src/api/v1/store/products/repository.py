@@ -56,3 +56,27 @@ class ProductsRepository:
 
         result: Result = await self.session.execute(stmt)
         return result.unique().scalars().all()
+
+    async def get_all_full(
+            self,
+            filter_model: "ProductFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(Product))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.options(
+            joinedload(Product.images),
+            joinedload(Product.brand).joinedload(Brand.image),
+            joinedload(Product.rubrics).joinedload(Rubric.image),
+        ).order_by(Product.id)
+
+        result: Result = await self.session.execute(stmt)
+        return result.unique().scalars().all()
+
+    async def get_orm_model_from_schema(
+            self,
+            instance: Union["ProductCreate", "ProductUpdate", "ProductPartialUpdate"]
+    ):
+        orm_model: Product = Product(**instance.model_dump())
+        return orm_model
