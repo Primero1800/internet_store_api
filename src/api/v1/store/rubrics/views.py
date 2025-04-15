@@ -14,7 +14,7 @@ from .schemas import (
     RubricShort,
     RubricRead,
 )
-
+from ...users.dependencies import current_superuser
 
 router = APIRouter()
 
@@ -51,4 +51,24 @@ async def get_one_by_slug(
     )
     return await service.get_one_complex(
         slug=slug
+    )
+
+
+@router.get(
+    "/{id}/",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=RubricRead,
+)
+@RateLimiter.rate_limit()
+async def get_one(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: RubricsService = RubricsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id
     )
