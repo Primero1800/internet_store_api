@@ -82,3 +82,26 @@ class ProductsService:
             await utils.get_short_schema_from_orm(returned_orm_model)
         return returned_orm_model
 
+    async def get_one_complex(
+            self,
+            id: int = None,
+            slug: str = None,
+    ):
+        repository: ProductsRepository = ProductsRepository(
+            session=self.session
+        )
+        try:
+            returned_orm_model = await repository.get_one_complex(
+                id=id,
+                slug=slug,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+        return await utils.get_schema_from_orm(returned_orm_model)

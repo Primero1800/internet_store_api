@@ -30,6 +30,33 @@ class ProductsRepository:
         self.session = session
         self.logger = logging.getLogger(__name__)
 
+    async def get_one_complex(
+            self,
+            id: int = None,
+            slug: str = None,
+    ):
+        stmt_select = select(Product)
+        if id:
+            stmt_filter = stmt_select.where(Product.id == id)
+        else:
+            stmt_filter = stmt_select.where(Product.slug == slug)
+
+        stmt = stmt_filter.options(
+            joinedload(Product.images),
+            joinedload(Product.brand).joinedload(Brand.image),
+            joinedload(Product.rubrics).joinedload(Rubric.image),
+        ).order_by(Product.id)
+
+        result: Result = await self.session.execute(stmt)
+        orm_model: Brand | None = result.unique().scalar_one_or_none()
+
+        if not orm_model:
+            text_error = f"id={id}" if id else f"slug={slug!r}"
+            raise CustomException(
+                msg=f"{CLASS} with {text_error} not found"
+            )
+        return orm_model
+
     async def get_one(
             self,
             id: int

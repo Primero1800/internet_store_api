@@ -78,3 +78,42 @@ async def get_all_full(
         page=page,
         size=size,
     )
+
+
+@router.get(
+    "/title/{slug}/",
+    status_code=status.HTTP_200_OK,
+    response_model=ProductRead,
+)
+@RateLimiter.rate_limit()
+async def get_one_by_slug(
+        request: Request,
+        slug: str,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        slug=slug
+    )
+
+
+@router.get(
+    "/{id}/",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=ProductRead,
+)
+@RateLimiter.rate_limit()
+async def get_one(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id
+    )
