@@ -1,12 +1,21 @@
 import logging
-from typing import Sequence
+from typing import Sequence, Union, TYPE_CHECKING
 
 from sqlalchemy import select, Result
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.core.models import Rubric, Product
+from src.core.models import Rubric, Product, RubricImage
 from src.tools.exceptions import CustomException
+from .exceptions import Errors
+
+if TYPE_CHECKING:
+    from .schemas import (
+        RubricCreate,
+        RubricUpdate,
+        RubricPartialUpdate,
+    )
 
 
 CLASS = "Rubric"
@@ -74,3 +83,60 @@ class RubricsRepository:
 
         result: Result = await self.session.execute(stmt)
         return result.unique().scalars().all()
+
+    async def get_orm_model_from_schema(
+            self,
+            instance: Union["RubricCreate", "RubricUpdate", "RubricPartialUpdate"]
+    ):
+        orm_model: Rubric = Rubric(**instance.model_dump())
+        return orm_model
+
+    async def create_one_empty(
+            self,
+            orm_model: Rubric
+    ):
+        try:
+            self.session.add(orm_model)
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+            self.logger.info("%r %r was successfully created" % (CLASS, orm_model))
+        except IntegrityError as error:
+            self.logger.error(f"Error while orm_model creating", exc_info=error)
+            raise CustomException(
+                msg=Errors.already_exists_titled(orm_model.title)
+            )
+
+    async def create_rubric_image(
+            self,
+            file: str,
+            orm_model: Rubric
+    ):
+        try:
+            image: RubricImage | None = RubricImage(file=file, brand_id=orm_model.id)
+            self.session.add(image)
+            await self.session.commit()
+            self.logger.info("%sImage %r was successfully created" % (CLASS, image))
+        except IntegrityError as error:
+            self.logger.error(
+                "Error occured while saving data to database. Parent model will be deleted", exc_info=error
+            )
+            await self.delete_one(
+                orm_model=orm_model,
+            )
+            raise CustomException(
+                msg=f"Error while {image!r} creating."
+            )
+
+    async def delete_one(
+            self,
+            orm_model: Rubric,
+    ) -> None:
+        try:
+            self.logger.info(f"Deleting %r from database" % orm_model)
+            await self.session.delete(orm_model)
+            await self.session.commit()
+        except IntegrityError as exc:
+            self.logger.error("Error while deleting data from database", exc_info=exc)
+            raise CustomException(
+                msg="Error while deleting %r from database" % orm_model
+            )

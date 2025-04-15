@@ -4,7 +4,7 @@ from fastapi import (
     APIRouter,
     status,
     Request,
-    Depends,
+    Depends, Form, UploadFile, File,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -89,3 +89,29 @@ async def get_all_full(
         session=session
     )
     return await service.get_all_full()
+
+
+@router.post(
+    "/",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=RubricRead,
+)
+@RateLimiter.rate_limit()
+async def create_one(
+        request: Request,
+        title: str = Form(),
+        description: str = Form(),
+        image: UploadFile = File(),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+
+    service: RubricsService = RubricsService(
+        session=session
+    )
+    return await service.create_one(
+        title=title,
+        description=description,
+        image_schema=image,
+    )
+
