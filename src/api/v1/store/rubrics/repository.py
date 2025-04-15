@@ -112,7 +112,7 @@ class RubricsRepository:
             orm_model: Rubric
     ):
         try:
-            image: RubricImage | None = RubricImage(file=file, brand_id=orm_model.id)
+            image: RubricImage | None = RubricImage(file=file, rubric_id=orm_model.id)
             self.session.add(image)
             await self.session.commit()
             self.logger.info("%sImage %r was successfully created" % (CLASS, image))
