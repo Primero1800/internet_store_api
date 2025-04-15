@@ -37,6 +37,30 @@ class RubricsService:
             result.append(await utils.get_schema_from_orm(orm_model=orm_model))
         return result
 
+    async def get_one(
+            self,
+            id: int,
+            to_schema: bool = True
+    ):
+        repository: RubricsRepository = RubricsRepository(
+            session=self.session
+        )
+        try:
+            returned_orm_model = await repository.get_one(
+                id=id,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            await utils.get_short_schema_from_orm(returned_orm_model)
+        return returned_orm_model
+
     async def get_one_complex(
             self,
             id: int = None,

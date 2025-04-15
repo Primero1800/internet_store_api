@@ -54,6 +54,18 @@ class RubricsRepository:
         result: Result = await self.session.execute(stmt)
         return result.unique().scalars().all()
 
+    async def get_one(
+            self,
+            id: int
+    ):
+        orm_model = await self.session.get(Rubric, id)
+        if not orm_model:
+            text_error = f"id={id}"
+            raise CustomException(
+                msg=f"{CLASS} with {text_error} not found"
+            )
+        return orm_model
+
     async def get_all_full(self) -> Sequence:
         stmt = select(Rubric).options(
             joinedload(Rubric.image),
