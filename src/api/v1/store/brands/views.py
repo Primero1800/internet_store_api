@@ -193,7 +193,3 @@ async def patch_one(
         orm_model=orm_model,
         is_partial=True
     )
-
-
-
-

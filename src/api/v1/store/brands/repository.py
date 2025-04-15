@@ -178,5 +178,5 @@ class BrandsRepository:
         except IntegrityError as exc:
             self.logger.error("Error occurred while editing data in database", exc_info=exc)
             raise CustomException(
-                msg=Errors.already_exists_titled(orm_model.title)
+                msg=Errors.already_exists_titled(instance.title)
             )

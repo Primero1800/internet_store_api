@@ -1,4 +1,4 @@
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Optional
 
 from fastapi import (
     APIRouter,
@@ -135,3 +135,56 @@ async def delete_one(
         session=session
     )
     return await service.delete_one(orm_model)
+
+
+@router.put(
+        "/{id}/",
+        dependencies=[Depends(current_superuser), ],
+        status_code=status.HTTP_200_OK,
+        response_model=RubricRead
+)
+@RateLimiter.rate_limit()
+async def put_one(
+        request: Request,
+        title: str = Form(),
+        description: str = Form(),
+        image: UploadFile = File(),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+        orm_model: "Rubric" = Depends(deps.get_one_simple)
+):
+    service: RubricsService = RubricsService(
+        session=session
+    )
+    return await service.edit_one(
+        title=title,
+        description=description,
+        image_schema=image,
+        orm_model=orm_model,
+    )
+
+
+@router.patch(
+        "/{id}/",
+        dependencies=[Depends(current_superuser), ],
+        status_code=status.HTTP_200_OK,
+        response_model=RubricRead
+)
+@RateLimiter.rate_limit()
+async def patch_one(
+        request: Request,
+        title: Optional[str] = Form(default=None),
+        description: Optional[str] = Form(default=None),
+        image: Optional[UploadFile] = File(default=None),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+        orm_model: "Rubric" = Depends(deps.get_one_simple)
+):
+    service: RubricsService = RubricsService(
+        session=session
+    )
+    return await service.edit_one(
+        title=title,
+        description=description,
+        image_schema=image,
+        orm_model=orm_model,
+        is_partial=True
+    )
