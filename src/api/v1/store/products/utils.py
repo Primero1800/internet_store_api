@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
+from fastapi import status
 
+from src.tools.exceptions import CustomException
 from .schemas import ProductRead, ProductShort
 from ..brands.schemas import BrandShort
 from ..rubrics.schemas import RubricShort
@@ -50,3 +52,13 @@ async def get_short_schema_from_orm(
         **orm_model.to_dict(),
         image_file=image_file,
     )
+
+
+async def temporary_fragment(ids: str):
+    try:
+        return [int(el.strip()) for el in ids.split(',')] if ids else []
+    except ValueError:
+        raise CustomException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            msg="Parameter 'rubric_ids' must contains only integers, differed by comma"
+        )
