@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from fastapi import (
     APIRouter,
@@ -15,6 +15,10 @@ from .schemas import (
     RubricRead,
 )
 from ...users.dependencies import current_superuser
+from . import dependencies as deps
+
+if TYPE_CHECKING:
+    from src.core.models import Rubric
 
 router = APIRouter()
 
@@ -115,3 +119,19 @@ async def create_one(
         image_schema=image,
     )
 
+
+@router.delete(
+    "/{id}/",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+@RateLimiter.rate_limit()
+async def delete_one(
+        request: Request,
+        orm_model: "Rubric" = Depends(deps.get_one_simple),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: RubricsService = RubricsService(
+        session=session
+    )
+    return await service.delete_one(orm_model)

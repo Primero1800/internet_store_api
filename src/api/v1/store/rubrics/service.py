@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 from fastapi import UploadFile, status
 from fastapi.responses import ORJSONResponse
@@ -14,6 +15,9 @@ from .schemas import (
 )
 from .exceptions import Errors
 from ..utils.image_utils import save_image
+
+if TYPE_CHECKING:
+    from src.core.models import Rubric
 
 
 CLASS = "Rubric"
@@ -160,3 +164,24 @@ class RubricsService:
         return await self.get_one_complex(
             id=orm_model.id
         )
+
+    async def delete_one(
+            self,
+            orm_model: "Rubric",
+    ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
+        repository: RubricsRepository = RubricsRepository(
+            session=self.session
+        )
+        try:
+            return await repository.delete_one(orm_model=orm_model)
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
