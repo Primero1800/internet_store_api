@@ -29,3 +29,15 @@ class ProductsRepository:
     ):
         self.session = session
         self.logger = logging.getLogger(__name__)
+
+    async def get_one(
+            self,
+            id: int
+    ):
+        orm_model = await self.session.get(Product, id)
+        if not orm_model:
+            text_error = f"id={id}"
+            raise CustomException(
+                msg=f"{CLASS} with {text_error} not found"
+            )
+        return orm_model
