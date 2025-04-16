@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, List, Optional
+from decimal import Decimal
+from typing import TYPE_CHECKING, List, Optional, Any
 
 from fastapi import (
     APIRouter,
@@ -14,6 +15,7 @@ from fastapi_filter import FilterDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.scrypts.pagination import paginate_result
+from src.tools.discount_choices import DiscountChoices
 from .service import ProductsService
 from .schemas import (
     ProductRead,
@@ -22,10 +24,13 @@ from .schemas import (
 from .filters import ProductFilter
 from src.api.v1.users.dependencies import current_superuser
 from src.core.config import DBConfigurer, RateLimiter
-from . import dependencies as deps
+
 
 if TYPE_CHECKING:
-    from src.core.models import Product
+    from src.core.models import (
+        Product,
+        Brand,
+    )
 
 
 router = APIRouter()
@@ -116,4 +121,41 @@ async def get_one(
     )
     return await service.get_one_complex(
         id=id
+    )
+
+
+@router.post(
+    "/",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=ProductRead,
+)
+@RateLimiter.rate_limit()
+async def create_one(
+        request: Request,
+        title: str = Form(),
+        description: str = Form(),
+        brand_id: int = Form(),
+        start_price: Decimal = Form(decimal_places=2),
+        available: bool = Form(),
+        discount: DiscountChoices = Form(),
+        quantity: int = Form(),
+        rubric_ids: list[Any] = Form(),
+        images: List[UploadFile] = File(),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> ProductRead:
+
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    return await service.create_one(
+        title=title,
+        description=description,
+        brand_id=brand_id,
+        start_price=start_price,
+        available=available,
+        discount=discount,
+        quantity=quantity,
+        rubric_ids=rubric_ids,
+        image_schemas=images,
     )
