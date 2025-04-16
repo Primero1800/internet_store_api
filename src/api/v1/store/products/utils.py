@@ -54,11 +54,15 @@ async def get_short_schema_from_orm(
     )
 
 
-async def temporary_fragment(ids: str):
+async def temporary_fragment(ids: str | list):
     try:
-        return [int(el.strip()) for el in ids.split(',')] if ids else []
+        if isinstance(ids, list) and ids:
+            ids = ids[0]
+        if isinstance(ids, str):
+            ids = ids.split(',')
+        return [int(el.strip()) for el in ids] if ids else []
     except ValueError:
         raise CustomException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            msg="Parameter 'rubric_ids' must contains only integers, differed by comma"
+            msg="Parameter 'rubric_ids' must contains only valid integers"
         )
