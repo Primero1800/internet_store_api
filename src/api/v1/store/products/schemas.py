@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Annotated, Optional, Any, List, Literal
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, conint, condecimal
 
 from src.api.v1.store.mixins import TitleSlugMixin, PriceMixin
 from src.tools.discount_choices import DiscountChoices
@@ -18,7 +18,7 @@ base_description_field = Annotated[str, Field(
         description="Product's description that used in application"
     )]
 
-base_start_price_field = Annotated[Decimal, Field(
+base_start_price_field = Annotated[condecimal(gt=0), Field(
     max_digits=8,
     decimal_places=2,
     title="Product's start price"
@@ -32,9 +32,8 @@ base_available_filed = Annotated[bool, Field(
     title="If product is available"
 )]
 
-base_quantity_filed = Annotated[int, Field(
+base_quantity_filed = Annotated[conint(ge=0), Field(
     title="Product's quantity",
-
 )]
 
 
