@@ -19,7 +19,7 @@ class Rubric(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
     image: Mapped['RubricImage'] = relationship(
         "RubricImage",
         back_populates="rubric",
-        cascade="all, delete",
+        # cascade="all, delete",
     )
 
     products: Mapped[list['Product']] = relationship(

@@ -66,7 +66,7 @@ class Product(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
     rubrics: Mapped[list['Rubric']] = relationship(
         secondary=DBConfigurerInitializer.utils.camel2snake('RubricProductAssociation'),
         back_populates="products",
-        cascade="all, delete",
+        # cascade="all, delete",
     )
 
     brand_id: Mapped[int] = mapped_column(
