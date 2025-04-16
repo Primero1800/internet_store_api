@@ -132,7 +132,7 @@ class BrandsRepository:
             self.logger.info("%sImage %r was successfully created" % (CLASS, image))
         except IntegrityError as error:
             self.logger.error(
-                "Error occured while saving data to database. Parent model will be deleted", exc_info=error
+                "Error occurred while saving data to database. Parent model will be deleted", exc_info=error
             )
             await self.delete_one(
                 orm_model=orm_model,
