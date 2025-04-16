@@ -1,9 +1,10 @@
-from typing import Annotated, Optional, Any, List
-from pydantic import BaseModel, Field, ConfigDict, model_validator
-from pydantic_core.core_schema import ValidationInfo
+from datetime import datetime
+from decimal import Decimal
+from typing import Annotated, Optional, Any, List, Literal
+from pydantic import BaseModel, Field, ConfigDict
 
-from src.api.v1.store.mixins import TitleSlugMixin
-
+from src.api.v1.store.mixins import TitleSlugMixin, PriceMixin
+from src.tools.discount_choices import DiscountChoices
 
 base_title_field = Annotated[str, Field(
         min_length=3, max_length=100,
@@ -17,6 +18,26 @@ base_description_field = Annotated[str, Field(
         description="Product's description that used in application"
     )]
 
+base_start_price_field = Annotated[Decimal, Field(
+    max_digits=8,
+    decimal_places=2,
+    title="Product's start price"
+)]
+
+base_discount_field = Annotated[Literal[*DiscountChoices.choices()], Field(
+    title="Product's discount"
+)]
+
+base_available_filed = Annotated[bool, Field(
+    title="If product is available"
+)]
+
+base_quantity_filed = Annotated[int, Field(
+    title="Product's quantity",
+
+)]
+
+
 
 class BaseProduct(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -24,9 +45,14 @@ class BaseProduct(BaseModel):
     title: base_title_field
     brand_id: int
 
+    start_price: base_start_price_field
+    discount: base_discount_field
+    available: base_available_filed
 
-class ProductCreate(BaseProduct, TitleSlugMixin):
+
+class ProductCreate(BaseProduct, TitleSlugMixin, PriceMixin):
     description: base_description_field
+    quantity: base_quantity_filed
 
 
 class ProductShort(BaseProduct):
@@ -34,18 +60,30 @@ class ProductShort(BaseProduct):
     image_file: str
     slug: str
 
+    start_price: Decimal
+    price: Decimal
+
 
 class ProductRead(ProductShort):
+    description: base_description_field
+
+    quantity: base_quantity_filed
+    published: datetime
+
     rubrics: List[Any]
     images: List[Any]
     brand: Any
 
 
-class ProductUpdate(BaseProduct, TitleSlugMixin):
+class ProductUpdate(BaseProduct, TitleSlugMixin, PriceMixin):
     description: base_description_field
+    quantity: base_quantity_filed
 
 
-class ProductPartialUpdate(BaseProduct, TitleSlugMixin):
+class ProductPartialUpdate(BaseProduct, TitleSlugMixin, PriceMixin):
     title: Optional[base_title_field] = None
     description: Optional[base_description_field] = None
     brand_id: Optional[int] = None
+    start_price: Optional[base_start_price_field] = None
+    discount: Optional[base_discount_field] = None
+    available: Optional[base_discount_field] = None
