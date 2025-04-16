@@ -25,6 +25,7 @@ class Rubric(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
     products: Mapped[list['Product']] = relationship(
         secondary=DBConfigurerInitializer.utils.camel2snake('RubricProductAssociation'),
         back_populates="rubrics",
+        cascade="all, delete"
         # overlaps="orders_details",
     )
 

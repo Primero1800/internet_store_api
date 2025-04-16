@@ -1,6 +1,8 @@
+from datetime import datetime
+from decimal import Decimal
 from typing import List, TYPE_CHECKING
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, DECIMAL, Boolean, Integer, DateTime, func, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.config.database_config import DBConfigurerInitializer
@@ -10,6 +12,7 @@ from src.core.models.mixins import (
 )
 from src.core.models.store.image import ImageBase
 from src.core.config.database_config import DBConfigurer
+from src.tools.discount_choices import DiscountChoices
 
 if TYPE_CHECKING:
     from src.core.models import (
@@ -19,7 +22,41 @@ if TYPE_CHECKING:
 
 
 class Product(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
+
+    __table_args__ = Title3FieldMixin.__table_args__ + (
+        CheckConstraint("start_price > 0", name="check_start_price_min_length"),
+        CheckConstraint("quantity >= 0", name="check_quantity_min_length"),
+    )
+
     slug: Mapped[str]
+
+    start_price: Mapped[Decimal] = mapped_column(
+        DECIMAL(8, 2)
+    )
+    discount: Mapped[DiscountChoices] = mapped_column(
+        Integer,
+        default=DiscountChoices.D0.value
+    )
+    price: Mapped[Decimal] = mapped_column(
+        DECIMAL(8, 2),
+    )
+    available: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        server_default='true'
+    )
+    quantity: Mapped[int] = mapped_column(
+        Integer,
+        default=1,
+        server_default='1',
+    )
+    published: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=func.now(),
+        server_default=func.now(),
+        nullable=False
+    )
+
     images: Mapped[List['ProductImage']] = relationship(
         'ProductImage',
         back_populates="product",
@@ -29,7 +66,7 @@ class Product(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
     rubrics: Mapped[list['Rubric']] = relationship(
         secondary=DBConfigurerInitializer.utils.camel2snake('RubricProductAssociation'),
         back_populates="products",
-        # overlaps="orders_details",
+        cascade="all, delete",
     )
 
     brand_id: Mapped[int] = mapped_column(
@@ -52,10 +89,10 @@ class Product(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
 
 class ProductImage(ImageBase):
     product_id: Mapped[int] = mapped_column(
-            ForeignKey(Product.id, ondelete="CASCADE"),
-            nullable=False,
-            unique=False,
-        )
+        ForeignKey(Product.id, ondelete="CASCADE"),
+        nullable=False,
+        unique=False,
+    )
 
     product: Mapped[Product] = relationship(
         Product,

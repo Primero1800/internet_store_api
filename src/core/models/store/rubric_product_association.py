@@ -14,5 +14,5 @@ class RubricProductAssociation(IDIntPkMixin, Base):
         UniqueConstraint("rubric_id", "product_id", name="idx_unique_rubric_product"),
     )
 
-    rubric_id: Mapped[int] = mapped_column(ForeignKey(Rubric.id))
-    product_id: Mapped[int] = mapped_column(ForeignKey(Product.id))
+    rubric_id: Mapped[int] = mapped_column(ForeignKey(Rubric.id, ondelete="cascade"))
+    product_id: Mapped[int] = mapped_column(ForeignKey(Product.id, ondelete="cascade"))
