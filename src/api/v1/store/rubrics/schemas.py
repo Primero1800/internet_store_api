@@ -41,7 +41,7 @@ class RubricShort(BaseRubric):
         return obj
 
 
-class RubricRead(BaseRubric):
+class RubricRead(RubricShort):
     description: base_description_field
     products: Optional[List[Any]]
 

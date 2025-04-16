@@ -42,6 +42,7 @@ class BrandShort(BaseBrand):
 
 
 class BrandRead(BrandShort):
+    id: int
     description: base_description_field
     products: Optional[List[Any]]
 

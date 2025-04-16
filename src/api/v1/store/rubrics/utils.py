@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 from .schemas import RubricRead, RubricShort
-from ..products.schemas import ProductShort
 
 if TYPE_CHECKING:
     from src.core.models import Rubric
@@ -16,16 +15,15 @@ async def get_schema_from_orm(
 
     short_schema: RubricShort = await get_short_schema_from_orm(orm_model=orm_model)
 
-    products = []
+    products_shorts = []
+    from ..products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
     for product in orm_model.products:
-        image_file = product.images[0].file if product.images else ''
-        product: ProductShort = ProductShort(**product.to_dict(), image_file=image_file)
-        products.append(product)
+        products_shorts.append(await get_short_product_schema_from_orm(product))
 
     return RubricRead(
         **short_schema.model_dump(),
         description=orm_model.description,
-        products=products
+        products=products_shorts
     )
 
 
