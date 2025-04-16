@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 
-class DiscountChoices(Enum):
+class DiscountChoices(IntEnum):
     D0 = 0              # "без скидки"
     D5 = 5              # "5% скидка"
     D10 = 10        # "10% скидка"
