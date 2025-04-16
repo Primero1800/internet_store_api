@@ -25,6 +25,7 @@ from .schemas import (
 from .filters import ProductFilter
 from src.api.v1.users.dependencies import current_superuser
 from src.core.config import DBConfigurer, RateLimiter
+from . import dependencies as deps
 
 
 if TYPE_CHECKING:
@@ -160,3 +161,19 @@ async def create_one(
         rubric_ids=rubric_ids,
         image_schemas=images,
     )
+
+@router.delete(
+    "/{id}/",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+@RateLimiter.rate_limit()
+async def delete_one(
+        request: Request,
+        orm_model: "Brand" = Depends(deps.get_one_simple),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    return await service.delete_one(orm_model)

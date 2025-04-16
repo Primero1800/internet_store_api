@@ -246,3 +246,24 @@ class ProductsService:
         return await self.get_one_complex(
             id=orm_model.id
         )
+
+    async def delete_one(
+            self,
+            orm_model: "Product",
+    ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
+        repository: ProductsRepository = ProductsRepository(
+            session=self.session
+        )
+        try:
+            return await repository.delete_one(orm_model=orm_model)
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
