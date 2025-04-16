@@ -19,6 +19,7 @@ from src.tools.discount_choices import DiscountChoices
 from .service import ProductsService
 from .schemas import (
     ProductRead,
+    ProductReadPublic,
     ProductShort,
 )
 from .filters import ProductFilter
@@ -88,7 +89,7 @@ async def get_all_full(
 @router.get(
     "/title/{slug}/",
     status_code=status.HTTP_200_OK,
-    response_model=ProductRead,
+    response_model=ProductReadPublic,
 )
 @RateLimiter.rate_limit()
 async def get_one_by_slug(

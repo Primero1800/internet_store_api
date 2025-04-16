@@ -64,15 +64,18 @@ class ProductShort(BaseProduct):
     price: Decimal
 
 
-class ProductRead(ProductShort):
+class ProductReadPublic(ProductShort):
     description: base_description_field
 
-    quantity: base_quantity_filed
     published: datetime
 
     rubrics: List[Any]
     images: List[Any]
     brand: Any
+
+
+class ProductRead(ProductReadPublic):
+    quantity: base_quantity_filed
 
 
 class ProductUpdate(BaseProduct, TitleSlugMixin, PriceMixin):
