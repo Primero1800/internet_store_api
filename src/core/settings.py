@@ -175,6 +175,9 @@ class Tags(CustomSettings):
     PRODUCTS_PREFIX: str
     PRODUCTS_TAG: str
 
+    ADD_INFO_PREFIX: str
+    ADD_INFO_TAG: str
+
 
 class Users(CustomSettings):
     USERS_PASSWORD_MIN_LENGTH: int
