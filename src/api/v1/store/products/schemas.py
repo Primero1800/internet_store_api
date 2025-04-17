@@ -28,11 +28,11 @@ base_discount_field = Annotated[Literal[*DiscountChoices.choices()], Field(
     title="Product's discount"
 )]
 
-base_available_filed = Annotated[bool, Field(
+base_available_field = Annotated[bool, Field(
     title="If product is available"
 )]
 
-base_quantity_filed = Annotated[conint(ge=0), Field(
+base_quantity_field = Annotated[conint(ge=0), Field(
     title="Product's quantity",
 )]
 
@@ -46,12 +46,12 @@ class BaseProduct(BaseModel):
 
     start_price: base_start_price_field
     discount: base_discount_field
-    available: base_available_filed
+    available: base_available_field
 
 
 class ProductCreate(BaseProduct, TitleSlugMixin, PriceMixin):
     description: base_description_field
-    quantity: base_quantity_filed
+    quantity: base_quantity_field
 
 
 class ProductShort(BaseProduct):
@@ -74,12 +74,12 @@ class ProductReadPublic(ProductShort):
 
 
 class ProductRead(ProductReadPublic):
-    quantity: base_quantity_filed
+    quantity: base_quantity_field
 
 
 class ProductUpdate(BaseProduct, TitleSlugMixin, PriceMixin):
     description: base_description_field
-    quantity: base_quantity_filed
+    quantity: base_quantity_field
 
 
 class ProductPartialUpdate(BaseProduct, TitleSlugMixin, PriceMixin):
@@ -88,4 +88,5 @@ class ProductPartialUpdate(BaseProduct, TitleSlugMixin, PriceMixin):
     brand_id: Optional[int] = None
     start_price: Optional[base_start_price_field] = None
     discount: Optional[base_discount_field] = None
-    available: Optional[base_discount_field] = None
+    available: Optional[base_available_field] = None
+    quantity: Optional[base_quantity_field] = None
