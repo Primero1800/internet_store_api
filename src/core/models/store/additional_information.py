@@ -17,7 +17,6 @@ if TYPE_CHECKING:
 class AdditionalInformation(IDIntPkMixin, Base):
     __table_args__ = (
         CheckConstraint("weight > 0", name="check_weight_min_value"),
-        # CheckConstraint("quantity >= 0", name="check_quantity_min_value"),
     )
     product_id: Mapped[int] = mapped_column(
         ForeignKey(f"{DBConfigurer.utils.camel2snake('Product')}.id", ondelete="CASCADE"),
