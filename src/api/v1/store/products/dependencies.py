@@ -19,3 +19,13 @@ async def get_one_simple(
         session=session
     )
     return await service.get_one(id=id, to_schema=False)
+
+
+async def get_one_complex(
+    id: int,
+    session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> "Product":
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    return await service.get_one_complex(id=id, to_schema=False)
