@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from src.core.models import (
         Rubric,
         Brand,
+        AdditionalInformation,
     )
 
 
@@ -78,6 +79,12 @@ class Product(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
     brand: Mapped['Brand'] = relationship(
         'Brand',
         back_populates='products',
+    )
+
+    add_info: Mapped['AdditionalInformation'] = relationship(
+        'AdditionalInformation',
+        back_populates='product',
+        cascade="all, delete"
     )
 
     def __str__(self):
