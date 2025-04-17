@@ -16,15 +16,12 @@ from .schemas import (
     ProductPartialUpdate,
 )
 from .exceptions import Errors
-from ..brands.repository import BrandsRepository
-from ..rubrics.repository import RubricsRepository
-from ..utils.image_utils import save_image
+from .validators import ValidRelationsInspector
+from ..utils.image_utils import save_image, del_directory
 
 if TYPE_CHECKING:
     from src.core.models import (
         Product,
-        Brand,
-        Rubric,
     )
     from .filters import ProductFilter
 
@@ -39,6 +36,7 @@ class ProductsService:
     ):
         self.session = session
         self.logger = logging.getLogger(__name__)
+        self.repository = None
 
     async def get_all(
             self,
@@ -87,13 +85,14 @@ class ProductsService:
                 }
             )
         if to_schema:
-            await utils.get_short_schema_from_orm(returned_orm_model)
+            return await utils.get_short_schema_from_orm(returned_orm_model)
         return returned_orm_model
 
     async def get_one_complex(
             self,
             id: int = None,
             slug: str = None,
+            to_schema: bool = True,
     ):
         repository: ProductsRepository = ProductsRepository(
             session=self.session
@@ -111,8 +110,9 @@ class ProductsService:
                     "detail": exc.msg,
                 }
             )
-
-        return await utils.get_schema_from_orm(returned_orm_model)
+        if to_schema:
+            return await utils.get_schema_from_orm(returned_orm_model)
+        return returned_orm_model
 
     async def create_one(
             self,
@@ -129,18 +129,8 @@ class ProductsService:
         repository: ProductsRepository = ProductsRepository(
             session=self.session
         )
+        self.repository = repository
 
-        # Expecting if rubric_ids format valid
-        try:
-            rubric_ids = await utils.temporary_fragment(ids=rubric_ids)
-        except CustomException as exc:
-            return ORJSONResponse(
-                status_code=exc.status_code,
-                content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": exc.msg,
-                }
-            )
         # Expecting if ProductCreate data valid
                 # catching ValidationError in exception_handler
         instance: ProductCreate = ProductCreate(
@@ -154,40 +144,16 @@ class ProductsService:
         )
         orm_model = await repository.get_orm_model_from_schema(instance=instance)
 
-        # Expecting if chosen brand_id existing
-        try:
-            brand_repository: BrandsRepository = BrandsRepository(
-                session=self.session
-            )
-            brand_orm: "Brand" = await brand_repository.get_one(id=brand_id)
-        except CustomException as exc:
-            return ORJSONResponse(
-                status_code=exc.status_code,
-                content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": exc.msg,
-                }
-            )
+        inspector = ValidRelationsInspector(
+            session=self.session,
+            **{"rubric_ids": rubric_ids, "brand_id": brand_id}
+        )
+        result = await inspector.inspect()
+        if isinstance(result, ORJSONResponse):
+            return result
+        rubric_orms = result["rubric_orms"] if "rubric_orms" in result else None
 
-        # Expecting if chosen rubric_ids existing
-        try:
-            rubric_repository: RubricsRepository = RubricsRepository(
-                session=self.session
-            )
-            rubric_orms = []
-            for rubric_id in rubric_ids:
-                rubric_orm: "Rubric" = await rubric_repository.get_one(id=rubric_id)
-                rubric_orms.append(rubric_orm)
-        except CustomException as exc:
-            return ORJSONResponse(
-                status_code=exc.status_code,
-                content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": exc.msg,
-                }
-            )
-
-        # Creating empty model in database (with relations)
+        # Creating model in database (with relations)
         try:
             await repository.create_one_with_relations(
                 orm_model=orm_model,
@@ -203,43 +169,19 @@ class ProductsService:
             )
 
         # Working with images. If exception -.> delete created model
-        for image_number, image_schema in enumerate(image_schemas):
-            try:
-                file_path: str = await save_image(
-                    name=str(image_number+1),
-                    image_object=image_schema,
-                    path=f"media/{_CLASS}s",
-                    folder=f"{orm_model.id}",
-                    cleaning=False,
-                )
-            except Exception as exc:
-                self.logger.error("Error wile writing file", exc_info=exc)
-                await repository.delete_one(
-                    orm_model=orm_model
-                )
-                return ORJSONResponse(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    content={
-                        "message": Errors.HANDLER_MESSAGE,
-                        "detail": Errors.IMAGE_SAVING_ERROR,
-                    }
-                )
+        for image_number, image_schema in enumerate(image_schemas, 1):
+            # Saving image to file
+            file_path = await self.saving_image_from_schema_with_rollback(
+                image_schema=image_schema, image_number=image_number, orm_model=orm_model
+            )
+            if isinstance(file_path, ORJSONResponse):
+                return file_path
+            self.logger.info("Image %r was successfully written as '%s.*'" % (image_schema.filename, image_number))
 
-            self.logger.info("Image %r was successfully written" % image_schema)
-
-            try:
-                await repository.create_product_image(
-                    file=file_path,
-                    orm_model=orm_model
-                )
-            except CustomException as exc:
-                return ORJSONResponse(
-                    status_code=exc.status_code,
-                    content={
-                        "message": Errors.HANDLER_MESSAGE,
-                        "detail": exc.msg,
-                    }
-                )
+            # Saving image_path to database as ProductImage
+            result = await self.saving_image_to_db(orm_model=orm_model, file_path=file_path)
+            if isinstance(result, ORJSONResponse):
+                return result
 
         self.logger.info("Product %r was successfully created" % orm_model)
 
@@ -259,6 +201,140 @@ class ProductsService:
         )
         try:
             return await repository.delete_one(orm_model=orm_model)
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+    async def edit_one(
+            self,
+            title: str,
+            description: str,
+            brand_id: int,
+            start_price: Decimal,
+            available: bool,
+            discount: DiscountChoices,
+            quantity: int,
+            rubric_ids: str | list,
+            image_schemas: list,
+            orm_model: "Product",
+            is_partial: bool = False
+    ):
+        repository: ProductsRepository = ProductsRepository(
+            session=self.session,
+        )
+        self.repository = repository
+
+        # catching ValidationError in exception_handler
+        updating_dictionary = {
+            "title": title,
+            "description": description,
+            "brand_id": brand_id,
+            "start_price": start_price,
+            "available": available,
+            "discount": discount,
+            "quantity": quantity,
+        }
+        if is_partial:
+            instance: ProductPartialUpdate = ProductPartialUpdate(**updating_dictionary)
+        else:
+            instance: ProductUpdate = ProductUpdate(**updating_dictionary)
+
+        inspector = ValidRelationsInspector(
+            session=self.session,
+            **{"rubric_ids": rubric_ids, "brand_id": brand_id}
+        )
+        result = await inspector.inspect()
+        if isinstance(result, ORJSONResponse):
+            return result
+        rubric_orms = result["rubric_orms"] if "rubric_orms" in result else None
+
+        # Working with images. If exception -.> stop editing model
+        if image_schemas:
+            await del_directory(
+                path=f"media/{_CLASS}s",
+                folder=f"{orm_model.id}",
+            )
+            for image_number, image_schema in enumerate(image_schemas, 1):
+                # Saving image to file
+                file_path = await self.saving_image_from_schema_with_rollback(
+                    image_schema=image_schema, image_number=image_number, orm_model=orm_model
+                )
+                if isinstance(file_path, ORJSONResponse):
+                    return file_path
+                self.logger.info("Image %r was successfully written as '%s.*'" % (image_schema.filename, image_number))
+
+                # Saving image_path to database as ProductImage
+                result = await self.saving_image_to_db(orm_model=orm_model, file_path=file_path)
+                if isinstance(result, ORJSONResponse):
+                    return result
+
+        # Editing model in database (with relations)
+        try:
+            await repository.edit_one_with_relations(
+                instance=instance,
+                orm_model=orm_model,
+                rubric_orms=rubric_orms,
+                image_schemas=image_schemas,
+                is_partial=is_partial,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+        self.logger.info("Product %r was successfully edited" % orm_model)
+
+        return await self.get_one_complex(
+            id=orm_model.id
+        )
+
+    async def saving_image_from_schema_with_rollback(
+            self,
+            image_schema: UploadFile,
+            image_number: int,
+            orm_model: "Product"
+    ):
+        try:
+            file_path: str = await save_image(
+                name=str(image_number),
+                image_object=image_schema,
+                path=f"media/{_CLASS}s",
+                folder=f"{orm_model.id}",
+                cleaning=False,
+            )
+            return file_path
+        except Exception as exc:
+            self.logger.error("Error wile writing file", exc_info=exc)
+            await self.repository.delete_one(
+                orm_model=orm_model
+            )
+            return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": Errors.IMAGE_SAVING_ERROR,
+                }
+            )
+
+    async def saving_image_to_db(
+            self,
+            orm_model: "Product",
+            file_path: str
+    ):
+        try:
+            await self.repository.create_product_image(
+                file=file_path,
+                orm_model=orm_model
+            )
         except CustomException as exc:
             return ORJSONResponse(
                 status_code=exc.status_code,
