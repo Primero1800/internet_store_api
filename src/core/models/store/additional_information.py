@@ -24,7 +24,7 @@ class AdditionalInformation(IDIntPkMixin, Base):
         unique=True,
     )
 
-    Product: Mapped['Product'] = relationship(
+    product: Mapped['Product'] = relationship(
         'Product',
         back_populates='add_info',
     )
