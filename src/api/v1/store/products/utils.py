@@ -60,7 +60,7 @@ async def temporary_fragment(ids: str | list):
             ids = ids[0]
         if isinstance(ids, str):
             ids = ids.split(',')
-        return [int(el.strip()) for el in ids] if ids else []
+        return set([int(el.strip()) for el in ids] if ids else [])
     except ValueError:
         raise CustomException(
             status_code=status.HTTP_400_BAD_REQUEST,
