@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, ForeignKey, DECIMAL, String
+from sqlalchemy import CheckConstraint, ForeignKey, DECIMAL, String, null
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.config import DBConfigurer
@@ -33,21 +33,21 @@ class AdditionalInformation(IDIntPkMixin, Base):
         DECIMAL(8, 2),
         nullable=True,
         default=None,
-        server_default='NULL',
+        server_default=null(),
     )
 
     size: Mapped[str] = mapped_column(
         String,
         nullable=True,
         default=None,
-        server_default='NULL'
+        server_default=null()
     )
 
     guarantee: Mapped[str] = mapped_column(
         String,
         nullable=True,
         default=None,
-        server_default='NULL'
+        server_default=null()
     )
 
     def __str__(self):

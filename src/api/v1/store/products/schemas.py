@@ -37,7 +37,6 @@ base_quantity_field = Annotated[conint(ge=0), Field(
 )]
 
 
-
 class BaseProduct(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
