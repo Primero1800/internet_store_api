@@ -177,3 +177,80 @@ async def delete_one(
         session=session
     )
     return await service.delete_one(orm_model)
+
+
+@router.put(
+        "/{id}/",
+        dependencies=[Depends(current_superuser), ],
+        status_code=status.HTTP_200_OK,
+        response_model=ProductRead
+)
+@RateLimiter.rate_limit()
+async def put_one(
+        request: Request,
+        title: str = Form(),
+        description: str = Form(),
+        brand_id: int = Form(),
+        start_price: Decimal = Form(decimal_places=2),
+        available: bool = Form(),
+        discount: DiscountChoices = Form(),
+        quantity: int = Form(),
+        rubric_ids: list[Any] = Form(),
+        images: List[UploadFile] = File(),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+        orm_model: "Product" = Depends(deps.get_one_complex)
+):
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        title=title,
+        description=description,
+        brand_id=brand_id,
+        start_price=start_price,
+        available=available,
+        discount=discount,
+        quantity=quantity,
+        rubric_ids=rubric_ids,
+        image_schemas=images,
+    )
+
+
+@router.patch(
+        "/{id}/",
+        dependencies=[Depends(current_superuser), ],
+        status_code=status.HTTP_200_OK,
+        response_model=ProductRead
+)
+@RateLimiter.rate_limit()
+async def patch_one(
+        request: Request,
+        title: Optional[str] = Form(default=None),
+        description: Optional[str] = Form(default=None),
+        brand_id: Optional[int] = Form(default=None),
+        start_price: Optional[Decimal] = Form(decimal_places=2, default=None),
+        available: Optional[bool] = Form(default=None),
+        discount: Optional[DiscountChoices] = Form(default=None),
+        quantity: Optional[int] = Form(default=None),
+        rubric_ids: Optional[list[Any]] = Form(default=None),
+        images: Optional[List[UploadFile]] = None,
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+        orm_model: "Product" = Depends(deps.get_one_complex)
+):
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        title=title,
+        description=description,
+        brand_id=brand_id,
+        start_price=start_price,
+        available=available,
+        discount=discount,
+        quantity=quantity,
+        rubric_ids=rubric_ids,
+        image_schemas=images,
+        is_partial=True
+    )
