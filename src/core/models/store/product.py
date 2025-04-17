@@ -24,8 +24,8 @@ if TYPE_CHECKING:
 class Product(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
 
     __table_args__ = Title3FieldMixin.__table_args__ + (
-        CheckConstraint("start_price > 0", name="check_start_price_min_length"),
-        CheckConstraint("quantity >= 0", name="check_quantity_min_length"),
+        CheckConstraint("start_price > 0", name="check_start_price_min_value"),
+        CheckConstraint("quantity >= 0", name="check_quantity_min_value"),
     )
 
     slug: Mapped[str]
