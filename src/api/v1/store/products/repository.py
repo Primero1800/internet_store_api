@@ -46,10 +46,10 @@ class ProductsRepository:
             joinedload(Product.images),
             joinedload(Product.brand).joinedload(Brand.image),
             joinedload(Product.rubrics).joinedload(Rubric.image),
-        ).order_by(Product.id)
+        )
 
         result: Result = await self.session.execute(stmt)
-        orm_model: Brand | None = result.unique().scalar_one_or_none()
+        orm_model: Product | None = result.unique().scalar_one_or_none()
 
         if not orm_model:
             text_error = f"id={id}" if id else f"slug={slug!r}"
@@ -73,10 +73,10 @@ class ProductsRepository:
             joinedload(Product.images),
             joinedload(Product.brand).joinedload(Brand.image),
             joinedload(Product.rubrics).joinedload(Rubric.image),
-        ).order_by(Product.id)
+        )
 
         result: Result = await self.session.execute(stmt)
-        orm_model: Brand | None = result.unique().scalar_one_or_none()
+        orm_model: Product | None = result.unique().scalar_one_or_none()
 
         if not orm_model:
             text_error = f"id={id}" if id else f"slug={slug!r}"
