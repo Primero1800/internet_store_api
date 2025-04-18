@@ -19,9 +19,9 @@ class BaseAddInfo(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     product_id: int
-    weight: base_weight_field
-    size: base_size_field
-    guarantee: base_guarantee_field
+    weight: Optional[base_weight_field]
+    size: Optional[base_size_field]
+    guarantee: Optional[base_guarantee_field]
 
 
 class AddInfoShort(BaseAddInfo):
@@ -42,5 +42,5 @@ class AddInfoUpdate(AddInfoCreate):
     pass
 
 
-class AddInfoUpdatePartial(AddInfoCreate):
+class AddInfoPartialUpdate(AddInfoCreate):
     product_id: Optional[int]
