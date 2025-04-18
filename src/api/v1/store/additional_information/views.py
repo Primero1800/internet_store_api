@@ -170,33 +170,36 @@ async def get_one_complex(
     )
 
 
-#
-#
-# @router.post(
-#     "",
-#     dependencies=[Depends(current_superuser),],
-#     status_code=status.HTTP_201_CREATED,
-#     response_model=AddInfoRead,
-# )
+# 7
+@router.post(
+    "",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=AddInfoRead,
+    description="Create additional info for existing product (for superuser only)"
+)
 # @RateLimiter.rate_limit()
-# async def create_one(
-#         request: Request,
-#         product_id: int = Form(),
-#         weight: Optional[Decimal] = Form(decimal_places=2, default=None),
-#         size: Optional[str] = Form(default=None),
-#         guarantee: Optional[str] = Form(default=None),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter)
-# ) -> AddInfoRead:
-#
-#     service: AddInfoService = AddInfoService(
-#         session=session
-#     )
-#     return await service.create_one(
-#         product_id=product_id,
-#         weight=weight,
-#         size=size,
-#         guarantee=guarantee,
-#     )
+# no rate limit for superuser
+async def create_one(
+        request: Request,
+        product_id: int = Form(),
+        weight: Optional[Decimal] = Form(decimal_places=2, default=None),
+        size: Optional[str] = Form(default=None),
+        guarantee: Optional[str] = Form(default=None),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> AddInfoRead:
+
+    service: AddInfoService = AddInfoService(
+        session=session
+    )
+    return await service.create_one(
+        product_id=product_id,
+        weight=weight,
+        size=size,
+        guarantee=guarantee,
+    )
+
+
 #
 #
 # @router.delete(

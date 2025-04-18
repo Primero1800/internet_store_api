@@ -155,7 +155,7 @@ class AddInfoService:
         self.logger.info("AdditionalInformation for Product id=%s was successfully created" % orm_model.product_id)
 
         return await self.get_one_complex(
-            id=orm_model.id
+            product_id=orm_model.product_id
         )
 
     async def delete_one(

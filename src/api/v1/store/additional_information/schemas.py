@@ -25,7 +25,7 @@ class BaseAddInfo(BaseModel):
 
 
 class AddInfoShort(BaseAddInfo):
-    id: int
+    pass
 
 
 class AddInfoRead(AddInfoShort):
