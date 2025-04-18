@@ -33,7 +33,7 @@ class ValidRelationsInspector:
         while self.need_inspect:
             to_inspect, params = self.need_inspect.pop(0)
             try:
-                if to_inspect == "product_id":
+                if to_inspect == "product_id" and params:
                     await self.expecting_product_exists(product_id=params)
             except ValidRelationsException:
                 return self.error
