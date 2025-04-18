@@ -35,19 +35,11 @@ class AddInfoRepository:
 
     async def get_one(
             self,
-            product_id: int,
-            id: int
+            product_id: int
     ):
-        stmt_select = select(AdditionalInformation)
-        if id:
-            stmt = stmt_select.where(AdditionalInformation.id == id)
-        else:
-            stmt = stmt_select.where(AdditionalInformation.product_id == product_id)
-        result: Result = await self.session.execute(stmt)
-        orm_model: AdditionalInformation | None = result.unique().scalar_one_or_none()
-
+        orm_model = await self.session.get(AdditionalInformation, product_id)
         if not orm_model:
-            text_error = f"id={id}" if id else f"product_id={product_id}"
+            text_error = f"id={id}"
             raise CustomException(
                 msg=f"{CLASS} with {text_error} not found"
             )
@@ -55,14 +47,9 @@ class AddInfoRepository:
 
     async def get_one_complex(
             self,
-            id: int = None,
             product_id: int = None,
     ):
-        stmt_select = select(AdditionalInformation)
-        if id:
-            stmt_filter = stmt_select.where(AdditionalInformation.id == id)
-        else:
-            stmt_filter = stmt_select.where(AdditionalInformation.product_id == product_id)
+        stmt_filter = select(AdditionalInformation).where(AdditionalInformation.product_id == product_id)
         stmt = stmt_filter.options(
             joinedload(AdditionalInformation.product).joinedload(Product.images),
         )
@@ -84,7 +71,7 @@ class AddInfoRepository:
         query_filter = filter_model.filter(select(AdditionalInformation))
         stmt_filtered = filter_model.sort(query_filter)
 
-        stmt = stmt_filtered.order_by(AdditionalInformation.id)
+        stmt = stmt_filtered.order_by(AdditionalInformation.product_id)
 
         result: Result = await self.session.execute(stmt)
         return result.unique().scalars().all()
@@ -101,7 +88,7 @@ class AddInfoRepository:
         )
         stmt_filtered = filter_model.sort(query_filter)
 
-        stmt = stmt_filtered.order_by(AdditionalInformation.id)
+        stmt = stmt_filtered.order_by(AdditionalInformation.product_id)
 
         result: Result = await self.session.execute(stmt)
         return result.unique().scalars().all()
