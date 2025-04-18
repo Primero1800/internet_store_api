@@ -1,6 +1,7 @@
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer
+from sqlalchemy import CheckConstraint, ForeignKey, Integer, DECIMAL
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.config import DBConfigurer
@@ -18,6 +19,7 @@ class SaleInformation(Base):
         CheckConstraint("viewed_count >= 0", name="check_viewed_count_min_value"),
         CheckConstraint("voted_count >= 0", name="check_voted_count_min_value"),
         CheckConstraint("rating >= 0", name="check_rating_min_value"),
+        CheckConstraint("rating_summary >= 0", name="check_rating_summary_min_value"),
     )
     product_id: Mapped[int] = mapped_column(
         ForeignKey(f"{DBConfigurer.utils.camel2snake('Product')}.id", ondelete="CASCADE"),
@@ -51,8 +53,15 @@ class SaleInformation(Base):
         server_default='0',
     )
 
-    rating: Mapped[int] = mapped_column(
+    rating_summary: Mapped[int] = mapped_column(
         Integer,
+        nullable=False,
+        default=0,
+        server_default='0',
+    )
+
+    rating: Mapped[Decimal] = mapped_column(
+        DECIMAL(2,1),
         nullable=True,
         default=None,
         server_default=None,

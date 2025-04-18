@@ -1,8 +1,8 @@
 """sale_information table added
 
-Revision ID: 8a87d35d31e0
+Revision ID: fdef4c889bc3
 Revises: a7c9a25a5689
-Create Date: 2025-04-18 14:16:25.039147
+Create Date: 2025-04-18 14:46:38.489240
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '8a87d35d31e0'
+revision: str = 'fdef4c889bc3'
 down_revision: Union[str, None] = 'a7c9a25a5689'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,8 +26,10 @@ def upgrade() -> None:
     sa.Column('sold_count', sa.Integer(), server_default='0', nullable=False),
     sa.Column('voted_count', sa.Integer(), server_default='0', nullable=False),
     sa.Column('viewed_count', sa.Integer(), server_default='0', nullable=False),
-    sa.Column('rating', sa.Integer(), nullable=True),
+    sa.Column('rating_summary', sa.Integer(), server_default='0', nullable=False),
+    sa.Column('rating', sa.DECIMAL(precision=2, scale=1), nullable=True),
     sa.CheckConstraint('rating >= 0', name=op.f('ck_el_sale_information_check_rating_min_value')),
+    sa.CheckConstraint('rating_summary >= 0', name=op.f('ck_el_sale_information_check_rating_summary_min_value')),
     sa.CheckConstraint('sold_count >= 0', name=op.f('ck_el_sale_information_check_sold_count_min_value')),
     sa.CheckConstraint('viewed_count >= 0', name=op.f('ck_el_sale_information_check_viewed_count_min_value')),
     sa.CheckConstraint('voted_count >= 0', name=op.f('ck_el_sale_information_check_voted_count_min_value')),

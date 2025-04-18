@@ -10,9 +10,6 @@ from src.scrypts.pagination import paginate_result
 from .schemas import (
     AddInfoShort,
     AddInfoRead,
-    AddInfoCreate,
-    AddInfoUpdate,
-    AddInfoPartialUpdate,
 )
 from .service import AddInfoService
 from .filters import AddInfoFilter, AddInfoFilterComplex
@@ -25,9 +22,6 @@ if TYPE_CHECKING:
         AdditionalInformation,
     )
 
-
-# @RateLimiter.rate_limit()
-# no rate limit for superuser
 
 RELATIONS_LIST = [
     {

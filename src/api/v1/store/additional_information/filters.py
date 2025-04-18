@@ -1,4 +1,3 @@
-from decimal import Decimal
 from typing import Optional
 
 from fastapi_filter import FilterDepends, with_prefix
