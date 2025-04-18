@@ -32,7 +32,11 @@ class BaseSaleInfo(BaseModel):
 
 
 class SaleInfoShort(BaseSaleInfo):
-    pass
+    sold_count: base_sold_count_field
+    viewed_count: base_viewed_count_field
+    voted_count: base_voted_count_field
+    rating_summary: base_rating_summary_field
+    rating: base_rating_field
 
 
 class SaleInfoRead(SaleInfoShort):

@@ -116,3 +116,67 @@ class SaleInfoService:
                 relations=relations,
             )
         return returned_orm_model
+
+    async def create_one(
+            self,
+            product_id: int,
+    ):
+        repository: SaleInfoRepository = SaleInfoRepository(
+            session=self.session
+        )
+        self.repository = repository
+
+        # Expecting if ProductCreate data valid
+                # catching ValidationError in exception_handler
+        instance: SaleInfoCreate = SaleInfoCreate(
+            product_id=product_id,
+        )
+        orm_model = await repository.get_orm_model_from_schema(instance=instance)
+
+        inspector = ValidRelationsInspector(
+            session=self.session,
+            **{"product_id": product_id}
+        )
+        result = await inspector.inspect()
+        if isinstance(result, ORJSONResponse):
+            return result
+
+        try:
+            await repository.create_one(
+                orm_model=orm_model,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+        self.logger.info("%s for Product id=%s was successfully created" % (CLASS, orm_model.product_id))
+
+        return await self.get_one_complex(
+            product_id=orm_model.product_id
+        )
+
+    async def delete_one(
+            self,
+            orm_model: "SaleInformation",
+    ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
+        repository: SaleInfoRepository = SaleInfoRepository(
+            session=self.session
+        )
+        try:
+            return await repository.delete_one(orm_model=orm_model)
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )

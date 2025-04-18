@@ -123,11 +123,13 @@ async def get_all_full(
 # 5
 @router.get(
     "/{product_id}",
+    dependencies=[Depends(current_superuser), ],
     status_code=status.HTTP_200_OK,
     response_model=SaleInfoShort,
-    description="Get the sale info of the product by product_id"
+    description="Get item of the product by product_id"
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def get_one(
         request: Request,
         product_id: int,
@@ -147,7 +149,7 @@ async def get_one(
     dependencies=[Depends(current_superuser), ],
     status_code=status.HTTP_200_OK,
     response_model=SaleInfoRead,
-    description="Get the sale info of the product by product_id with all relations (for superuser only)"
+    description="Get item of the product by product_id with all relations (for superuser only)"
 )
 # @RateLimiter.rate_limit()
 # no rate limit for superuser
@@ -162,3 +164,47 @@ async def get_one_complex(
     return await service.get_one_complex(
         product_id=product_id
     )
+
+
+# 7
+@router.post(
+    "",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=SaleInfoRead,
+    description="Create item for existing product (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def create_one(
+        request: Request,
+        product_id: int = Form(),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> SaleInfoRead:
+
+    service: SaleInfoService = SaleInfoService(
+        session=session
+    )
+    return await service.create_one(
+        product_id=product_id,
+    )
+
+
+# 8
+@router.delete(
+    "/{product_id}",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_204_NO_CONTENT,
+    description="Delete item of the product by product_id (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def delete_one(
+        request: Request,
+        orm_model: "SaleInformation" = Depends(deps.get_one),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: SaleInfoService = SaleInfoService(
+        session=session
+    )
+    return await service.delete_one(orm_model)
