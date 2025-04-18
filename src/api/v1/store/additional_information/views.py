@@ -17,6 +17,7 @@ from .schemas import (
 from .service import AddInfoService
 from .filters import AddInfoFilter, AddInfoFilterComplex
 from . import dependencies as deps
+from ..products.schemas import ProductShort
 from ...users.dependencies import current_superuser
 
 if TYPE_CHECKING:
@@ -282,4 +283,27 @@ async def edit_one_partial(
         size=size,
         guarantee=guarantee,
         is_partial=True,
+    )
+
+
+# 11
+@router.get(
+    "/{product_id}/product",
+    status_code=status.HTTP_200_OK,
+    response_model=ProductShort,
+    description="Get the relations product of additional info by product_id"
+)
+@RateLimiter.rate_limit()
+async def get_one(
+        request: Request,
+        product_id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: AddInfoService = AddInfoService(
+        session=session
+    )
+    return await service.get_one_complex(
+        product_id=product_id,
+        maximized=False,
+        relations=['product']
     )

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from ..products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
 
@@ -25,14 +25,19 @@ async def get_short_schema_from_orm(
 
 async def get_schema_from_orm(
     orm_model: "AdditionalInformation",
-    maximized: bool = False,
-) -> AddInfoRead:
+    maximized: bool = True,
+    relations: list | None = [],
+) -> AddInfoRead | Any:
 
     # BRUTE FORCE VARIANT
 
-    short_schema: AddInfoShort = await get_short_schema_from_orm(orm_model=orm_model)
+    short_schema: AddInfoShort = await get_short_schema_from_orm(orm_model=orm_model) if maximized else {}
 
-    product_short = await get_short_product_schema_from_orm(orm_model.product)
+    product_short = None
+    if maximized or 'product' in relations:
+        product_short = await get_short_product_schema_from_orm(orm_model.product)
+    if 'product' in relations:
+        return product_short
 
     return AddInfoRead(
         **short_schema.model_dump(),

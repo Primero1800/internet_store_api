@@ -48,11 +48,14 @@ class AddInfoRepository:
     async def get_one_complex(
             self,
             product_id: int = None,
+            maximized: bool = True,
+            relations: list = []
     ):
-        stmt_filter = select(AdditionalInformation).where(AdditionalInformation.product_id == product_id)
-        stmt = stmt_filter.options(
-            joinedload(AdditionalInformation.product).joinedload(Product.images),
-        )
+        stmt = select(AdditionalInformation).where(AdditionalInformation.product_id == product_id)
+        if maximized or "product" in relations:
+            stmt = stmt.options(
+                joinedload(AdditionalInformation.product).joinedload(Product.images),
+            )
         result: Result = await self.session.execute(stmt)
         orm_model: AdditionalInformation | None = result.unique().scalar_one_or_none()
 

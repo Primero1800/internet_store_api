@@ -88,6 +88,8 @@ class AddInfoService:
     async def get_one_complex(
             self,
             product_id: int = None,
+            maximized: bool = True,
+            relations: list | None = [],
             to_schema: bool = True,
     ):
         repository: AddInfoRepository = AddInfoRepository(
@@ -96,6 +98,8 @@ class AddInfoService:
         try:
             returned_orm_model = await repository.get_one_complex(
                 product_id=product_id,
+                maximized=maximized,
+                relations=relations,
             )
         except CustomException as exc:
             return ORJSONResponse(
@@ -106,7 +110,11 @@ class AddInfoService:
                 }
             )
         if to_schema:
-            return await utils.get_schema_from_orm(returned_orm_model)
+            return await utils.get_schema_from_orm(
+                orm_model=returned_orm_model,
+                maximized=maximized,
+                relations=relations,
+            )
         return returned_orm_model
 
     async def create_one(
