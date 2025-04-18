@@ -18,6 +18,9 @@ from . import utils
 
 if TYPE_CHECKING:
     from .filters import AddInfoFilter, AddInfoFilterComplex
+    from src.core.models import (
+        AdditionalInformation,
+    )
 
 CLASS = "AdditionalInformation"
 _CLASS = "add_info"
@@ -53,11 +56,36 @@ class AddInfoService:
             session=self.session
         )
         result = []
-        # TODO KeyError
         listed_orm_models = await repository.get_all_full(filter_model=filter_model)
         for orm_model in listed_orm_models:
             result.append(await utils.get_schema_from_orm(orm_model=orm_model))
         return result
+
+    async def get_one(
+            self,
+            id: int = None,
+            product_id: int = None,
+            to_schema: bool = True,
+    ):
+        repository: AddInfoRepository = AddInfoRepository(
+            session=self.session
+        )
+        try:
+            returned_orm_model = await repository.get_one(
+                product_id=product_id,
+                id=id,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            return await utils.get_short_schema_from_orm(returned_orm_model)
+        return returned_orm_model
 
     async def get_one_complex(
             self,
@@ -133,3 +161,24 @@ class AddInfoService:
         return await self.get_one_complex(
             id=orm_model.id
         )
+
+    async def delete_one(
+            self,
+            orm_model: "AdditionalInformation",
+    ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
+        repository: AddInfoRepository = AddInfoRepository(
+            session=self.session
+        )
+        try:
+            return await repository.delete_one(orm_model=orm_model)
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )

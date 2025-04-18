@@ -33,6 +33,26 @@ class AddInfoRepository:
         self.session = session
         self.logger = logging.getLogger(__name__)
 
+    async def get_one(
+            self,
+            product_id: int,
+            id: int
+    ):
+        stmt_select = select(AdditionalInformation)
+        if id:
+            stmt = stmt_select.where(AdditionalInformation.id == id)
+        else:
+            stmt = stmt_select.where(AdditionalInformation.product_id == product_id)
+        result: Result = await self.session.execute(stmt)
+        orm_model: AdditionalInformation | None = result.unique().scalar_one_or_none()
+
+        if not orm_model:
+            text_error = f"id={id}" if id else f"product_id={product_id}"
+            raise CustomException(
+                msg=f"{CLASS} with {text_error} not found"
+            )
+        return orm_model
+
     async def get_one_complex(
             self,
             id: int = None,
@@ -106,4 +126,18 @@ class AddInfoRepository:
             self.logger.error(f"Error while orm_model creating", exc_info=error)
             raise CustomException(
                 msg=Errors.ALREADY_EXISTS
+            )
+
+    async def delete_one(
+            self,
+            orm_model: AdditionalInformation,
+    ) -> None:
+        try:
+            self.logger.info(f"Deleting %r from database" % orm_model)
+            await self.session.delete(orm_model)
+            await self.session.commit()
+        except IntegrityError as exc:
+            self.logger.error("Error while deleting data from database", exc_info=exc)
+            raise CustomException(
+                msg="Error while deleting %r from database" % orm_model
             )

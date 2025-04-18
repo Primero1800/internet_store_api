@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from fastapi import APIRouter, status, Request, Query, Depends, Form
 from fastapi_filter import FilterDepends
@@ -16,7 +16,14 @@ from .schemas import (
 )
 from .service import AddInfoService
 from .filters import AddInfoFilter, AddInfoFilterComplex
+from . import dependencies as deps
 from ...users.dependencies import current_superuser
+
+if TYPE_CHECKING:
+    from src.core.models import (
+        AdditionalInformation,
+    )
+
 
 router = APIRouter()
 
@@ -135,3 +142,20 @@ async def create_one(
         size=size,
         guarantee=guarantee,
     )
+
+
+@router.delete(
+    "/product/{id}/",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+@RateLimiter.rate_limit()
+async def delete_one(
+        request: Request,
+        orm_model: "AdditionalInformation" = Depends(deps.get_one_simple_by_product_id),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: AddInfoService = AddInfoService(
+        session=session
+    )
+    return await service.delete_one(orm_model)

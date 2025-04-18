@@ -17,3 +17,13 @@ async def get_one_simple(
         session=session
     )
     return await service.get_one(id=id, to_schema=False)
+
+
+async def get_one_simple_by_product_id(
+    product_id: int,
+    session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> "AdditionalInformation":
+    service: AddInfoService = AddInfoService(
+        session=session
+    )
+    return await service.get_one(product_id=product_id, to_schema=False)
