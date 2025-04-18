@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, ForeignKey, DECIMAL, String, null
+from sqlalchemy import CheckConstraint, ForeignKey, DECIMAL, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.config import DBConfigurer

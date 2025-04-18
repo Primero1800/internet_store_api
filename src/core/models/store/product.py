@@ -19,6 +19,7 @@ if TYPE_CHECKING:
         Rubric,
         Brand,
         AdditionalInformation,
+        SaleInformation,
     )
 
 
@@ -83,6 +84,12 @@ class Product(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
 
     add_info: Mapped['AdditionalInformation'] = relationship(
         'AdditionalInformation',
+        back_populates='product',
+        cascade="all, delete"
+    )
+
+    sale_info: Mapped['SaleInformation'] = relationship(
+        'SaleInformation',
         back_populates='product',
         cascade="all, delete"
     )
