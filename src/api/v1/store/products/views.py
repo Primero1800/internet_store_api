@@ -162,6 +162,7 @@ async def create_one(
         image_schemas=images,
     )
 
+
 @router.delete(
     "/{id}/",
     dependencies=[Depends(current_superuser), ],
@@ -170,7 +171,7 @@ async def create_one(
 @RateLimiter.rate_limit()
 async def delete_one(
         request: Request,
-        orm_model: "Brand" = Depends(deps.get_one_simple),
+        orm_model: "Product" = Depends(deps.get_one_simple),
         session: AsyncSession = Depends(DBConfigurer.session_getter),
 ):
     service: ProductsService = ProductsService(
