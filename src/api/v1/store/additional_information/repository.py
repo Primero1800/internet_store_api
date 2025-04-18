@@ -57,7 +57,7 @@ class AddInfoRepository:
         orm_model: AdditionalInformation | None = result.unique().scalar_one_or_none()
 
         if not orm_model:
-            text_error = f"id={id}" if id else f"product_id={product_id}"
+            text_error = f"product_id={product_id}"
             raise CustomException(
                 msg=f"{CLASS} with {text_error} not found"
             )

@@ -87,7 +87,6 @@ class AddInfoService:
 
     async def get_one_complex(
             self,
-            id: int = None,
             product_id: int = None,
             to_schema: bool = True,
     ):
@@ -96,7 +95,6 @@ class AddInfoService:
         )
         try:
             returned_orm_model = await repository.get_one_complex(
-                id=id,
                 product_id=product_id,
             )
         except CustomException as exc:
