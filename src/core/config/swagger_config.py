@@ -16,18 +16,14 @@ BASE_DIR: str = str(Path(__file__).resolve().parent.parent.parent.parent)
 class SwaggerConfigurer:
 
     @staticmethod
-    async def get_routes(application: FastAPI, path=True, tags=True, methods=True, ):
-        routes_info = []
-        for route in application.routes:
-            route_dict = {}
-            if path:
-                route_dict['path'] = route.path
-            if tags:
-                route_dict['tags'] = route.tags if hasattr(route, "tags") else []
-            if methods:
-                route_dict['methods'] = route.methods
-            routes_info.append(route_dict)
-        return routes_info
+    async def get_routes(application: FastAPI):
+        from src.scrypts.get_routes import get_routes as scrypt_get_routes
+        return await scrypt_get_routes(
+            application=application,
+            path=True,
+            tags=False,
+            methods=True,
+        )
 
     @staticmethod
     def delete_router_tag(application: FastAPI):

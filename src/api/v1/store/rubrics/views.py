@@ -31,7 +31,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/",
+    "",
     response_model=List[RubricShort],
     status_code=status.HTTP_200_OK,
 )
@@ -55,7 +55,7 @@ async def get_all(
 
 
 @router.get(
-    "/full/",
+    "/full",
     dependencies=[Depends(current_superuser),],
     response_model=List[RubricRead],
     status_code=status.HTTP_200_OK,
@@ -80,7 +80,7 @@ async def get_all_full(
 
 
 @router.get(
-    "/title/{slug}/",
+    "/title/{slug}",
     status_code=status.HTTP_200_OK,
     response_model=RubricRead,
 )
@@ -99,7 +99,7 @@ async def get_one_by_slug(
 
 
 @router.get(
-    "/{id}/",
+    "/{id}",
     dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_200_OK,
     response_model=RubricRead,
@@ -119,7 +119,7 @@ async def get_one(
 
 
 @router.post(
-    "/",
+    "",
     dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_201_CREATED,
     response_model=RubricRead,
@@ -144,7 +144,7 @@ async def create_one(
 
 
 @router.delete(
-    "/{id}/",
+    "/{id}",
     dependencies=[Depends(current_superuser), ],
     status_code=status.HTTP_204_NO_CONTENT,
 )
@@ -161,7 +161,7 @@ async def delete_one(
 
 
 @router.put(
-        "/{id}/",
+        "/{id}",
         dependencies=[Depends(current_superuser), ],
         status_code=status.HTTP_200_OK,
         response_model=RubricRead
@@ -187,7 +187,7 @@ async def put_one(
 
 
 @router.patch(
-        "/{id}/",
+        "/{id}",
         dependencies=[Depends(current_superuser), ],
         status_code=status.HTTP_200_OK,
         response_model=RubricRead

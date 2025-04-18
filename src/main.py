@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from typing import Dict, Any
 
 import uvicorn
 from fastapi import FastAPI, Request, Depends
@@ -63,7 +64,7 @@ SwaggerConfigurer.delete_router_tag(app)
     tags=[settings.tags.ROOT_TAG,],
 )
 @RateLimiter.rate_limit()
-async def top(request: Request):
+async def top(request: Request) -> str:
     return f"top here"
 
 
@@ -72,7 +73,7 @@ async def top(request: Request):
     tags=[settings.tags.TECH_TAG,],
 )
 @RateLimiter.rate_limit()
-def echo(request: Request, thing: str):
+def echo(request: Request, thing: str) -> str:
     return " ".join([thing for _ in range(3)])
 
 
@@ -82,7 +83,7 @@ def echo(request: Request, thing: str):
     dependencies=[Depends(current_superuser)]
 )
 # no rate limit for superuser
-async def get_routes_endpoint(request: Request):
+async def get_routes_endpoint(request: Request) -> Dict[str, Any]:
     return await SwaggerConfigurer.get_routes(
         application=app,
     )

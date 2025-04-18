@@ -6,7 +6,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.config import DBConfigurer
 from src.core.models import Base
-from src.core.models.mixins import IDIntPkMixin
 
 if TYPE_CHECKING:
     from src.core.models import (
@@ -14,14 +13,14 @@ if TYPE_CHECKING:
     )
 
 
-class AdditionalInformation(IDIntPkMixin, Base):
+class AdditionalInformation(Base):
     __table_args__ = (
         CheckConstraint("weight > 0", name="check_weight_min_value"),
     )
     product_id: Mapped[int] = mapped_column(
         ForeignKey(f"{DBConfigurer.utils.camel2snake('Product')}.id", ondelete="CASCADE"),
+        primary_key=True,
         nullable=False,
-        unique=True,
     )
 
     product: Mapped['Product'] = relationship(
