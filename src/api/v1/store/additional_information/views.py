@@ -25,7 +25,10 @@ if TYPE_CHECKING:
     )
 
 
-RELATIONS_DICT = [
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+
+RELATIONS_LIST = [
     {
         "name": "product",
         "usage": "/{id}/product",
@@ -50,7 +53,6 @@ async def get_routes(
     return await scrypt_get_routes(
         application=router,
         tags=False,
-        deps=True,
         desc=True
     )
 
@@ -65,32 +67,37 @@ async def get_routes(
 async def get_relations(
         request: Request,
 ) -> list[Dict[str, Any]]:
-    return RELATIONS_DICT
+    return RELATIONS_LIST
 
 
-# @router.get(
-#     "",
-#     dependencies=[Depends(current_superuser)],
-#     response_model=list[AddInfoShort],
-#     status_code=status.HTTP_200_OK,
-# )
+# 3
+@router.get(
+    "",
+    dependencies=[Depends(current_superuser)],
+    response_model=list[AddInfoShort],
+    status_code=status.HTTP_200_OK,
+    description="Get the list of the all items (for superuser only)"
+)
 # @RateLimiter.rate_limit()
-# async def get_all(
-#         request: Request,
-#         page: int = Query(1, gt=0),
-#         size: int = Query(10, gt=0),
-#         filter_model: AddInfoFilter = FilterDepends(AddInfoFilter),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter)
-# ):
-#     service: AddInfoService = AddInfoService(
-#         session=session
-#     )
-#     result_full = await service.get_all(filter_model=filter_model)
-#     return await paginate_result(
-#         query_list=result_full,
-#         page=page,
-#         size=size,
-#     )
+# no rate limit for superuser
+async def get_all(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        filter_model: AddInfoFilter = FilterDepends(AddInfoFilter),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: AddInfoService = AddInfoService(
+        session=session
+    )
+    result_full = await service.get_all(filter_model=filter_model)
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
+
+
 #
 #
 # @router.get(

@@ -10,7 +10,7 @@ from ..products.filters import ProductFilterShort
 
 
 class AddInfoFilter(Filter):
-    order_by: Optional[list[str]] = ['id']
+    order_by: Optional[list[str]] = ['product_id']
     guarantee__like: Optional[str] = Field(default=None, description="Filter by product guarantee contains", )
 
     class Constants(Filter.Constants):

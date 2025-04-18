@@ -50,7 +50,7 @@ class AdditionalInformation(Base):
     )
 
     def __str__(self):
-        return f"AdditionalInformation(id={self.id}, product_id={self.product_id})"
+        return f"AdditionalInformation(product_id={self.product_id})"
 
     def __repr__(self):
         return str(self)

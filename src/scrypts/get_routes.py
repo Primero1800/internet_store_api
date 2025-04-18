@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter
+from fastapi.encoders import jsonable_encoder
 
 
 async def get_routes(application: FastAPI | APIRouter, path=True, tags=True, methods=True, deps=False, desc=False):
@@ -12,7 +13,8 @@ async def get_routes(application: FastAPI | APIRouter, path=True, tags=True, met
         if methods:
             route_dict['methods'] = route.methods if hasattr(route, "methods") else []
         if deps:
-            route_dict['dependencies'] = route.dependencies if hasattr(route, 'dependencies') else []
+            dependencies = route.dependencies if hasattr(route, 'dependencies') else []
+            route_dict['dependencies'] = [str(dep) for dep in dependencies]
         if desc:
             route_dict['description'] = route.description if hasattr(route, 'description') else None
         routes_info.append(route_dict)

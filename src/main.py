@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from typing import Dict, Any
 
 import uvicorn
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, Query
 from starlette.staticfiles import StaticFiles
 
 from src.api.v1.users.dependencies import current_superuser
@@ -15,6 +15,7 @@ from src.core.config import (
     ExceptionHandlerConfigurer,
 )
 from src.api import router as router_api
+from src.scrypts.pagination import paginate_result
 
 
 @asynccontextmanager
@@ -82,10 +83,20 @@ def echo(request: Request, thing: str) -> str:
     tags=[settings.tags.TECH_TAG,],
     dependencies=[Depends(current_superuser)]
 )
+# @RateLimiter.rate_limit()
 # no rate limit for superuser
-async def get_routes_endpoint(request: Request) -> list[Dict[str, Any]]:
-    return await SwaggerConfigurer.get_routes(
+async def get_routes_endpoint(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+) -> list[Dict[str, Any]]:
+    routes = await SwaggerConfigurer.get_routes(
         application=app,
+    )
+    return await paginate_result(
+        query_list=routes,
+        page=page,
+        size=size,
     )
 
 
