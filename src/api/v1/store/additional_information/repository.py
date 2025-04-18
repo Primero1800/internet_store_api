@@ -1,5 +1,4 @@
 import logging
-from fastapi import status
 from typing import Sequence, TYPE_CHECKING, Union
 
 from sqlalchemy import select, Result

@@ -178,6 +178,9 @@ class Tags(CustomSettings):
     ADD_INFO_PREFIX: str
     ADD_INFO_TAG: str
 
+    SALE_INFO_PREFIX: str
+    SALE_INFO_TAG: str
+
 
 class Users(CustomSettings):
     USERS_PASSWORD_MIN_LENGTH: int

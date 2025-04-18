@@ -35,19 +35,19 @@ class SaleInfoShort(BaseSaleInfo):
     pass
 
 
-class AddInfoRead(SaleInfoShort):
+class SaleInfoRead(SaleInfoShort):
     product: Any
 
 
-class AddInfoCreate(BaseSaleInfo):
+class SaleInfoCreate(BaseSaleInfo):
     pass
 
 
-class AddInfoUpdate(AddInfoCreate):
+class SaleInfoUpdate(SaleInfoCreate):
     pass
 
 
-class AddInfoPartialUpdate(AddInfoCreate):
+class SaleInfoPartialUpdate(SaleInfoCreate):
     product_id: Optional[int]
     voted_count: Optional[base_voted_count_field]
     viewed_count: Optional[base_viewed_count_field]
