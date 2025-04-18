@@ -63,7 +63,6 @@ class AddInfoService:
 
     async def get_one(
             self,
-            id: int = None,
             product_id: int = None,
             to_schema: bool = True,
     ):
@@ -73,7 +72,6 @@ class AddInfoService:
         try:
             returned_orm_model = await repository.get_one(
                 product_id=product_id,
-                id=id,
             )
         except CustomException as exc:
             return ORJSONResponse(

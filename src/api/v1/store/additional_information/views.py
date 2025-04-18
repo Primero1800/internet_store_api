@@ -126,25 +126,26 @@ async def get_all_full(
     )
 
 
-#
-#
-# @router.get(
-#     "/product/{id}",
-#     status_code=status.HTTP_200_OK,
-#     response_model=AddInfoRead,
-# )
-# @RateLimiter.rate_limit()
-# async def get_one(
-#         request: Request,
-#         product_id: int,
-#         session: AsyncSession = Depends(DBConfigurer.session_getter)
-# ):
-#     service: AddInfoService = AddInfoService(
-#         session=session
-#     )
-#     return await service.get_one_complex(
-#         product_id=product_id
-#     )
+# 5
+@router.get(
+    "/{product_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=AddInfoShort,
+    description="Get the additional info of the product by product_id"
+)
+@RateLimiter.rate_limit()
+async def get_one(
+        request: Request,
+        product_id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: AddInfoService = AddInfoService(
+        session=session
+    )
+    return await service.get_one(
+        product_id=product_id
+    )
+
 #
 #
 # @router.get(

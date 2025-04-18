@@ -39,7 +39,7 @@ class AddInfoRepository:
     ):
         orm_model = await self.session.get(AdditionalInformation, product_id)
         if not orm_model:
-            text_error = f"id={id}"
+            text_error = f"product_id={product_id}"
             raise CustomException(
                 msg=f"{CLASS} with {text_error} not found"
             )
