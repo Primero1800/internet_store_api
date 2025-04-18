@@ -178,3 +178,62 @@ class AddInfoService:
                     "detail": exc.msg,
                 }
             )
+
+    async def edit_one(
+            self,
+            product_id: int,
+            orm_model: "AdditionalInformation",
+            weight: Optional[Decimal],
+            size: Optional[str],
+            guarantee: Optional[str],
+            is_partial: bool = False
+    ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
+        repository: AddInfoRepository = AddInfoRepository(
+            session=self.session
+        )
+        self.repository = repository
+
+        # Expecting if Update or PartialUpdate data valid
+                # catching ValidationError in exception_handler
+        updating_dictionary = {
+            "product_id": product_id,
+            "weight": weight,
+            "size": size,
+            "guarantee": guarantee,
+        }
+        if is_partial:
+            instance: AddInfoPartialUpdate = AddInfoPartialUpdate(**updating_dictionary)
+        else:
+            instance: AddInfoUpdate = AddInfoUpdate(**updating_dictionary)
+
+        inspector = ValidRelationsInspector(
+            session=self.session,
+            **{"product_id": product_id}
+        )
+        result = await inspector.inspect()
+        if isinstance(result, ORJSONResponse):
+            return result
+
+        try:
+            await repository.edit_one(
+                orm_model=orm_model,
+                instance=instance,
+                is_partial=is_partial,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+        self.logger.info("AdditionalInformation for Product id=%s was successfully edited" % orm_model.product_id)
+
+        return await self.get_one_complex(
+            product_id=orm_model.product_id
+        )

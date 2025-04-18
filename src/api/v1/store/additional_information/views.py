@@ -205,6 +205,7 @@ async def create_one(
     "/{product_id}",
     dependencies=[Depends(current_superuser), ],
     status_code=status.HTTP_204_NO_CONTENT,
+    description="Delete additional info of the product by product_id (for superuser only)"
 )
 # @RateLimiter.rate_limit()
 # no rate limit for superuser
@@ -217,3 +218,68 @@ async def delete_one(
         session=session
     )
     return await service.delete_one(orm_model)
+
+
+# 9
+@router.put(
+    "",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=AddInfoRead,
+    description="Edit additional info for existing product (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def edit_one(
+        request: Request,
+        orm_model: "AdditionalInformation" = Depends(deps.get_one),
+        product_id: int = Form(),
+        weight: Optional[Decimal] = Form(decimal_places=2, default=None),
+        size: Optional[str] = Form(default=None),
+        guarantee: Optional[str] = Form(default=None),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> AddInfoRead:
+
+    service: AddInfoService = AddInfoService(
+        session=session
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        product_id=product_id,
+        weight=weight,
+        size=size,
+        guarantee=guarantee,
+    )
+
+
+# 10
+@router.patch(
+    "",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=AddInfoRead,
+    description="Edit additional info for existing product (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def edit_one_partial(
+        request: Request,
+        orm_model: "AdditionalInformation" = Depends(deps.get_one),
+        product_id: Optional[int] = Form(default=None),
+        weight: Optional[Decimal] = Form(decimal_places=2, default=None),
+        size: Optional[str] = Form(default=None),
+        guarantee: Optional[str] = Form(default=None),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> AddInfoRead:
+
+    service: AddInfoService = AddInfoService(
+        session=session
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        product_id=product_id,
+        weight=weight,
+        size=size,
+        guarantee=guarantee,
+        is_partial=True,
+    )
