@@ -8,8 +8,6 @@ from .service import ProductsService
 if TYPE_CHECKING:
     from src.core.models import Product
 
-CLASS = "Product"
-
 
 async def get_one_simple(
     id: int,
