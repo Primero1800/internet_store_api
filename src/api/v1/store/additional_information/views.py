@@ -25,18 +25,27 @@ if TYPE_CHECKING:
     )
 
 
+RELATIONS_DICT = [
+    {
+        "name": "product",
+        "usage": "/{id}/product",
+        "conditions": "public"
+    },
+]
+
 router = APIRouter()
 
 
+# 1
 @router.get(
     "/routes",
     status_code=status.HTTP_200_OK,
-    description="Getting all routes of current branch",
+    description="Getting all the routes of the current branch",
 )
 @RateLimiter.rate_limit()
 async def get_routes(
         request: Request,
-) -> Dict[str, Any]:
+) -> list[Dict[str, Any]]:
     from src.scrypts.get_routes import get_routes as scrypt_get_routes
     return await scrypt_get_routes(
         application=router,
@@ -44,6 +53,19 @@ async def get_routes(
         deps=True,
         desc=True
     )
+
+
+# 2
+@router.get(
+    "/relations",
+    status_code=status.HTTP_200_OK,
+    description="Getting the relations info for the branch items"
+)
+@RateLimiter.rate_limit()
+async def get_relations(
+        request: Request,
+) -> list[Dict[str, Any]]:
+    return RELATIONS_DICT
 
 
 # @router.get(

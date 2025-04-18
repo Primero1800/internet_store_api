@@ -83,7 +83,7 @@ def echo(request: Request, thing: str) -> str:
     dependencies=[Depends(current_superuser)]
 )
 # no rate limit for superuser
-async def get_routes_endpoint(request: Request) -> Dict[str, Any]:
+async def get_routes_endpoint(request: Request) -> list[Dict[str, Any]]:
     return await SwaggerConfigurer.get_routes(
         application=app,
     )
