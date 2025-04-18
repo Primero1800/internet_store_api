@@ -1,8 +1,8 @@
 """sale_information table added
 
-Revision ID: fdef4c889bc3
+Revision ID: 07e056eb3bc9
 Revises: a7c9a25a5689
-Create Date: 2025-04-18 14:46:38.489240
+Create Date: 2025-04-18 16:30:44.308766
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'fdef4c889bc3'
+revision: str = '07e056eb3bc9'
 down_revision: Union[str, None] = 'a7c9a25a5689'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,6 +28,7 @@ def upgrade() -> None:
     sa.Column('viewed_count', sa.Integer(), server_default='0', nullable=False),
     sa.Column('rating_summary', sa.Integer(), server_default='0', nullable=False),
     sa.Column('rating', sa.DECIMAL(precision=2, scale=1), nullable=True),
+    sa.CheckConstraint('rating <= 5', name=op.f('ck_el_sale_information_check_rating_max_value')),
     sa.CheckConstraint('rating >= 0', name=op.f('ck_el_sale_information_check_rating_min_value')),
     sa.CheckConstraint('rating_summary >= 0', name=op.f('ck_el_sale_information_check_rating_summary_min_value')),
     sa.CheckConstraint('sold_count >= 0', name=op.f('ck_el_sale_information_check_sold_count_min_value')),

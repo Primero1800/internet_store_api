@@ -2,6 +2,8 @@ from typing import Annotated, Optional, Any
 
 from pydantic import BaseModel, ConfigDict, Field, conint, condecimal
 
+from src.api.v1.store.mixins import RatingMixin
+
 base_sold_count_field = Annotated[conint(ge=0), Field(
     title="Product's sold count",
 )]
@@ -51,7 +53,7 @@ class SaleInfoUpdate(SaleInfoCreate):
     pass
 
 
-class SaleInfoPartialUpdate(SaleInfoCreate):
+class SaleInfoPartialUpdate(SaleInfoCreate, RatingMixin):
     product_id: Optional[int]
     voted_count: Optional[base_voted_count_field]
     viewed_count: Optional[base_viewed_count_field]

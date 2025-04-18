@@ -19,6 +19,7 @@ class SaleInformation(Base):
         CheckConstraint("viewed_count >= 0", name="check_viewed_count_min_value"),
         CheckConstraint("voted_count >= 0", name="check_voted_count_min_value"),
         CheckConstraint("rating >= 0", name="check_rating_min_value"),
+        CheckConstraint("rating <= 5", name="check_rating_max_value"),
         CheckConstraint("rating_summary >= 0", name="check_rating_summary_min_value"),
     )
     product_id: Mapped[int] = mapped_column(
