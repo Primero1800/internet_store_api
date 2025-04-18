@@ -31,5 +31,13 @@ class ProductFilter(Filter):
         search_field_name = "search_for"
         search_model_fields = ["description", ]
 
-    class Config:
-            populated_by_name = True
+
+class ProductFilterShort(Filter):
+    available: Optional[bool] = Field(default=None, description="Filter if available")
+    title__like: Optional[str] = Field(default=None, description="Filter by product title contains", )
+    search_for: Optional[str] = None
+
+    class Constants(Filter.Constants):
+        model = Product
+        search_field_name = "search_for"
+        search_model_fields = ["title", "description"]
