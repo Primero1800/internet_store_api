@@ -201,6 +201,8 @@ class RubricsService:
             orm_model: "Rubric",
             is_partial: bool = False
     ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
         repository: RubricsRepository = RubricsRepository(
             session=self.session,
         )
@@ -210,10 +212,6 @@ class RubricsService:
             instance: RubricPartialUpdate = RubricPartialUpdate(title=title, description=description)
         else:
             instance: RubricUpdate = RubricUpdate(title=title, description=description)
-
-        repository: RubricsRepository = RubricsRepository(
-            session=self.session
-        )
 
         try:
             await repository.edit_one_empty(

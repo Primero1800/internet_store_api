@@ -37,10 +37,10 @@ class ValidRelationsInspector:
         while self.need_inspect:
             to_inspect, params = self.need_inspect.pop(0)
             try:
-                if to_inspect == "rubric_ids":
+                if to_inspect == "rubric_ids" and params:
                     await self.expecting_rubric_ids(rubric_ids=params)
                     await self.expecting_rubrics_exist(rubric_ids=self.result['rubric_ids'])
-                if to_inspect == "brand_id":
+                if to_inspect == "brand_id" and params:
                     await self.expecting_brand_exists(brand_id=params)
             except ValidRelationsException:
                 return self.error

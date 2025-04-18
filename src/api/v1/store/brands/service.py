@@ -201,6 +201,8 @@ class BrandsService:
             orm_model: "Brand",
             is_partial: bool = False
     ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
         repository: BrandsRepository = BrandsRepository(
             session=self.session,
         )
@@ -210,10 +212,6 @@ class BrandsService:
             instance: BrandPartialUpdate = BrandPartialUpdate(title=title, description=description)
         else:
             instance: BrandUpdate = BrandUpdate(title=title, description=description)
-
-        repository: BrandsRepository = BrandsRepository(
-            session=self.session
-        )
 
         try:
             await repository.edit_one_empty(

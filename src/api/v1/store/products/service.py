@@ -224,6 +224,9 @@ class ProductsService:
             orm_model: "Product",
             is_partial: bool = False
     ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
         repository: ProductsRepository = ProductsRepository(
             session=self.session,
         )
