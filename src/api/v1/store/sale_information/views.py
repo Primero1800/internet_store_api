@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Optional, TYPE_CHECKING, Dict, Any
 
 from fastapi import APIRouter, status, Request, Query, Depends, Form
@@ -208,3 +209,38 @@ async def delete_one(
         session=session
     )
     return await service.delete_one(orm_model)
+
+
+# 9
+@router.patch(
+    "",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=SaleInfoRead,
+    description="Edit item for existing product (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def edit_one_partial(
+        request: Request,
+        orm_model: "SaleInformation" = Depends(deps.get_one),
+        product_id: Optional[int] = Form(default=None),
+        viewed_count: Optional[int] = Form(default=None),
+        sold_count: Optional[int] = Form(default=None),
+        voted_count: Optional[int] = Form(default=None),
+        rating_summary: Optional[Decimal] = Form(decimal_places=2, default=None),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> SaleInfoRead:
+
+    service: SaleInfoService = SaleInfoService(
+        session=session
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        product_id=product_id,
+        viewed_count=viewed_count,
+        sold_count=sold_count,
+        voted_count=voted_count,
+        rating_summary=rating_summary,
+        is_partial=True,
+    )

@@ -1,4 +1,5 @@
 import logging
+from fastapi import status
 from typing import Sequence, TYPE_CHECKING, Union
 
 from sqlalchemy import select, Result
@@ -7,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from src.core.models import SaleInformation, Product, ProductImage
-from src.tools.exceptions import CustomException
+from src.tools.exceptions import CustomException, UnreachableValueError
 from .exceptions import Errors
 
 if TYPE_CHECKING:
@@ -130,4 +131,40 @@ class SaleInfoRepository:
             raise CustomException(
                 msg="Error while deleting %r from database" % orm_model
             )
-    
+
+    async def edit_one(
+            self,
+            instance:  Union["SaleInfoUpdate", "SaleInfoPartialUpdate"],
+            orm_model: SaleInformation,
+            is_partial: bool = False
+    ):
+        if is_partial:
+            instance.rating_summary = instance.rating_summary or orm_model.rating_summary
+            instance.voted_count = instance.voted_count or orm_model.voted_count
+        try:
+            for key, val in instance.model_dump(
+                    exclude_unset=is_partial,
+                    exclude_none=is_partial,
+            ).items():
+                setattr(orm_model, key, val)
+        except ZeroDivisionError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                msg="Division by zero: voted_count=0"
+            )
+        except UnreachableValueError as exc:
+            self.logger.error("Error occurred while editing data in database. Rating can't be more than 5")
+            raise CustomException(
+                msg="Rating must be not more than 5"
+            )
+
+        self.logger.warning(f"Editing %r in database" % orm_model)
+        try:
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+            self.logger.info("%r %r was successfully edited" % (CLASS, orm_model))
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                msg=Errors.already_exists_product_id(instance.product_id)
+            )
