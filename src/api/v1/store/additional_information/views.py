@@ -200,20 +200,20 @@ async def create_one(
     )
 
 
-#
-#
-# @router.delete(
-#     "/product/{id}",
-#     dependencies=[Depends(current_superuser), ],
-#     status_code=status.HTTP_204_NO_CONTENT,
-# )
+# 8
+@router.delete(
+    "/{product_id}",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 # @RateLimiter.rate_limit()
-# async def delete_one(
-#         request: Request,
-#         orm_model: "AdditionalInformation" = Depends(deps.get_one_simple_by_product_id),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter),
-# ):
-#     service: AddInfoService = AddInfoService(
-#         session=session
-#     )
-#     return await service.delete_one(orm_model)
+# no rate limit for superuser
+async def delete_one(
+        request: Request,
+        orm_model: "AdditionalInformation" = Depends(deps.get_one),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: AddInfoService = AddInfoService(
+        session=session
+    )
+    return await service.delete_one(orm_model)
