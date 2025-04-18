@@ -33,21 +33,21 @@ class AdditionalInformation(IDIntPkMixin, Base):
         DECIMAL(8, 2),
         nullable=True,
         default=None,
-        server_default=null(),
+        server_default=None,
     )
 
     size: Mapped[str] = mapped_column(
         String,
         nullable=True,
         default=None,
-        server_default=null()
+        server_default=None
     )
 
     guarantee: Mapped[str] = mapped_column(
         String,
         nullable=True,
         default=None,
-        server_default=null()
+        server_default=None
     )
 
     def __str__(self):
