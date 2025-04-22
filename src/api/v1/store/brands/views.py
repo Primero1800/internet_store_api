@@ -299,7 +299,7 @@ async def patch_one(
     response_model=list[ProductShort],
 )
 @RateLimiter.rate_limit()
-async def get_one_by_slug(
+async def get_relations_products(
         request: Request,
         id: int,
         session: AsyncSession = Depends(DBConfigurer.session_getter)

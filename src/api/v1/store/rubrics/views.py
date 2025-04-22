@@ -21,6 +21,7 @@ from .schemas import (
     RubricRead,
 )
 from .filters import RubricFilter, RubricFilterComplex
+from ..products.schemas import ProductShort
 from ...users.dependencies import current_superuser
 from . import dependencies as deps
 
@@ -187,13 +188,15 @@ async def get_one(
     )
 
 
+# 7
 @router.post(
     "",
     dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_201_CREATED,
     response_model=RubricRead,
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def create_one(
         request: Request,
         title: str = Form(),
@@ -212,12 +215,14 @@ async def create_one(
     )
 
 
+# 8
 @router.delete(
     "/{id}",
     dependencies=[Depends(current_superuser), ],
     status_code=status.HTTP_204_NO_CONTENT,
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def delete_one(
         request: Request,
         orm_model: "Rubric" = Depends(deps.get_one_simple),
@@ -229,13 +234,15 @@ async def delete_one(
     return await service.delete_one(orm_model)
 
 
+# 9
 @router.put(
         "/{id}",
         dependencies=[Depends(current_superuser), ],
         status_code=status.HTTP_200_OK,
         response_model=RubricRead
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def put_one(
         request: Request,
         title: str = Form(),
@@ -255,13 +262,15 @@ async def put_one(
     )
 
 
+# 10
 @router.patch(
         "/{id}",
         dependencies=[Depends(current_superuser), ],
         status_code=status.HTTP_200_OK,
         response_model=RubricRead
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def patch_one(
         request: Request,
         title: Optional[str] = Form(default=None),
@@ -279,4 +288,26 @@ async def patch_one(
         image_schema=image,
         orm_model=orm_model,
         is_partial=True
+    )
+
+
+# 11
+@router.get(
+    "/{id}/products",
+    status_code=status.HTTP_200_OK,
+    response_model=list[ProductShort],
+)
+@RateLimiter.rate_limit()
+async def get_relations_products(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: RubricsService = RubricsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id,
+        maximized=False,
+        relations=['products',]
     )
