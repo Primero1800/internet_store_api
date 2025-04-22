@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi_filter import FilterDepends
 from fastapi_users import BaseUserManager, models, schemas
@@ -20,7 +22,42 @@ from .filters import UserFilter
 
 from ..auth.dependencies import get_user_manager
 
+
 router = APIRouter()
+
+
+RELATIONS_LIST = []
+
+
+# 1
+@router.get(
+    "/routes",
+    status_code=status.HTTP_200_OK,
+    description="Getting all the routes of the current branch",
+)
+@RateLimiter.rate_limit()
+async def get_routes(
+        request: Request,
+) -> list[Dict[str, Any]]:
+    from src.scrypts.get_routes import get_routes as scrypt_get_routes
+    return await scrypt_get_routes(
+        application=router,
+        tags=False,
+        desc=True
+    )
+
+
+# 2
+@router.get(
+    "/relations",
+    status_code=status.HTTP_200_OK,
+    description="Getting the relations info for the branch items"
+)
+@RateLimiter.rate_limit()
+async def get_relations(
+        request: Request,
+) -> list[Dict[str, Any]]:
+    return RELATIONS_LIST
 
 
 @router.get(
@@ -76,6 +113,7 @@ router.include_router(
 )
 
 
+# 3
 @router.get(
     '',
     response_model=list[UserRead],
@@ -98,7 +136,6 @@ async def get_users(
     result_full = await service.get_all_users(
         filter_model=user_filter,
     )
-
     return await paginate_result(
         query_list=result_full,
         page=page,
