@@ -302,13 +302,20 @@ async def patch_one(
 async def get_relations_products(
         request: Request,
         id: int,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ):
     service: BrandsService = BrandsService(
         session=session
     )
-    return await service.get_one_complex(
+    result_full = await service.get_one_complex(
         id=id,
         maximized=False,
         relations=['products',]
+    )
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
     )
