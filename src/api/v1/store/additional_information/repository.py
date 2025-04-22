@@ -83,14 +83,12 @@ class AddInfoRepository:
             filter_model: "AddInfoFilterComplex",
     ) -> Sequence:
 
-        query_filter = filter_model.filter(
-            select(AdditionalInformation).options(
-                joinedload(AdditionalInformation.product).joinedload(Product.images)
-            )
-        )
+        query_filter = filter_model.filter(select(AdditionalInformation).outerjoin(Product))
         stmt_filtered = filter_model.sort(query_filter)
 
-        stmt = stmt_filtered.order_by(AdditionalInformation.product_id)
+        stmt = stmt_filtered.options(
+            joinedload(AdditionalInformation.product).joinedload(Product.images)
+        ).order_by(AdditionalInformation.product_id)
 
         result: Result = await self.session.execute(stmt)
         return result.unique().scalars().all()
