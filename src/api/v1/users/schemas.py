@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Annotated, Optional
 
 from fastapi_users import schemas
-from pydantic import Field
+from pydantic import Field, BaseModel
 
 base_firstname = Annotated[str | None, Field(
             max_length=50, min_length=2,
@@ -29,7 +29,7 @@ base_last_login = Annotated[datetime, Field(
     )]
 
 
-class BaseUser():
+class BaseUser:
 
     firstname: base_firstname
     lastname: base_lastname
@@ -51,3 +51,13 @@ class UserUpdate(BaseUser, schemas.BaseUserUpdate):
 
 class UserUpdateExtended(UserUpdate):
     last_login: Optional[base_last_login] = None
+
+
+class UserPublic(BaseUser, BaseModel):
+    data_joined: base_data_joined
+    last_login: Optional[base_last_login]
+    email: str
+
+
+class UserPublicExtended(UserPublic):
+    id: int
