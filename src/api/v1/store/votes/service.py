@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from fastapi import status
 from fastapi.responses import ORJSONResponse
@@ -14,10 +14,13 @@ from .schemas import (
     VotePartialUpdate,
 )
 from .exceptions import Errors
-
+from .validators import ValidRelationsInspector
 
 if TYPE_CHECKING:
-    from src.core.models import Vote
+    from src.core.models import (
+        Vote,
+        User,
+    )
     from .filters import VoteFilter
 
 CLASS = "Vote"
@@ -117,3 +120,51 @@ class VotesService:
                 relations=relations,
             )
         return returned_orm_model
+
+    async def create_one(
+            self,
+            user: "User",
+            product_id: int,
+            name: str,
+            stars: int,
+            review: Optional[str] = None,
+    ):
+        repository: VotesRepository = VotesRepository(
+            session=self.session
+        )
+
+        # catching ValidationError in exception_handler
+        instance: VoteCreate = VoteCreate(
+            user_id=user.id,
+            product_id=product_id,
+            name=name,
+            review=review,
+            stars=stars,
+        )
+        orm_model = await repository.get_orm_model_from_schema(instance=instance)
+
+        inspector = ValidRelationsInspector(
+            session=self.session,
+            **{"product_id": product_id}
+        )
+        result = await inspector.inspect()
+        if isinstance(result, ORJSONResponse):
+            return result
+        # product_orm = result["product_orm"] if "product_orm" in result else None
+
+        try:
+            await repository.create_one_empty(orm_model=orm_model)
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+        self.logger.info("Brand %r was successfully created" % orm_model)
+
+        return await self.get_one_complex(
+            id=orm_model.id
+        )

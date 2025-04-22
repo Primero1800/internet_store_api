@@ -27,7 +27,7 @@ class BaseVote(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     product_id: int
-    user_id: int
+    user_id: Optional[int]
 
     name: base_name_field
     review: base_review_field

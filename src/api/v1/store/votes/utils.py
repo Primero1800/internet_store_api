@@ -25,7 +25,11 @@ async def get_schema_from_orm(
         return product_short
 
     if maximized or 'user' in relations:
-        user_short = orm_model.user.to_dict() if orm_model.user else None
+        if orm_model.user:
+            from src.api.v1.users.utils import get_short_schema_from_orm as get_short_user_schema_from_orm
+            user_short = await get_short_user_schema_from_orm(orm_model.user)
+        else:
+            user_short = None
     if 'user' in relations:
         return user_short
 

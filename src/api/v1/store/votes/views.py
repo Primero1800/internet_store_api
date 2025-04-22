@@ -14,16 +14,22 @@ from fastapi_filter import FilterDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.scrypts.pagination import paginate_result
+from src.tools.stars_choices import StarsChoices
 from .service import VotesService
 from .schemas import (
     VoteRead,
     VoteShort,
 )
 from .filters import VoteFilter
-from src.api.v1.users.dependencies import current_superuser
+from src.api.v1.users.dependencies import current_superuser, current_user
 from src.core.config import DBConfigurer, RateLimiter
 from ..products.schemas import ProductShort
 from ...users.schemas import UserRead
+
+if TYPE_CHECKING:
+    from src.core.models import(
+        User,
+    )
 
 
 RELATIONS_LIST = [
@@ -166,4 +172,34 @@ async def get_one(
     return await service.get_one_complex(
         id=id,
         maximized=True
+    )
+
+
+# 7
+@router.post(
+    "",
+    dependencies=[Depends(current_user),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=VoteRead,
+)
+@RateLimiter.rate_limit()
+async def create_one(
+        request: Request,
+        product_id: int = Form(),
+        name: str = Form(),
+        review: Optional[str] = Form(default=None),
+        stars: StarsChoices = Form(default=StarsChoices.S5),
+        user: "User" = Depends(current_user),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+
+    service: VotesService = VotesService(
+        session=session
+    )
+    return await service.create_one(
+        user=user,
+        product_id=product_id,
+        name=name,
+        review=review,
+        stars=stars,
     )
