@@ -35,6 +35,8 @@ class ProductsRepository:
             self,
             id: int = None,
             slug: str = None,
+            maximized: bool = True,
+            relations: list = []
     ):
         stmt_select = select(Product)
         if id:
@@ -42,11 +44,19 @@ class ProductsRepository:
         else:
             stmt_filter = stmt_select.where(Product.slug == slug)
 
-        stmt = stmt_filter.options(
+        options_list = [
             joinedload(Product.images),
             joinedload(Product.brand).joinedload(Brand.image),
             joinedload(Product.rubrics).joinedload(Rubric.image),
-        )
+        ]
+
+        if maximized or "add_info" in relations:
+            options_list.append(joinedload(Product.add_info))
+
+        if maximized or "sale_info" in relations:
+            options_list.append(joinedload(Product.sale_info))
+
+        stmt = stmt_filter.options(*options_list)
 
         result: Result = await self.session.execute(stmt)
         orm_model: Product | None = result.unique().scalar_one_or_none()

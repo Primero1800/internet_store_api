@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import TYPE_CHECKING, List, Optional, Any
+from typing import TYPE_CHECKING, List, Optional, Any, Dict
 
 from fastapi import (
     APIRouter,
@@ -26,18 +26,64 @@ from .filters import ProductFilter
 from src.api.v1.users.dependencies import current_superuser
 from src.core.config import DBConfigurer, RateLimiter
 from . import dependencies as deps
-
+from ..additional_information.schemas import AddInfoShort
+from ..sale_information.schemas import SaleInfoShort
 
 if TYPE_CHECKING:
     from src.core.models import (
         Product,
-        Brand,
     )
+
+
+RELATIONS_LIST = [
+    {
+        "name": "additional information",
+        "usage": "/{id}/add_info",
+        "conditions": "public"
+    },
+    {
+        "name": "sale information",
+        "usage": "/{id}/sale-info",
+        "conditions": "private"
+    },
+]
 
 
 router = APIRouter()
 
 
+# 1
+@router.get(
+    "/routes",
+    status_code=status.HTTP_200_OK,
+    description="Getting all the routes of the current branch",
+)
+@RateLimiter.rate_limit()
+async def get_routes(
+        request: Request,
+) -> list[Dict[str, Any]]:
+    from src.scrypts.get_routes import get_routes as scrypt_get_routes
+    return await scrypt_get_routes(
+        application=router,
+        tags=False,
+        desc=True
+    )
+
+
+# 2
+@router.get(
+    "/relations",
+    status_code=status.HTTP_200_OK,
+    description="Getting the relations info for the branch items"
+)
+@RateLimiter.rate_limit()
+async def get_relations(
+        request: Request,
+) -> list[Dict[str, Any]]:
+    return RELATIONS_LIST
+
+
+# 3
 @router.get(
     "",
     response_model=List[ProductShort],
@@ -62,13 +108,15 @@ async def get_all(
     )
 
 
+# 4
 @router.get(
     "/full",
     dependencies=[Depends(current_superuser),],
     response_model=List[ProductRead],
     status_code=status.HTTP_200_OK,
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def get_all_full(
         request: Request,
         page: int = Query(1, gt=0),
@@ -87,6 +135,7 @@ async def get_all_full(
     )
 
 
+# 5_1
 @router.get(
     "/title/{slug}",
     status_code=status.HTTP_200_OK,
@@ -102,17 +151,20 @@ async def get_one_by_slug(
         session=session
     )
     return await service.get_one_complex(
-        slug=slug
+        slug=slug,
+        maximized=False,
     )
 
 
+# 5_2
 @router.get(
     "/{id}",
     dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_200_OK,
     response_model=ProductRead,
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def get_one(
         request: Request,
         id: int,
@@ -122,17 +174,20 @@ async def get_one(
         session=session
     )
     return await service.get_one_complex(
-        id=id
+        id=id,
+        maximized=False
     )
 
 
+# 6
 @router.post(
     "",
     dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_201_CREATED,
     response_model=ProductRead,
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def create_one(
         request: Request,
         title: str = Form(),
@@ -163,12 +218,14 @@ async def create_one(
     )
 
 
+# 7
 @router.delete(
     "/{id}",
     dependencies=[Depends(current_superuser), ],
     status_code=status.HTTP_204_NO_CONTENT,
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def delete_one(
         request: Request,
         orm_model: "Product" = Depends(deps.get_one_simple),
@@ -180,13 +237,15 @@ async def delete_one(
     return await service.delete_one(orm_model)
 
 
+# 8
 @router.put(
         "/{id}",
         dependencies=[Depends(current_superuser), ],
         status_code=status.HTTP_200_OK,
         response_model=ProductRead
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def put_one(
         request: Request,
         title: str = Form(),
@@ -218,13 +277,15 @@ async def put_one(
     )
 
 
+# 9
 @router.patch(
         "/{id}",
         dependencies=[Depends(current_superuser), ],
         status_code=status.HTTP_200_OK,
         response_model=ProductRead
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def patch_one(
         request: Request,
         title: Optional[str] = Form(default=None),
@@ -254,4 +315,48 @@ async def patch_one(
         rubric_ids=rubric_ids,
         image_schemas=images,
         is_partial=True
+    )
+
+
+# 11
+@router.get(
+    "/{id}/add-info",
+    status_code=status.HTTP_200_OK,
+)
+@RateLimiter.rate_limit()
+async def get_relations_add_info(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id,
+        maximized=False,
+        relations=['add_info',]
+    )
+
+
+# 11_2
+@router.get(
+    "/{id}/sale-info",
+    dependencies=[Depends(current_superuser,)],
+    status_code=status.HTTP_200_OK,
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_relations_sale_info(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id,
+        maximized=False,
+        relations=['sale_info',]
     )

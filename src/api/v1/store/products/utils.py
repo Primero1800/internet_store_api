@@ -11,13 +11,26 @@ if TYPE_CHECKING:
 
 
 async def get_schema_from_orm(
-    orm_model: "Product",
-    maximized: bool = False,
-) -> ProductRead:
+        orm_model: "Product",
+        maximized: bool = True,
+        relations: list | None = [],
+):
 
     # BRUTE FORCE VARIANT
 
-    short_schema: ProductShort = await get_short_schema_from_orm(orm_model=orm_model)
+    if maximized or "add_info" in relations:
+        from ..additional_information.utils import get_short_schema_from_orm as get_short_add_info_schema_from_orm
+        if "add_info" in relations:
+            if not orm_model.add_info:
+                return None
+            return await get_short_add_info_schema_from_orm(orm_model.add_info)
+
+    if maximized or "sale_info" in relations:
+        from ..sale_information.utils import get_short_schema_from_orm as get_short_sale_info_schema_from_orm
+        if "sale_info" in relations:
+            if not orm_model.sale_info:
+                return None
+            return await get_short_sale_info_schema_from_orm(orm_model.sale_info)
 
     rubrics_shorts = []
     from ..rubrics.utils import get_short_schema_from_orm as get_short_rubric_schema_from_orm
@@ -32,7 +45,7 @@ async def get_schema_from_orm(
     return ProductRead(
         **orm_model.to_dict(),
 
-        rubrics=rubrics_shorts,
+        rubrics=sorted(rubrics_shorts, key=lambda x: x.id),
         brand=brand_short,
         image_file=await get_main_image_file(orm_model),
         images=images,
