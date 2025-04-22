@@ -57,3 +57,63 @@ class VotesService:
         for orm_model in listed_orm_models:
             result.append(await utils.get_schema_from_orm(orm_model=orm_model))
         return result
+
+    async def get_one(
+            self,
+            id: int,
+            to_schema: bool = True
+    ):
+        repository: VotesRepository = VotesRepository(
+            session=self.session
+        )
+        try:
+            returned_orm_model = await repository.get_one(
+                id=id,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            await utils.get_short_schema_from_orm(returned_orm_model)
+        return returned_orm_model
+
+    async def get_one_complex(
+            self,
+            id: int = None,
+            maximized: bool = True,
+            relations: list | None = [],
+            to_schema: bool = True,
+    ):
+        repository: VotesRepository = VotesRepository(
+            session=self.session
+        )
+        try:
+            returned_orm_model = await repository.get_one_complex(
+                id=id,
+                maximized=maximized,
+                relations=relations,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            if not maximized and not relations:
+                return await utils.get_short_schema_from_orm(
+                    returned_orm_model
+                )
+            return await utils.get_schema_from_orm(
+                returned_orm_model,
+                maximized=maximized,
+                relations=relations,
+            )
+        return returned_orm_model
