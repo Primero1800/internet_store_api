@@ -16,6 +16,8 @@ __all__ = (
     "AdditionalInformation",
     "SaleInformation",
 
+    "Vote",
+
 
 )
 
@@ -28,3 +30,4 @@ from .store.product import Product, ProductImage
 from .store.rubric_product_association import RubricProductAssociation
 from .store.additional_information import AdditionalInformation
 from .store.sale_information import SaleInformation
+from .store.vote import Vote
