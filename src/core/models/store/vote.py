@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer, DateTime, func, CheckConstraint, String
+from sqlalchemy import ForeignKey, Integer, DateTime, func, CheckConstraint, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.models import Base
@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 class Vote(IDIntPkMixin, Base):
     __table_args__ = (
         CheckConstraint("length(name) > 2", name="check_name_min_length"),
+        UniqueConstraint('product_id', 'user_id', name='product_user')
     )
 
     product_id: Mapped[int] = mapped_column(
