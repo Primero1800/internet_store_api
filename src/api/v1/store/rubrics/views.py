@@ -122,10 +122,11 @@ async def get_all_full(
     )
 
 
+# 5_1
 @router.get(
     "/title/{slug}",
     status_code=status.HTTP_200_OK,
-    response_model=RubricRead,
+    response_model=RubricShort,
 )
 @RateLimiter.rate_limit()
 async def get_one_by_slug(
@@ -137,15 +138,16 @@ async def get_one_by_slug(
         session=session
     )
     return await service.get_one_complex(
-        slug=slug
+        slug=slug,
+        maximized=False
     )
 
 
+# 5_2
 @router.get(
     "/{id}",
-    dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_200_OK,
-    response_model=RubricRead,
+    response_model=RubricShort,
 )
 @RateLimiter.rate_limit()
 async def get_one(
@@ -157,7 +159,8 @@ async def get_one(
         session=session
     )
     return await service.get_one_complex(
-        id=id
+        id=id,
+        maximized=False
     )
 
 

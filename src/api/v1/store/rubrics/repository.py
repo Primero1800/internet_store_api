@@ -34,6 +34,8 @@ class RubricsRepository:
             self,
             id: int = None,
             slug: str = None,
+            maximized: bool = True,
+            relations: list = []
     ):
         stmt_select = select(Rubric)
         if id:
@@ -41,10 +43,14 @@ class RubricsRepository:
         else:
             stmt_filter = stmt_select.where(Rubric.slug == slug)
 
-        stmt = stmt_filter.options(
-            joinedload(Rubric.image),
-            joinedload(Rubric.products).joinedload(Product.images),
-        ).order_by(Rubric.id)
+        options_list = [
+            joinedload(Rubric.image)
+        ]
+
+        if maximized or "products" in relations:
+            options_list.append(joinedload(Rubric.products).joinedload(Product.images))
+
+        stmt = stmt_filter.options(*options_list)
 
         result: Result = await self.session.execute(stmt)
         orm_model: Rubric | None = result.unique().scalar_one_or_none()
