@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from fastapi_users.db import(
     SQLAlchemyBaseUserTable,
@@ -10,6 +11,11 @@ from sqlalchemy.orm import (
 
 from src.core.models import Base
 from src.core.models.mixins import IDIntPkMixin
+
+if TYPE_CHECKING:
+    from src.core.models import (
+        Vote,
+    )
 
 
 class User(Base, IDIntPkMixin, SQLAlchemyBaseUserTable[int]):
@@ -39,12 +45,10 @@ class User(Base, IDIntPkMixin, SQLAlchemyBaseUserTable[int]):
         nullable=True,
     )
 
-
-    # session: Mapped['Session'] = relationship(
-    #     "Session",
-    #     back_populates="user",
-    #     cascade="all, delete",
-    # )
+    votes: Mapped['Vote'] = relationship(
+        "Vote",
+        back_populates="user",
+    )
 
     def __str__(self):
         return (f"{self.__class__.__name__}("

@@ -20,6 +20,7 @@ if TYPE_CHECKING:
         Brand,
         AdditionalInformation,
         SaleInformation,
+        Vote,
     )
 
 
@@ -90,6 +91,12 @@ class Product(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
 
     sale_info: Mapped['SaleInformation'] = relationship(
         'SaleInformation',
+        back_populates='product',
+        cascade="all, delete"
+    )
+
+    votes: Mapped['Vote'] = relationship(
+        'Vote',
         back_populates='product',
         cascade="all, delete"
     )

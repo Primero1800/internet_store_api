@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, Integer, DateTime, func, CheckConstraint, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -9,6 +10,12 @@ from src.core.models.mixins import (
 )
 from src.core.config.database_config import DBConfigurer
 from src.tools.stars_choices import StarsChoices
+
+if TYPE_CHECKING:
+    from src.core.models import (
+        Product,
+        User,
+    )
 
 
 class Vote(IDIntPkMixin, Base):
@@ -23,8 +30,8 @@ class Vote(IDIntPkMixin, Base):
     )
 
     user_id: Mapped[int] = mapped_column(
-        ForeignKey(f"{DBConfigurer.utils.camel2snake('User')}.id", ondelete="CASCADE"),
-        nullable=False,
+        ForeignKey(f"{DBConfigurer.utils.camel2snake('User')}.id", ondelete="SET NULL"),
+        nullable=True,
         unique=False,
     )
 
@@ -46,4 +53,14 @@ class Vote(IDIntPkMixin, Base):
     stars: Mapped[StarsChoices] = mapped_column(
         Integer,
         default=StarsChoices.S5.value
+    )
+
+    product: Mapped['Product'] = relationship(
+        'Product',
+        back_populates='votes',
+    )
+
+    brand: Mapped['User'] = relationship(
+        'User',
+        back_populates='votes',
     )
