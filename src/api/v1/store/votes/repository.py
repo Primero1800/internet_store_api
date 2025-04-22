@@ -29,3 +29,73 @@ class VotesRepository:
     ):
         self.session = session
         self.logger = logging.getLogger(__name__)
+
+    async def get_one_complex(
+            self,
+            id: int = None,
+            maximized: bool = True,
+            relations: list = []
+    ):
+        stmt_filter = select(Vote).where(Vote.id == id)
+
+        options_list = [
+        ]
+
+        if maximized or "product" in relations:
+            options_list.append(joinedload(Vote.product).joinedload(Product.images))
+
+        if maximized or "user" in relations:
+            options_list.append(joinedload(Vote.user))
+
+        stmt = stmt_filter.options(*options_list)
+
+        result: Result = await self.session.execute(stmt)
+        orm_model: Vote | None = result.unique().scalar_one_or_none()
+
+        if not orm_model:
+            text_error = f"id={id}"
+            raise CustomException(
+                msg=f"{CLASS} with {text_error} not found"
+            )
+        return orm_model
+
+    async def get_one(
+            self,
+            id: int
+    ):
+        orm_model = await self.session.get(Vote, id)
+        if not orm_model:
+            text_error = f"id={id}"
+            raise CustomException(
+                msg=f"{CLASS} with {text_error} not found"
+            )
+        return orm_model
+
+    async def get_all(
+            self,
+            filter_model: "VoteFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(Vote))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.order_by(Vote.id)
+
+        result: Result = await self.session.execute(stmt)
+        return result.unique().scalars().all()
+
+    async def get_all_full(
+            self,
+            filter_model: "VoteFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(Vote))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.options(
+            joinedload(Vote.product).joinedload(Product.images),
+            joinedload(Vote.user),
+        ).order_by(Vote.id)
+
+        result: Result = await self.session.execute(stmt)
+        return result.unique().scalars().all()

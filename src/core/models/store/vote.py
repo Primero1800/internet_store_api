@@ -61,7 +61,7 @@ class Vote(IDIntPkMixin, Base):
         back_populates='votes',
     )
 
-    brand: Mapped['User'] = relationship(
+    user: Mapped['User'] = relationship(
         'User',
         back_populates='votes',
     )

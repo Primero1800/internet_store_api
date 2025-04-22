@@ -45,3 +45,15 @@ class VotesService:
             result.append(await utils.get_short_schema_from_orm(orm_model=orm_model))
         return result
 
+    async def get_all_full(
+            self,
+            filter_model: "VoteFilter"
+    ):
+        repository: VotesRepository = VotesRepository(
+            session=self.session
+        )
+        result = []
+        listed_orm_models = await repository.get_all_full(filter_model=filter_model)
+        for orm_model in listed_orm_models:
+            result.append(await utils.get_schema_from_orm(orm_model=orm_model))
+        return result

@@ -32,6 +32,11 @@ async def get_schema_from_orm(
                 return None
             return await get_short_sale_info_schema_from_orm(orm_model.sale_info)
 
+    if maximized or "votes" in relations:
+        from ..votes.utils import get_short_schema_from_orm as get_short_vote_schema_from_orm
+        if "votes" in relations:
+            return await get_short_vote_schema_from_orm(orm_model.votes)
+
     rubrics_shorts = []
     from ..rubrics.utils import get_short_schema_from_orm as get_short_rubric_schema_from_orm
     for rubric in orm_model.rubrics:

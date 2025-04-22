@@ -45,6 +45,11 @@ RELATIONS_LIST = [
         "usage": "/{id}/sale-info",
         "conditions": "private"
     },
+    {
+        "name": "votes",
+        "usage": "/{id}/votes",
+        "conditions": "public"
+    },
 ]
 
 
@@ -358,4 +363,26 @@ async def get_relations_sale_info(
         id=id,
         maximized=False,
         relations=['sale_info',]
+    )
+
+
+# 11_3
+@router.get(
+    "/{id}/votes",
+    dependencies=[Depends(current_superuser,)],
+    status_code=status.HTTP_200_OK,
+)
+@RateLimiter.rate_limit()
+async def get_relations_votes(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id,
+        maximized=False,
+        relations=['votes',]
     )

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Literal, Optional, Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -34,8 +34,13 @@ class BaseVote(BaseModel):
     stars: base_stars_field
 
 
-class VoteRead(BaseVote):
+class VoteShort(BaseVote):
     published: datetime
+
+
+class VoteRead(VoteShort):
+    product: Optional[Any]
+    user: Optional[Any]
 
 
 class VoteCreate(BaseVote):
