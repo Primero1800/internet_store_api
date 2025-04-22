@@ -244,3 +244,28 @@ async def edit_one_partial(
         rating_summary=rating_summary,
         is_partial=True,
     )
+
+
+# 10
+@router.get(
+    "/{product_id}/product",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=ProductShort,
+    description="Get the relations product of sale info by product_id"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_one(
+        request: Request,
+        product_id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: SaleInfoService = SaleInfoService(
+        session=session
+    )
+    return await service.get_one_complex(
+        product_id=product_id,
+        maximized=False,
+        relations=['product']
+    )
