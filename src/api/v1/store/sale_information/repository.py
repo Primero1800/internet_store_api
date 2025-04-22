@@ -84,14 +84,12 @@ class SaleInfoRepository:
             filter_model: "SaleInfoFilterComplex",
     ) -> Sequence:
 
-        query_filter = filter_model.filter(
-            select(SaleInformation).options(
-                joinedload(SaleInformation.product).joinedload(Product.images)
-            )
-        )
+        query_filter = filter_model.filter(select(SaleInformation).outerjoin(Product))
         stmt_filtered = filter_model.sort(query_filter)
 
-        stmt = stmt_filtered.order_by(SaleInformation.product_id)
+        stmt = stmt_filtered.options(
+            joinedload(SaleInformation.product).joinedload(Product.images)
+        ).order_by(SaleInformation.product_id)
 
         result: Result = await self.session.execute(stmt)
         return result.unique().scalars().all()
