@@ -86,6 +86,9 @@ class BrandsService:
             self,
             id: int = None,
             slug: str = None,
+            maximized: bool = True,
+            relations: list | None = [],
+            to_schema: bool = True,
     ):
         repository: BrandsRepository = BrandsRepository(
             session=self.session
@@ -94,6 +97,8 @@ class BrandsService:
             returned_orm_model = await repository.get_one_complex(
                 id=id,
                 slug=slug,
+                maximized=maximized,
+                relations=relations,
             )
         except CustomException as exc:
             return ORJSONResponse(
@@ -103,8 +108,17 @@ class BrandsService:
                     "detail": exc.msg,
                 }
             )
-
-        return await utils.get_schema_from_orm(returned_orm_model)
+        if to_schema:
+            if not maximized and not relations:
+                return await utils.get_short_schema_from_orm(
+                    returned_orm_model
+                )
+            return await utils.get_schema_from_orm(
+                returned_orm_model,
+                maximized=maximized,
+                relations=relations,
+            )
+        return returned_orm_model
 
     async def create_one(
             self,

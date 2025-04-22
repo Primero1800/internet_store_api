@@ -33,6 +33,8 @@ class BrandsRepository:
             self,
             id: int = None,
             slug: str = None,
+            maximized: bool = True,
+            relations: list = []
     ):
         stmt_select = select(Brand)
         if id:
@@ -40,10 +42,14 @@ class BrandsRepository:
         else:
             stmt_filter = stmt_select.where(Brand.slug == slug)
 
-        stmt = stmt_filter.options(
-            joinedload(Brand.image),
-            joinedload(Brand.products).joinedload(Product.images),
-        ).order_by(Brand.id)
+        options_list = [
+            joinedload(Brand.image)
+        ]
+
+        if maximized or "products" in relations:
+            options_list.append(joinedload(Brand.products).joinedload(Product.images))
+
+        stmt = stmt_filter.options(*options_list)
 
         result: Result = await self.session.execute(stmt)
         orm_model: Brand | None = result.unique().scalar_one_or_none()
