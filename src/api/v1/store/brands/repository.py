@@ -93,7 +93,7 @@ class BrandsRepository:
             filter_model: "BrandFilter",
     ) -> Sequence:
 
-        query_filter = filter_model.filter(select(Brand).outerjoin(Product))
+        query_filter = filter_model.filter(select(Brand).outerjoin(Product, Brand.products))
         stmt_filtered = filter_model.sort(query_filter)
 
         stmt = stmt_filtered.options(

@@ -88,7 +88,7 @@ class RubricsRepository:
             filter_model: "RubricFilter",
     ) -> Sequence:
 
-        query_filter = filter_model.filter(select(Rubric))
+        query_filter = filter_model.filter(select(Rubric).outerjoin(Product, Rubric.products))
         stmt_filtered = filter_model.sort(query_filter)
 
         stmt = stmt_filtered.options(

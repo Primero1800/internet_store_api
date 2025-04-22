@@ -1,4 +1,4 @@
-from typing import List, TYPE_CHECKING, Optional
+from typing import List, TYPE_CHECKING, Optional, Dict, Any
 
 from fastapi import (
     APIRouter,
@@ -20,16 +20,58 @@ from .schemas import (
     RubricShort,
     RubricRead,
 )
-from .filters import RubricFilter
+from .filters import RubricFilter, RubricFilterComplex
 from ...users.dependencies import current_superuser
 from . import dependencies as deps
 
 if TYPE_CHECKING:
     from src.core.models import Rubric
 
+
+RELATIONS_LIST = [
+    {
+        "name": "products",
+        "usage": "/{id}/products",
+        "conditions": "public"
+    },
+]
+
+
 router = APIRouter()
 
 
+# 1
+@router.get(
+    "/routes",
+    status_code=status.HTTP_200_OK,
+    description="Getting all the routes of the current branch",
+)
+@RateLimiter.rate_limit()
+async def get_routes(
+        request: Request,
+) -> list[Dict[str, Any]]:
+    from src.scrypts.get_routes import get_routes as scrypt_get_routes
+    return await scrypt_get_routes(
+        application=router,
+        tags=False,
+        desc=True
+    )
+
+
+# 2
+@router.get(
+    "/relations",
+    status_code=status.HTTP_200_OK,
+    description="Getting the relations info for the branch items"
+)
+@RateLimiter.rate_limit()
+async def get_relations(
+        request: Request,
+) -> list[Dict[str, Any]]:
+    return RELATIONS_LIST
+
+
+# 3
 @router.get(
     "",
     response_model=List[RubricShort],
@@ -54,6 +96,7 @@ async def get_all(
     )
 
 
+# 4
 @router.get(
     "/full",
     dependencies=[Depends(current_superuser),],
@@ -65,7 +108,7 @@ async def get_all_full(
         request: Request,
         page: int = Query(1, gt=0),
         size: int = Query(10, gt=0),
-        filter_model: RubricFilter = FilterDepends(RubricFilter),
+        filter_model: RubricFilter = FilterDepends(RubricFilterComplex),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ):
     service: RubricsService = RubricsService(
