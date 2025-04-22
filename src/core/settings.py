@@ -181,6 +181,9 @@ class Tags(CustomSettings):
     SALE_INFO_PREFIX: str
     SALE_INFO_TAG: str
 
+    VOTES_PREFIX: str
+    VOTES_TAG: str
+
 
 class Users(CustomSettings):
     USERS_PASSWORD_MIN_LENGTH: int
