@@ -7,6 +7,7 @@ from .rubrics import router as rubrics_router
 from .products import router as products_router
 from .additional_information import router as add_info_router
 from .sale_information import router as sale_info_router
+from .votes import router as votes_router
 
 
 router = APIRouter()
@@ -43,4 +44,11 @@ router.include_router(
     sale_info_router,
     prefix=settings.tags.SALE_INFO_PREFIX,
     tags=[settings.tags.SALE_INFO_TAG,],
+)
+
+
+router.include_router(
+    votes_router,
+    prefix=settings.tags.VOTES_PREFIX,
+    tags=[settings.tags.VOTES_TAG,],
 )
