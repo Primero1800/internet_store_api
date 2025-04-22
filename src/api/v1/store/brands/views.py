@@ -19,7 +19,7 @@ from .schemas import (
     BrandRead,
     BrandShort,
 )
-from .filters import BrandFilter
+from .filters import BrandFilter, BrandFilterComplex
 from src.api.v1.users.dependencies import current_superuser
 from src.core.config import DBConfigurer, RateLimiter
 from . import dependencies as deps
@@ -110,7 +110,7 @@ async def get_all_full(
         request: Request,
         page: int = Query(1, gt=0),
         size: int = Query(10, gt=0),
-        filter_model: BrandFilter = FilterDepends(BrandFilter),
+        filter_model: BrandFilter = FilterDepends(BrandFilterComplex),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ):
     service: BrandsService = BrandsService(
