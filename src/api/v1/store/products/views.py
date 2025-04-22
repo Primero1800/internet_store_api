@@ -26,8 +26,7 @@ from .filters import ProductFilter
 from src.api.v1.users.dependencies import current_superuser
 from src.core.config import DBConfigurer, RateLimiter
 from . import dependencies as deps
-from ..additional_information.schemas import AddInfoShort
-from ..sale_information.schemas import SaleInfoShort
+
 
 if TYPE_CHECKING:
     from src.core.models import (
