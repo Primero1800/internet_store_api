@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import DBConfigurer, RateLimiter
 from src.scrypts.pagination import paginate_result
+from src.tools.stars_choices import StarsChoices
 from .schemas import (
     SaleInfoShort,
     SaleInfoRead,
@@ -292,3 +293,34 @@ async def get_one_or_create(
     return await service.get_or_create(
         product_id=product_id,
     )
+
+
+# 12
+@router.post(
+    "/do-vote/",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=list[SaleInfoShort],
+    description="Change rating according votes"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def do_vote(
+        request: Request,
+        product_id_vote_add: Optional[int] = Form(default=None),
+        vote_add: Optional[StarsChoices] = Form(default=None),
+        product_id_vote_del: Optional[int] = Form(default=None),
+        vote_del: Optional[StarsChoices] = Form(default=None),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: SaleInfoService = SaleInfoService(
+        session=session
+    )
+    return await service.do_vote(
+        product_id_vote_add=product_id_vote_add,
+        vote_add=vote_add,
+        product_id_vote_del=product_id_vote_del,
+        vote_del=vote_del,
+    )
+
+

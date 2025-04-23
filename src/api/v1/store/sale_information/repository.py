@@ -137,8 +137,10 @@ class SaleInfoRepository:
             is_partial: bool = False
     ):
         if is_partial:
-            instance.rating_summary = instance.rating_summary or orm_model.rating_summary
-            instance.voted_count = instance.voted_count or orm_model.voted_count
+            instance.rating_summary = instance.rating_summary if isinstance(instance.rating_summary, int) \
+                else orm_model.rating_summary
+            instance.voted_count = instance.voted_count if isinstance(instance.voted_count, int) \
+                else orm_model.voted_count
         try:
             for key, val in instance.model_dump(
                     exclude_unset=is_partial,

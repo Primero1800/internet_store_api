@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -60,3 +60,22 @@ async def get_or_create(
         session=session
     )
     return await service.get_or_create(product_id)
+
+
+async def do_vote(
+        session: AsyncSession,
+        product_id_vote_add: Optional[int] = None,
+        vote_add: Optional[int] = None,
+        product_id_vote_del: Optional[int] = None,
+        vote_del: Optional[int] = None,
+):
+    from .service import SaleInfoService
+    service = SaleInfoService(
+        session=session
+    )
+    return await service.do_vote(
+        product_id_vote_add=product_id_vote_add,
+        vote_add=vote_add,
+        product_id_vote_del=product_id_vote_del,
+        vote_del=vote_del,
+    )

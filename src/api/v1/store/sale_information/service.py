@@ -1,7 +1,7 @@
 import logging
-from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
+from fastapi import status
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -120,6 +120,7 @@ class SaleInfoService:
     async def create_one(
             self,
             product_id: int,
+            to_schema: Optional[bool] = True,
     ):
         repository: SaleInfoRepository = SaleInfoRepository(
             session=self.session
@@ -157,7 +158,8 @@ class SaleInfoService:
         self.logger.info("%s for Product id=%s was successfully created" % (CLASS, orm_model.product_id))
 
         return await self.get_one_complex(
-            product_id=orm_model.product_id
+            product_id=orm_model.product_id,
+            to_schema=to_schema,
         )
 
     async def delete_one(
@@ -185,11 +187,12 @@ class SaleInfoService:
             self,
             product_id: int,
             orm_model: "SaleInformation",
-            viewed_count: Optional[int],
-            sold_count: Optional[int],
-            voted_count: Optional[int],
-            rating_summary: Optional[int],
-            is_partial: bool = False
+            viewed_count: Optional[int] = None,
+            sold_count: Optional[int] = None,
+            voted_count: Optional[int] = None,
+            rating_summary: Optional[int] = None,
+            is_partial: bool = False,
+            to_schema: Optional[bool] = True
     ):
         if orm_model and isinstance(orm_model, ORJSONResponse):
             return orm_model
@@ -239,7 +242,8 @@ class SaleInfoService:
         self.logger.info("AdditionalInformation for Product id=%s was successfully edited" % orm_model.product_id)
 
         return await self.get_one_complex(
-            product_id=orm_model.product_id
+            product_id=orm_model.product_id,
+            to_schema=to_schema,
         )
 
     async def get_or_create(
@@ -254,5 +258,106 @@ class SaleInfoService:
         if isinstance(sa_orm_model, ORJSONResponse):
             self.logger.info('No %r bound with product_id=%s in database' % (CLASS, product_id))
             self.logger.info('Creating %r bound with product_id=%s in database' % (CLASS, product_id))
-            sa_orm_model = await self.create_one(product_id=product_id)
+            sa_orm_model = await self.create_one(
+                product_id=product_id,
+                to_schema=False,
+            )
         return sa_orm_model
+
+    async def do_vote(
+            self,
+            product_id_vote_add: Optional[int] = None,
+            vote_add: Optional[int] = None,
+            product_id_vote_del: Optional[int] = None,
+            vote_del: Optional[int] = None,
+    ):
+        if product_id_vote_add is None and product_id_vote_del is None:
+            return []
+
+        # CASE IF NO MORE VOTES, JUST EDIT OLD ONE
+        if product_id_vote_add == product_id_vote_del:
+            if vote_add is None or vote_del is None:
+                return ORJSONResponse(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    content={
+                        "message": Errors.HANDLER_MESSAGE,
+                        "detail": "Values 'votes' both must be valid integers",
+                    }
+                )
+            delta = vote_add - vote_del
+            if not delta:
+                return []
+            orm_model = await self.get_or_create(
+                product_id=product_id_vote_add,
+            )
+            if isinstance(orm_model, ORJSONResponse):
+                return orm_model
+            orm_model = await self.edit_one(
+                product_id=product_id_vote_add,
+                is_partial=True,
+                orm_model=orm_model,
+                rating_summary=orm_model.rating_summary + delta,
+            )
+            if isinstance(orm_model, ORJSONResponse):
+                return orm_model
+            self.logger.info('Rating_summary was successfully edited')
+            return [orm_model]
+
+        orm_models = []
+
+        if product_id_vote_add:
+            if vote_add is None :
+                self.logger.error("Error while changing rating: Value 'vote_add' must be valid integer")
+                return ORJSONResponse(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    content={
+                        "message": Errors.HANDLER_MESSAGE,
+                        "detail": "Value 'vote_add' must be valid integer",
+                    }
+                )
+            orm_model = await self.get_or_create(
+                product_id=product_id_vote_add,
+            )
+            if isinstance(orm_model, ORJSONResponse):
+                return orm_model
+            orm_model = await self.edit_one(
+                product_id=product_id_vote_add,
+                is_partial=True,
+                orm_model=orm_model,
+                rating_summary=orm_model.rating_summary + vote_add,
+                voted_count=orm_model.voted_count + 1
+            )
+            if isinstance(orm_model, ORJSONResponse):
+                return orm_model
+            self.logger.info('Rating_summary was successfully increased')
+            orm_models.append(orm_model)
+
+        if product_id_vote_del:
+            if vote_del is None :
+                return ORJSONResponse(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    content={
+                        "message": Errors.HANDLER_MESSAGE,
+                        "detail": "Value 'vote_add' must be valid integer",
+                    }
+                )
+            orm_model = await self.get_or_create(
+                product_id=product_id_vote_del,
+            )
+            if isinstance(orm_model, ORJSONResponse):
+                return orm_model
+            print('OOOOOOOORRRRRRRRRMMMMMM ', orm_model.voted_count, orm_model.rating_summary)
+            orm_model = await self.edit_one(
+                product_id=product_id_vote_del,
+                is_partial=True,
+                orm_model=orm_model,
+                rating_summary=orm_model.rating_summary - vote_del,
+                voted_count=orm_model.voted_count - 1
+            )
+            if isinstance(orm_model, ORJSONResponse):
+                return orm_model
+            self.logger.info('Rating_summary was successfully decreased')
+            orm_models.append(orm_model)
+
+        return orm_models
+
