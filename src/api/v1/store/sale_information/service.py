@@ -241,3 +241,18 @@ class SaleInfoService:
         return await self.get_one_complex(
             product_id=orm_model.product_id
         )
+
+    async def get_or_create(
+            self,
+            product_id: int
+    ):
+        self.logger.info('Getting %r bound with product_id=%s from database' % (CLASS, product_id))
+        sa_orm_model = await self.get_one(
+            product_id=product_id,
+            to_schema=False
+        )
+        if isinstance(sa_orm_model, ORJSONResponse):
+            self.logger.info('No %r bound with product_id=%s in database' % (CLASS, product_id))
+            self.logger.info('Creating %r bound with product_id=%s in database' % (CLASS, product_id))
+            sa_orm_model = await self.create_one(product_id=product_id)
+        return sa_orm_model

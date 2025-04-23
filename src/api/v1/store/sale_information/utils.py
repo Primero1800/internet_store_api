@@ -1,5 +1,8 @@
 from typing import TYPE_CHECKING, Any
 
+from fastapi.responses import ORJSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from ..products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
 
 from .schemas import (
@@ -11,6 +14,9 @@ if TYPE_CHECKING:
     from src.core.models import (
         SaleInformation,
     )
+
+
+CLASS = "SaleInformation"
 
 
 async def get_short_schema_from_orm(
@@ -43,3 +49,14 @@ async def get_schema_from_orm(
         **short_schema.model_dump(),
         product=product_short
     )
+
+
+async def get_or_create(
+        product_id: int,
+        session: AsyncSession,
+) -> "SaleInformation":
+    from .service import SaleInfoService
+    service = SaleInfoService(
+        session=session
+    )
+    return await service.get_or_create(product_id)

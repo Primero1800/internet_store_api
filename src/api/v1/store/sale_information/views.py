@@ -269,3 +269,26 @@ async def get_one(
         maximized=False,
         relations=['product']
     )
+
+
+# 11
+@router.post(
+    "/get-or-create/{product_id}",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=SaleInfoShort,
+    description="Get the sale info by product_id or creating empty one if not exists"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_one_or_create(
+        request: Request,
+        product_id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: SaleInfoService = SaleInfoService(
+        session=session
+    )
+    return await service.get_or_create(
+        product_id=product_id,
+    )

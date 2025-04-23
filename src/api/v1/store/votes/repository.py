@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.core.models import Vote, Product, ProductImage, User
+from src.core.models import Vote, Product
 from src.tools.exceptions import CustomException
 from .exceptions import Errors
 
