@@ -226,3 +226,64 @@ async def delete_one(
         orm_model=orm_model,
         user=user
     )
+
+
+# 9
+@router.put(
+        "/{id}",
+        status_code=status.HTTP_200_OK,
+        response_model=VoteRead
+)
+@RateLimiter.rate_limit()
+async def put_one(
+        request: Request,
+        user: "User" = Depends(current_user),
+        orm_model: "Vote" = Depends(deps.get_one_simple),
+        product_id: int = Form(),
+        name: str = Form(),
+        review: Optional[str] = Form(default=None),
+        stars: StarsChoices = Form(default=StarsChoices.S5),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: VotesService = VotesService(
+        session=session
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        user=user,
+        product_id=product_id,
+        name=name,
+        review=review,
+        stars=stars,
+    )
+
+
+# 10
+@router.patch(
+        "/{id}",
+        status_code=status.HTTP_200_OK,
+        response_model=VoteRead
+)
+@RateLimiter.rate_limit()
+async def put_one(
+        request: Request,
+        user: "User" = Depends(current_user),
+        orm_model: "Vote" = Depends(deps.get_one_simple),
+        product_id: Optional[int] = Form(default=None),
+        name: Optional[str] = Form(default=None),
+        review: Optional[str] = Form(default=None),
+        stars: Optional[StarsChoices] = Form(default=None),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: VotesService = VotesService(
+        session=session
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        user=user,
+        product_id=product_id,
+        name=name,
+        review=review,
+        stars=stars,
+        is_partial=True
+    )

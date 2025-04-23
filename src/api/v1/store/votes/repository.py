@@ -135,3 +135,27 @@ class VotesRepository:
             raise CustomException(
                 msg="Error while deleting %r from database" % orm_model
             )
+
+    async def edit_one_empty(
+            self,
+            instance:  Union["VoteUpdate", "VotePartialUpdate"],
+            orm_model: Vote,
+            is_partial: bool = False
+    ):
+        for key, val in instance.model_dump(
+                exclude_unset=is_partial,
+                exclude_none=is_partial,
+        ).items():
+            setattr(orm_model, key, val)
+        product_id = orm_model.product_id
+        user_id = orm_model.user_id
+
+        self.logger.warning(f"Editing %r in database" % orm_model)
+        try:
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                msg=Errors.already_exists_titled(user_id, product_id)
+            )

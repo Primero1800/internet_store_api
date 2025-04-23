@@ -163,7 +163,7 @@ class VotesService:
                 }
             )
 
-        self.logger.info("Brand %r was successfully created" % orm_model)
+        self.logger.info("%s %r was successfully created" % (CLASS, orm_model))
 
         return await self.get_one_complex(
             id=orm_model.id
@@ -195,3 +195,72 @@ class VotesService:
                     "detail": exc.msg,
                 }
             )
+
+    async def edit_one(
+            self,
+            orm_model: "Vote",
+            user: "User",
+            product_id: int,
+            name: str,
+            review: str,
+            stars: int,
+            is_partial: bool = False
+    ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+        repository: VotesRepository = VotesRepository(
+            session=self.session,
+        )
+
+        # catching ValidationError in exception_handler
+        updating_dictionary = {
+            "user_id": user.id,
+            "product_id": product_id,
+            "name": name,
+            "review": review,
+            "stars": stars,
+        }
+        if is_partial:
+            instance: VotePartialUpdate = VotePartialUpdate(**updating_dictionary)
+        else:
+            instance: VoteUpdate = VoteUpdate(**updating_dictionary)
+
+        # inspecting if user is authorized to edit item
+        if not user.is_superuser and user.id != orm_model.user_id:
+            return ORJSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": Errors.NO_RIGHTS,
+                }
+            )
+
+        inspector = ValidRelationsInspector(
+            session=self.session,
+            **{"product_id": product_id}
+        )
+        result = await inspector.inspect()
+        if isinstance(result, ORJSONResponse):
+            return result
+        # product_orm = result["product_orm"] if "product_orm" in result else None
+
+        try:
+            await repository.edit_one_empty(
+                instance=instance,
+                orm_model=orm_model,
+                is_partial=is_partial,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+        self.logger.info("%s %r was successfully edited" % (CLASS, orm_model))
+
+        return await self.get_one_complex(
+            id=orm_model.id
+        )
