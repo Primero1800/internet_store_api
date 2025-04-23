@@ -16,6 +16,8 @@ from .schemas import (
 from .exceptions import Errors
 from .validators import ValidRelationsInspector
 
+from ..sale_information import utils as sale_info_utils
+
 if TYPE_CHECKING:
     from src.core.models import (
         Vote,
@@ -152,6 +154,12 @@ class VotesService:
             return result
         # product_orm = result["product_orm"] if "product_orm" in result else None
 
+        # storing data to recount rating in SaleInformation table
+        data_to_restore_rating = {
+            "product_id_vote_add": instance.product_id or orm_model.product_id,
+            "vote_add": instance.stars or orm_model.stars,
+        }
+
         try:
             await repository.create_one_empty(orm_model=orm_model)
         except CustomException as exc:
@@ -164,6 +172,13 @@ class VotesService:
             )
 
         self.logger.info("%s %r was successfully created" % (CLASS, orm_model))
+
+        # Editing rating according 'data_restore_rating'
+        await sale_info_utils.do_vote(
+            session=self.session,
+            **data_to_restore_rating,
+        )
+        self.logger.info("Rating was successfully edited")
 
         return await self.get_one_complex(
             id=orm_model.id
@@ -180,13 +195,20 @@ class VotesService:
         repository: VotesRepository = VotesRepository(
             session=self.session
         )
+
+        # storing data to recount rating in SaleInformation table
+        data_to_restore_rating = {
+            "product_id_vote_del": orm_model.product_id,
+            "vote_del": orm_model.stars
+        }
+
         try:
             if not user.is_superuser and user.id != orm_model.user_id:
                 raise CustomException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     msg=Errors.NO_RIGHTS
                 )
-            return await repository.delete_one(orm_model=orm_model)
+            result = await repository.delete_one(orm_model=orm_model)
         except CustomException as exc:
             return ORJSONResponse(
                 status_code=exc.status_code,
@@ -195,6 +217,14 @@ class VotesService:
                     "detail": exc.msg,
                 }
             )
+
+        # Editing rating according 'data_restore_rating'
+        await sale_info_utils.do_vote(
+            session=self.session,
+            **data_to_restore_rating,
+        )
+        self.logger.info("Rating was successfully edited")
+        return result
 
     async def edit_one(
             self,
@@ -244,6 +274,14 @@ class VotesService:
             return result
         # product_orm = result["product_orm"] if "product_orm" in result else None
 
+        # storing data to recount rating in SaleInformation table
+        data_to_restore_rating = {
+            "product_id_vote_add": instance.product_id or orm_model.product_id,
+            "vote_add": instance.stars or orm_model.stars,
+            "product_id_vote_del": orm_model.product_id,
+            "vote_del": orm_model.stars
+        }
+
         try:
             await repository.edit_one_empty(
                 instance=instance,
@@ -260,6 +298,13 @@ class VotesService:
             )
 
         self.logger.info("%s %r was successfully edited" % (CLASS, orm_model))
+
+        # Editing rating according 'data_restore_rating'
+        await sale_info_utils.do_vote(
+            session=self.session,
+            **data_to_restore_rating,
+        )
+        self.logger.info("Rating was successfully edited")
 
         return await self.get_one_complex(
             id=orm_model.id
