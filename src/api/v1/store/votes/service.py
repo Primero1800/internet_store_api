@@ -168,3 +168,30 @@ class VotesService:
         return await self.get_one_complex(
             id=orm_model.id
         )
+
+    async def delete_one(
+            self,
+            orm_model: "Vote",
+            user: "User",
+    ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
+        repository: VotesRepository = VotesRepository(
+            session=self.session
+        )
+        try:
+            if not user.is_superuser and user.id != orm_model.user_id:
+                raise CustomException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    msg=Errors.NO_RIGHTS
+                )
+            return await repository.delete_one(orm_model=orm_model)
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )

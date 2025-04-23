@@ -25,10 +25,12 @@ from src.api.v1.users.dependencies import current_superuser, current_user
 from src.core.config import DBConfigurer, RateLimiter
 from ..products.schemas import ProductShort
 from ...users.schemas import UserRead
+from . import dependencies as deps
 
 if TYPE_CHECKING:
     from src.core.models import(
         User,
+        Vote,
     )
 
 
@@ -202,4 +204,25 @@ async def create_one(
         name=name,
         review=review,
         stars=stars,
+    )
+
+
+# 8
+@router.delete(
+    "/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+@RateLimiter.rate_limit()
+async def delete_one(
+        request: Request,
+        user: "User" = Depends(current_user),
+        orm_model: "Vote" = Depends(deps.get_one_simple),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: VotesService = VotesService(
+        session=session
+    )
+    return await service.delete_one(
+        orm_model=orm_model,
+        user=user
     )

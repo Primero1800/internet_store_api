@@ -35,6 +35,7 @@ class BaseVote(BaseModel):
 
 
 class VoteShort(BaseVote):
+    id: int
     published: datetime
 
 

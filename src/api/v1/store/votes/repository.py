@@ -121,3 +121,17 @@ class VotesRepository:
             raise CustomException(
                 msg=Errors.already_exists_titled(orm_model.user_id, orm_model.product_id)
             )
+
+    async def delete_one(
+            self,
+            orm_model: Vote,
+    ) -> None:
+        try:
+            self.logger.info(f"Deleting %r from database" % orm_model)
+            await self.session.delete(orm_model)
+            await self.session.commit()
+        except IntegrityError as exc:
+            self.logger.error("Error while deleting data from database", exc_info=exc)
+            raise CustomException(
+                msg="Error while deleting %r from database" % orm_model
+            )

@@ -8,6 +8,8 @@ class Errors:
 
     ALREADY_EXISTS = "Vote already exists"
 
+    NO_RIGHTS = "You are not authorized for this operation"
+
     @staticmethod
     def already_exists_titled(user_id: int, product_id: int):
         return "Vote user_id=%s and product_id=%s already exists" % (user_id, product_id)
