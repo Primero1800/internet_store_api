@@ -95,7 +95,7 @@ class Product(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
         cascade="all, delete"
     )
 
-    votes: Mapped['Vote'] = relationship(
+    votes: Mapped[list['Vote']] = relationship(
         'Vote',
         back_populates='product',
         cascade="all, delete"

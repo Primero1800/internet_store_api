@@ -137,6 +137,7 @@ class ProductsRepository:
             joinedload(Product.images),
             joinedload(Product.brand).joinedload(Brand.image),
             joinedload(Product.rubrics).joinedload(Rubric.image),
+            joinedload(Product.votes),
         ).order_by(Product.id)
 
         result: Result = await self.session.execute(stmt)
