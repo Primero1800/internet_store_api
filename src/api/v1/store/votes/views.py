@@ -24,7 +24,7 @@ from .filters import VoteFilter
 from src.api.v1.users.dependencies import current_superuser, current_user
 from src.core.config import DBConfigurer, RateLimiter
 from ..products.schemas import ProductShort
-from ...users.schemas import UserRead
+from ...users.schemas import UserPublic, UserPublicExtended
 from . import dependencies as deps
 
 if TYPE_CHECKING:
@@ -286,4 +286,50 @@ async def put_one(
         review=review,
         stars=stars,
         is_partial=True
+    )
+
+
+# 11_1
+@router.get(
+    "/{id}/user",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_200_OK,
+    response_model=UserPublicExtended,
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_relations_user(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: VotesService = VotesService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id,
+        maximized=False,
+        relations=['user',]
+    )
+
+
+# 11_2
+@router.get(
+    "/{id}/product",
+    status_code=status.HTTP_200_OK,
+    response_model=ProductShort,
+)
+@RateLimiter.rate_limit()
+async def get_relations_product(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: VotesService = VotesService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id,
+        maximized=False,
+        relations=['product',]
     )
