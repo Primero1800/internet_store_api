@@ -181,3 +181,58 @@ class UserToolsService:
                     "detail": exc.msg,
                 }
             )
+
+    async def edit_one(
+            self,
+            user_id: int,
+            orm_model: "UserTools",
+            is_partial: bool = False,
+            to_schema: Optional[bool] = True
+    ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
+        repository: UserToolsRepository = UserToolsRepository(
+            session=self.session
+        )
+        self.repository = repository
+
+        # Expecting if Update or PartialUpdate data valid
+        # catching ValidationError in exception_handler
+        updating_dictionary = {
+            "user_id": user_id,
+        }
+        if is_partial:
+            return
+        else:
+            instance: UserToolsUpdate = UserToolsUpdate(**updating_dictionary)
+
+        inspector = ValidRelationsInspector(
+            session=self.session,
+            **{"user_id": user_id}
+        )
+        result = await inspector.inspect()
+        if isinstance(result, ORJSONResponse):
+            return result
+
+        try:
+            await repository.edit_one(
+                orm_model=orm_model,
+                instance=instance,
+                is_partial=is_partial,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+        self.logger.info("%s for User id=%s was successfully edited" % (CLASS, orm_model.user_id))
+
+        return await self.get_one_complex(
+            user_id=orm_model.user_id,
+            to_schema=to_schema,
+        )

@@ -57,5 +57,5 @@ class UserToolsCreate(BaseUserTools):
     comparison: list[Any] = []
 
 
-class UserToolsUpdate(BaseUserTools):
+class UserToolsUpdate(UserToolsCreate):
     pass

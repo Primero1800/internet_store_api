@@ -126,3 +126,27 @@ class UserToolsRepository:
             raise CustomException(
                 msg="Error while deleting %r from database" % orm_model
             )
+
+    async def edit_one(
+            self,
+            instance:  "UserToolsUpdate",
+            orm_model: UserTools,
+            is_partial: bool = False
+    ):
+
+        for key, val in instance.model_dump(
+                exclude_unset=is_partial,
+                exclude_none=is_partial,
+        ).items():
+            setattr(orm_model, key, val)
+
+        self.logger.warning(f"Editing %r in database" % orm_model)
+        try:
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+            self.logger.info("%r %r was successfully edited" % (CLASS, orm_model))
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                msg=Errors.already_exists_user_id(instance.user_id)
+            )

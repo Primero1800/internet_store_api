@@ -222,3 +222,29 @@ async def delete_one(
         session=session
     )
     return await service.delete_one(orm_model)
+
+
+# 10
+@router.put(
+    "",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsRead,
+    description="Edit item for existing product (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def edit_onel(
+        request: Request,
+        orm_model: "UserTools" = Depends(deps.get_one),
+        user_id: int = Form(gt=0),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> UserToolsRead:
+
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        user_id=user_id,
+    )
