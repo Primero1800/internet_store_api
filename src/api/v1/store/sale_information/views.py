@@ -295,7 +295,7 @@ async def get_one_or_create(
     )
 
 
-# 12
+# 12_1
 @router.post(
     "/do-vote/",
     dependencies=[Depends(current_superuser),],
@@ -321,6 +321,55 @@ async def do_vote(
         vote_add=vote_add,
         product_id_vote_del=product_id_vote_del,
         vote_del=vote_del,
+    )
+
+
+# 12_2
+@router.post(
+    "/do-view/",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=SaleInfoShort,
+    description="Increasing view_count on 1 (product viewing imitation)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def do_view(
+        request: Request,
+        product_id: int = Form(gt=0),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: SaleInfoService = SaleInfoService(
+        session=session
+    )
+    return await service.do_view_or_sell(
+        product_id=product_id
+    )
+
+
+# 12_3
+@router.post(
+    "/do-sell/",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=SaleInfoShort,
+    description="Increasing sold_count on 1 (product selling imitation)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def do_sell(
+        request: Request,
+        product_id: int = Form(gt=0),
+        count: Optional[int] = Form(default=1, gt=0),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: SaleInfoService = SaleInfoService(
+        session=session
+    )
+    return await service.do_view_or_sell(
+        action="sell",
+        product_id=product_id,
+        count=count
     )
 
 

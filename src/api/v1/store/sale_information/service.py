@@ -346,7 +346,6 @@ class SaleInfoService:
             )
             if isinstance(orm_model, ORJSONResponse):
                 return orm_model
-            print('OOOOOOOORRRRRRRRRMMMMMM ', orm_model.voted_count, orm_model.rating_summary)
             orm_model = await self.edit_one(
                 product_id=product_id_vote_del,
                 is_partial=True,
@@ -360,4 +359,35 @@ class SaleInfoService:
             orm_models.append(orm_model)
 
         return orm_models
+
+    async def do_view_or_sell(
+            self,
+            product_id: int,
+            count: int = 1,
+            action: str = 'view'
+    ):
+        orm_model = await self.get_or_create(
+            product_id=product_id,
+        )
+        if isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
+        data_dict = {}
+        if action == "sell":
+            data_dict['sold_count'] = orm_model.sold_count + count
+        else:
+            data_dict['viewed_count'] = orm_model.viewed_count + count
+
+        orm_model = await self.edit_one(
+            product_id=product_id,
+            is_partial=True,
+            orm_model=orm_model,
+            **data_dict,
+        )
+        if isinstance(orm_model, ORJSONResponse):
+            return orm_model
+        self.logger.info('SaleInformation was successfully edited')
+        return orm_model
+
+
 
