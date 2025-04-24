@@ -7,7 +7,7 @@ from src.tools.exceptions import CustomException
 
 from .exceptions import Errors
 from ..user.repository import UsersRepository
-
+from ...auth.dependencies import get_user_manager
 
 if TYPE_CHECKING:
     from src.core.models import (
@@ -43,9 +43,9 @@ class ValidRelationsInspector:
         # Expecting if chosen product exists
         try:
             users_repository: UsersRepository = UsersRepository(
-                session=self.session
+                session=self.session,
             )
-            user_orm: "User" = await users_repository.user_manager.get(id=user_id)
+            user_orm: "User" = await users_repository.get_one_complex(id=user_id, maximized=False)
             self.result['user_orm'] = user_orm
         except CustomException as exc:
             self.error = ORJSONResponse(

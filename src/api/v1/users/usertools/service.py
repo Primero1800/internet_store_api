@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.tools.exceptions import CustomException
 from .repository import UserToolsRepository
 from .exceptions import Errors
-# from .validators import ValidRelationsInspector
+from .validators import ValidRelationsInspector
 from .schemas import (
     UserToolsCreate,
     UserToolsUpdate,
@@ -83,3 +83,80 @@ class UserToolsService:
         if to_schema:
             return await utils.get_short_schema_from_orm(returned_orm_model)
         return returned_orm_model
+
+    async def get_one_complex(
+            self,
+            user_id: int = None,
+            maximized: bool = True,
+            relations: list | None = [],
+            to_schema: bool = True,
+    ):
+        repository: UserToolsRepository = UserToolsRepository(
+            session=self.session
+        )
+        try:
+            returned_orm_model = await repository.get_one_complex(
+                user_id=user_id,
+                maximized=maximized,
+                relations=relations,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            return await utils.get_schema_from_orm(
+                orm_model=returned_orm_model,
+                maximized=maximized,
+                relations=relations,
+            )
+        return returned_orm_model
+
+    async def create_one(
+            self,
+            user_id: int,
+            to_schema: Optional[bool] = True,
+    ):
+        repository: UserToolsRepository = UserToolsRepository(
+            session=self.session
+        )
+        self.repository = repository
+
+        # Expecting if UserCreate data valid
+                # catching ValidationError in exception_handler
+        instance: UserToolsCreate = UserToolsCreate(
+            user_id=user_id,
+        )
+        orm_model = await repository.get_orm_model_from_schema(instance=instance)
+
+        inspector = ValidRelationsInspector(
+            session=self.session,
+            **{"user_id": user_id}
+        )
+        result = await inspector.inspect()
+        if isinstance(result, ORJSONResponse):
+            return result
+
+        try:
+            await repository.create_one(
+                orm_model=orm_model,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+        self.logger.info("%s for User id=%s was successfully created" % (CLASS, orm_model.user_id))
+
+        return await self.get_one_complex(
+            user_id=orm_model.user_id,
+            to_schema=to_schema,
+        )

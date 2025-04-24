@@ -52,7 +52,9 @@ class UserToolsRead(UserToolsShort):
 
 
 class UserToolsCreate(BaseUserTools):
-    pass
+    recently_viewed: list[Any] = []
+    wishlist: list[Any] = []
+    comparison: list[Any] = []
 
 
 class UserToolsUpdate(BaseUserTools):

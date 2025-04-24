@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, Query, Request, status, Form
 from fastapi_filter import FilterDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -148,4 +148,51 @@ async def get_one(
     )
     return await service.get_one(
         user_id=user_id
+    )
+
+
+# 6
+@router.get(
+    "/{user_id}/full",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsRead,
+    description="Get item of the user by user_id with all relations (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_one_complex(
+        request: Request,
+        user_id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        user_id=user_id
+    )
+
+
+# 7
+@router.post(
+    "",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=UserToolsRead,
+    description="Create item for existing user (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def create_one(
+        request: Request,
+        user_id: int = Form(gt=0),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> UserToolsRead:
+
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.create_one(
+        user_id=user_id,
     )

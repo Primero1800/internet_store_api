@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload
 
 from src.core.models import UserTools, User
 from src.tools.exceptions import CustomException
-# from .exceptions import Errors
+from .exceptions import Errors
 
 if TYPE_CHECKING:
     from .filters import (
@@ -97,3 +97,18 @@ class UserToolsRepository:
     ):
         orm_model: UserTools = UserTools(**instance.model_dump())
         return orm_model
+
+    async def create_one(
+            self,
+            orm_model: UserTools
+    ):
+        try:
+            self.session.add(orm_model)
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+            self.logger.info("%s %r was successfully created" % (CLASS, orm_model))
+        except IntegrityError as error:
+            self.logger.error(f"Error while orm_model creating", exc_info=error)
+            raise CustomException(
+                msg=Errors.ALREADY_EXISTS
+            )
