@@ -126,3 +126,26 @@ async def get_all_full(
         page=page,
         size=size,
     )
+
+
+# 5
+@router.get(
+    "/{user_id}",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsShort,
+    description="Get item of the user by user_id"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_one(
+        request: Request,
+        user_id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.get_one(
+        user_id=user_id
+    )
