@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, Any, Optional
 
-from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
