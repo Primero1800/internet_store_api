@@ -1,10 +1,34 @@
 from typing import TYPE_CHECKING
 
-from .schemas import UserPublicExtended
+from .schemas import UserPublicExtended, UserRead, UserReadExtended
 
 if TYPE_CHECKING:
     from src.core.models import (
         User,
+    )
+
+
+async def get_schema_from_orm(
+        orm_model: "User",
+        maximized: bool = True,
+        relations: list | None = [],
+):
+
+    # BRUTE FORCE VARIANT
+
+    vote_shorts = []
+    print('@@@@@@@@@@@@@@@@@@@@@@@@@@ ', orm_model.votes)
+    if maximized or "votes" in relations:
+        from ..store.votes.utils import get_short_schema_from_orm as get_short_vote_schema_from_orm
+        for vote in orm_model.votes:
+            vote_shorts.append(await get_short_vote_schema_from_orm(vote))
+        if "votes" in relations:
+            return sorted(vote_shorts, key=lambda x: x.id)
+
+    return UserReadExtended(
+        **orm_model.to_dict(),
+
+        votes=sorted(vote_shorts, key=lambda x: x.id),
     )
 
 
