@@ -19,7 +19,7 @@ def task_send_mail(
         schema: dict,
 ) -> dict:
     meta = {
-        'app_name': '3_sur_app1',
+        'app_name': '4_sur_src',
         'task_name': self.name,
         'args': tuple(),
         'kwargs': schema,
