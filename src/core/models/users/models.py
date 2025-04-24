@@ -15,6 +15,7 @@ from src.core.models.mixins import IDIntPkMixin
 if TYPE_CHECKING:
     from src.core.models import (
         Vote,
+        UserTools,
     )
 
 
@@ -47,6 +48,11 @@ class User(Base, IDIntPkMixin, SQLAlchemyBaseUserTable[int]):
 
     votes: Mapped[list['Vote']] = relationship(
         "Vote",
+        back_populates="user",
+    )
+
+    usertools: Mapped['UserTools'] = relationship(
+        "UserTools",
         back_populates="user",
     )
 

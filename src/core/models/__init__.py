@@ -17,6 +17,7 @@ __all__ = (
     "SaleInformation",
 
     "Vote",
+    "UserTools",
 
 
 )
@@ -31,3 +32,5 @@ from .store.rubric_product_association import RubricProductAssociation
 from .store.additional_information import AdditionalInformation
 from .store.sale_information import SaleInformation
 from .store.vote import Vote
+
+from .users.usertools import UserTools
