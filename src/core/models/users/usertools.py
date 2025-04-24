@@ -16,12 +16,6 @@ if TYPE_CHECKING:
     )
 
 
-@dataclass
-class ToolsContent:
-    product_id: int
-    added: datetime
-
-
 class UserTools(Base):
     __table_args__ = (
         CheckConstraint("max_length_rv > 0", name="check_rv_min_value"),
