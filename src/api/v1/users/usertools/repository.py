@@ -1,0 +1,77 @@
+import logging
+from typing import Sequence, TYPE_CHECKING
+
+from sqlalchemy import select, Result
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
+
+from src.core.models import UserTools, User
+from src.tools.exceptions import CustomException
+from .exceptions import Errors
+
+if TYPE_CHECKING:
+    from .filters import (
+        UserToolsFilter,
+    )
+    from .schemas import (
+        UserToolsCreate,
+        UserToolsUpdate,
+    )
+
+CLASS = "UserTools"
+
+
+class UserToolsRepository:
+    def __init__(
+            self,
+            session: AsyncSession,
+    ):
+        self.session = session
+        self.logger = logging.getLogger(__name__)
+
+    async def get_one(
+            self,
+            user_id: int
+    ):
+        orm_model = await self.session.get(UserTools, user_id)
+        if not orm_model:
+            text_error = f"user_id={user_id}"
+            raise CustomException(
+                msg=f"{CLASS} with {text_error} not found"
+            )
+        return orm_model
+
+    async def get_one_complex(
+            self,
+            user_id: int = None,
+            maximized: bool = True,
+            relations: list = []
+    ):
+        stmt = select(UserTools).where(UserTools.user_id == user_id)
+        if maximized or "user" in relations:
+            stmt = stmt.options(
+                joinedload(UserTools.user),
+            )
+        result: Result = await self.session.execute(stmt)
+        orm_model: UserTools | None = result.unique().scalar_one_or_none()
+
+        if not orm_model:
+            text_error = f"user_id={user_id}"
+            raise CustomException(
+                msg=f"{CLASS} with {text_error} not found"
+            )
+        return orm_model
+
+    async def get_all(
+            self,
+            filter_model: "UserToolsFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(UserTools))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.order_by(UserTools.user_id)
+
+        result: Result = await self.session.execute(stmt)
+        return result.unique().scalars().all()

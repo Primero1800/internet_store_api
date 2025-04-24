@@ -2,7 +2,6 @@ from typing import Dict, Any
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi_filter import FilterDepends
-from fastapi_users import BaseUserManager, models, schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.v1.users.user.dependencies import (
@@ -10,19 +9,19 @@ from src.api.v1.users.user.dependencies import (
     current_user,
 )
 from src.api.v1.users.user.schemas import (
-    UserRead,
+    UserPublicExtended,
 )
 from src.core.config import DBConfigurer, RateLimiter
 from src.scrypts.pagination import paginate_result
 
 # from .service import UserToolsService
-# from .filters import UserToolsFilter
-#
-#
-# from .schemas import (
-#     VoteShort,
-# )
+from .filters import UserToolsFilter
 
+
+from .schemas import (
+    UserToolsShort,
+    UserToolsRead,
+)
 
 
 router = APIRouter()
@@ -71,3 +70,31 @@ async def get_relations(
         request: Request,
 ) -> list[Dict[str, Any]]:
     return RELATIONS_LIST
+
+
+# 3
+@router.get(
+    "",
+    dependencies=[Depends(current_superuser)],
+    response_model=list[UserToolsShort],
+    status_code=status.HTTP_200_OK,
+    description="Get the list of the all items (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_all(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        filter_model: UserToolsFilter = FilterDepends(UserToolsFilter),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    result_full = await service.get_all(filter_model=filter_model)
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )

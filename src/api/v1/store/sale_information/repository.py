@@ -1,5 +1,4 @@
 import logging
-from fastapi import status
 from typing import Sequence, TYPE_CHECKING, Union
 
 from sqlalchemy import select, Result
@@ -7,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.core.models import SaleInformation, Product, ProductImage
+from src.core.models import SaleInformation, Product
 from src.tools.exceptions import CustomException, UnreachableValueError
 from .exceptions import Errors
 
