@@ -376,13 +376,20 @@ async def get_relations_sale_info(
 async def get_relations_votes(
         request: Request,
         id: int,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ):
     service: ProductsService = ProductsService(
         session=session
     )
-    return await service.get_one_complex(
+    result_full = await service.get_one_complex(
         id=id,
         maximized=False,
         relations=['votes',]
+    )
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
     )
