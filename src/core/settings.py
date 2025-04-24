@@ -160,6 +160,9 @@ class Tags(CustomSettings):
     USERS_PREFIX: str
     USERS_TAG: str
 
+    USERTOOLS_PREFIX: str
+    USERTOOLS_TAG: str
+
     AUTH_PREFIX: str
     AUTH_TAG: str
 

@@ -6,19 +6,19 @@ from fastapi_users import BaseUserManager, models, schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.v1.auth.backend import fastapi_users as fastapi_users_custom
-from src.api.v1.users.user.dependencies import (
+from .dependencies import (
     current_superuser,
     current_user,
 )
-from src.api.v1.users.user.schemas import (
+from .schemas import (
     UserRead,
     UserUpdate,
 )
 from src.core.config import DBConfigurer, RateLimiter
 from src.scrypts.pagination import paginate_result
 
-from src.api.v1.users.user.service import UsersService
-from src.api.v1.users.user.filters import UserFilter
+from .service import UsersService
+from .filters import UserFilter
 
 
 from src.api.v1.store.votes.schemas import (
