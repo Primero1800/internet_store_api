@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Annotated, Optional, Any
 
 from fastapi_users import schemas
 from pydantic import Field, BaseModel
@@ -61,3 +61,7 @@ class UserPublic(BaseUser, BaseModel):
 
 class UserPublicExtended(UserPublic):
     id: int
+
+
+class UserReadExtended(UserRead):
+    votes: list[Any]

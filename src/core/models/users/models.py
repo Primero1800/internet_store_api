@@ -45,7 +45,7 @@ class User(Base, IDIntPkMixin, SQLAlchemyBaseUserTable[int]):
         nullable=True,
     )
 
-    votes: Mapped['Vote'] = relationship(
+    votes: Mapped[list['Vote']] = relationship(
         "Vote",
         back_populates="user",
     )
