@@ -62,6 +62,7 @@ async def get_or_create(
     return await service.get_or_create(product_id)
 
 
+# /do-vote
 async def do_vote(
         session: AsyncSession,
         product_id_vote_add: Optional[int] = None,
@@ -78,4 +79,35 @@ async def do_vote(
         vote_add=vote_add,
         product_id_vote_del=product_id_vote_del,
         vote_del=vote_del,
+    )
+
+
+# /do-view
+async def do_view(
+        session: AsyncSession,
+        product_id: int,
+):
+    from .service import SaleInfoService
+    service = SaleInfoService(
+        session=session
+    )
+    return await service.do_view_or_sell(
+        product_id=product_id,
+    )
+
+
+# /do-sell
+async def do_sell(
+        session: AsyncSession,
+        product_id: int,
+        count: int = 1,
+):
+    from .service import SaleInfoService
+    service = SaleInfoService(
+        session=session
+    )
+    return await service.do_view_or_sell(
+        product_id=product_id,
+        action='sell',
+        count=count,
     )

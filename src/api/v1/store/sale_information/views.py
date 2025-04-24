@@ -297,7 +297,7 @@ async def get_one_or_create(
 
 # 12_1
 @router.post(
-    "/do-vote/",
+    "/do-vote",
     dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_200_OK,
     response_model=list[SaleInfoShort],
@@ -326,7 +326,7 @@ async def do_vote(
 
 # 12_2
 @router.post(
-    "/do-view/",
+    "/do-view",
     dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_200_OK,
     response_model=SaleInfoShort,
@@ -349,7 +349,7 @@ async def do_view(
 
 # 12_3
 @router.post(
-    "/do-sell/",
+    "/do-sell",
     dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_200_OK,
     response_model=SaleInfoShort,
