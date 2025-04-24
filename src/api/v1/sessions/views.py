@@ -1,7 +1,7 @@
 from typing import Any, Dict
 from uuid import UUID
 
-from fastapi import APIRouter, Request, Response, status, Depends, Body
+from fastapi import APIRouter, Request, Response, status, Depends, Body, Query
 
 from src.api.v1.users.dependencies import (
     current_user_or_none,
@@ -14,6 +14,7 @@ from src.core.sessions.fastapi_sessions_config import (
     cookie,
     verifier,
 )
+from src.scrypts.pagination import paginate_result
 from .service import SessionsService
 
 
@@ -143,6 +144,13 @@ async def clear_session(
 @RateLimiter.rate_limit()
 async def get_all(
         request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
 ):
     service: SessionsService = SessionsService()
-    return await service.get_all()
+    result_full = await service.get_all()
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
