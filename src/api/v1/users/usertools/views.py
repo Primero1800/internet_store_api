@@ -14,7 +14,7 @@ from src.api.v1.users.user.schemas import (
 from src.core.config import DBConfigurer, RateLimiter
 from src.scrypts.pagination import paginate_result
 
-# from .service import UserToolsService
+from .service import UserToolsService
 from .filters import UserToolsFilter
 
 
@@ -93,6 +93,34 @@ async def get_all(
         session=session
     )
     result_full = await service.get_all(filter_model=filter_model)
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
+
+
+# 4
+@router.get(
+    "/full",
+    dependencies=[Depends(current_superuser),],
+    response_model=list[UserToolsRead],
+    status_code=status.HTTP_200_OK,
+    description="Get the list of the all items with product relations (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_all_full(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        filter_model: UserToolsFilter = FilterDepends(UserToolsFilter),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    result_full = await service.get_all_full(filter_model=filter_model)
     return await paginate_result(
         query_list=result_full,
         page=page,

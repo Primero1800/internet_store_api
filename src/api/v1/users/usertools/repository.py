@@ -1,5 +1,5 @@
 import logging
-from typing import Sequence, TYPE_CHECKING
+from typing import Sequence, TYPE_CHECKING, Union
 
 from sqlalchemy import select, Result
 from sqlalchemy.exc import IntegrityError
@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload
 
 from src.core.models import UserTools, User
 from src.tools.exceptions import CustomException
-from .exceptions import Errors
+# from .exceptions import Errors
 
 if TYPE_CHECKING:
     from .filters import (
@@ -75,3 +75,25 @@ class UserToolsRepository:
 
         result: Result = await self.session.execute(stmt)
         return result.unique().scalars().all()
+
+    async def get_all_full(
+            self,
+            filter_model: "UserToolsFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(UserTools))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.options(
+            joinedload(UserTools.user)
+        ).order_by(UserTools.user_id)
+
+        result: Result = await self.session.execute(stmt)
+        return result.unique().scalars().all()
+
+    async def get_orm_model_from_schema(
+            self,
+            instance: Union["UserToolsCreate", "UserToolsUpdate"]
+    ):
+        orm_model: UserTools = UserTools(**instance.model_dump())
+        return orm_model

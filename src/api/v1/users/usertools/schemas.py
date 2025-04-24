@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, computed_field
 
@@ -44,9 +44,11 @@ class UserToolsShort(BaseUserTools):
 
 
 class UserToolsRead(UserToolsShort):
-    recently_viewed: list["ProductShort"]
-    wishlist: list["ProductShort"]
-    comparison: list["ProductShort"]
+    # recently_viewed: list["ProductShort"]
+    # wishlist: list["ProductShort"]
+    # comparison: list["ProductShort"]
+
+    user: Any
 
 
 class UserToolsCreate(BaseUserTools):
