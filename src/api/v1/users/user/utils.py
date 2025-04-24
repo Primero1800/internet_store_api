@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from .schemas import UserPublicExtended, UserRead, UserReadExtended
+from src.api.v1.users.user.schemas import UserPublicExtended, UserReadExtended
 
 if TYPE_CHECKING:
     from src.core.models import (
@@ -17,9 +17,8 @@ async def get_schema_from_orm(
     # BRUTE FORCE VARIANT
 
     vote_shorts = []
-    print('@@@@@@@@@@@@@@@@@@@@@@@@@@ ', orm_model.votes)
     if maximized or "votes" in relations:
-        from ..store.votes.utils import get_short_schema_from_orm as get_short_vote_schema_from_orm
+        from ...store.votes.utils import get_short_schema_from_orm as get_short_vote_schema_from_orm
         for vote in orm_model.votes:
             vote_shorts.append(await get_short_vote_schema_from_orm(vote))
         if "votes" in relations:

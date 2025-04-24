@@ -16,7 +16,7 @@ from .service import SaleInfoService
 from .filters import SaleInfoFilter, SaleInfoFilterComplex
 from . import dependencies as deps
 from ..products.schemas import ProductShort
-from ...users.dependencies import current_superuser
+from src.api.v1.users.user.dependencies import current_superuser
 
 if TYPE_CHECKING:
     from src.core.models import (

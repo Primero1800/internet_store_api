@@ -22,7 +22,7 @@ from .schemas import (
 )
 from .filters import RubricFilter, RubricFilterComplex
 from ..products.schemas import ProductShort
-from ...users.dependencies import current_superuser
+from src.api.v1.users.user.dependencies import current_superuser
 from . import dependencies as deps
 
 if TYPE_CHECKING:

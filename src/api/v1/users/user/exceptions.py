@@ -2,6 +2,7 @@ from src.tools.exceptions import CustomException
 
 CLASS = "User"
 
+
 class Errors:
 
     HANDLER_MESSAGE = f"Handled by {CLASS}s exception handler"

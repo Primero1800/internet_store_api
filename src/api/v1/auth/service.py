@@ -13,7 +13,7 @@ from .exceptions import Errors
 
 if TYPE_CHECKING:
     from src.core.models import User
-    from src.api.v1.users.schemas import UserUpdateExtended
+    from src.api.v1.users.user.schemas import UserUpdateExtended
 
 
 class AuthService:

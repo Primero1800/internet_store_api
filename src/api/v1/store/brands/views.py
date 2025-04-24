@@ -20,7 +20,7 @@ from .schemas import (
     BrandShort,
 )
 from .filters import BrandFilter, BrandFilterComplex
-from src.api.v1.users.dependencies import current_superuser
+from src.api.v1.users.user.dependencies import current_superuser
 from src.core.config import DBConfigurer, RateLimiter
 from . import dependencies as deps
 from ..products.schemas import ProductShort

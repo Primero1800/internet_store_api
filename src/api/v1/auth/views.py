@@ -19,8 +19,8 @@ from src.api.v1.auth.backend import (
 from src.api.v1.auth.dependencies import get_user_manager
 from src.core.config import RateLimiter
 from .service import AuthService
-from ..users.dependencies import current_user_token
-from ..users.schemas import (
+from src.api.v1.users.user.dependencies import current_user_token
+from src.api.v1.users.user.schemas import (
     UserRead,
     UserCreate,
 )

@@ -1,4 +1,4 @@
-from typing import Dict, Any, TYPE_CHECKING
+from typing import Dict, Any
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi_filter import FilterDepends
@@ -6,26 +6,26 @@ from fastapi_users import BaseUserManager, models, schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.v1.auth.backend import fastapi_users as fastapi_users_custom
-from src.api.v1.users.dependencies import (
+from src.api.v1.users.user.dependencies import (
     current_superuser,
     current_user,
 )
-from src.api.v1.users.schemas import (
+from src.api.v1.users.user.schemas import (
     UserRead,
     UserUpdate,
 )
 from src.core.config import DBConfigurer, RateLimiter
 from src.scrypts.pagination import paginate_result
 
-from .service import UsersService
-from .filters import UserFilter
+from src.api.v1.users.user.service import UsersService
+from src.api.v1.users.user.filters import UserFilter
 
 
 from src.api.v1.store.votes.schemas import (
     VoteShort,
 )
 
-from ..auth.dependencies import get_user_manager
+from src.api.v1.auth.dependencies import get_user_manager
 
 
 router = APIRouter()

@@ -110,7 +110,7 @@ class UserManager(IntegerIDMixin, BaseUserManager["User", Integer]):
     ):
         logger.info("%r logged in." % (user,))
         from src.api.v1.auth.service import AuthService
-        from src.api.v1.users.schemas import UserUpdateExtended
+        from src.api.v1.users.user.schemas import UserUpdateExtended
         service = AuthService(
             user_manager=self
         )

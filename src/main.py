@@ -5,7 +5,7 @@ import uvicorn
 from fastapi import FastAPI, Request, Depends, Query
 from starlette.staticfiles import StaticFiles
 
-from src.api.v1.users.dependencies import current_superuser
+from src.api.v1.users.user.dependencies import current_superuser
 from src.core.settings import settings
 from src.core.config import (
     AppConfigurer,

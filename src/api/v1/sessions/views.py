@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Request, Response, status, Depends, Body, Query
 
-from src.api.v1.users.dependencies import (
+from src.api.v1.users.user.dependencies import (
     current_user_or_none,
     current_user,
     current_superuser,

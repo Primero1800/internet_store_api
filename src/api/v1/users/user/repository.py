@@ -7,7 +7,7 @@ from sqlalchemy import select, Result
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.api.v1.users.exceptions import NoSessionException
+from .exceptions import NoSessionException
 from src.core.models import User
 from src.tools.exceptions import CustomException
 

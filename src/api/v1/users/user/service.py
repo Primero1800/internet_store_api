@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 
 from fastapi import status, Request
 from fastapi.responses import ORJSONResponse
-from fastapi_users import BaseUserManager, models, schemas, exceptions
+from fastapi_users import BaseUserManager, models, exceptions
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 

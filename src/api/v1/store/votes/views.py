@@ -2,9 +2,7 @@ from typing import TYPE_CHECKING, List, Optional, Dict, Any
 
 from fastapi import (
     APIRouter,
-    UploadFile,
     Form,
-    File,
     Depends,
     status,
     Request,
@@ -21,10 +19,10 @@ from .schemas import (
     VoteShort,
 )
 from .filters import VoteFilter
-from src.api.v1.users.dependencies import current_superuser, current_user
+from src.api.v1.users.user.dependencies import current_superuser, current_user
 from src.core.config import DBConfigurer, RateLimiter
 from ..products.schemas import ProductShort
-from ...users.schemas import UserPublic, UserPublicExtended
+from src.api.v1.users.user.schemas import UserPublicExtended
 from . import dependencies as deps
 
 if TYPE_CHECKING:
