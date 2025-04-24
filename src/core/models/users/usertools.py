@@ -1,14 +1,12 @@
-from datetime import datetime
 from typing import TYPE_CHECKING
 
-from pydantic.dataclasses import dataclass
 from sqlalchemy import ForeignKey, Integer, CheckConstraint, JSON
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.config import DBConfigurer
 from src.core.models import Base
-
+from src.tools.usertools_content import ToolsContent
 
 if TYPE_CHECKING:
     from src.core.models import (
