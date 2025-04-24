@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, Query, Request, status, Form
 from fastapi_filter import FilterDepends
@@ -16,12 +16,18 @@ from src.scrypts.pagination import paginate_result
 
 from .service import UserToolsService
 from .filters import UserToolsFilter
+from . import dependencies as deps
 
 
 from .schemas import (
     UserToolsShort,
     UserToolsRead,
 )
+
+if TYPE_CHECKING:
+    from src.core.models import (
+        UserTools,
+    )
 
 
 router = APIRouter()
@@ -196,3 +202,23 @@ async def create_one(
     return await service.create_one(
         user_id=user_id,
     )
+
+
+# 8
+@router.delete(
+    "/{user_id}",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_204_NO_CONTENT,
+    description="Delete item of the user by user_id (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def delete_one(
+        request: Request,
+        orm_model: "UserTools" = Depends(deps.get_one),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.delete_one(orm_model)
