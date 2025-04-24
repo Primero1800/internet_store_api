@@ -6,12 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.tools.exceptions import CustomException
 
 from .exceptions import Errors
-from ..products.repository import ProductsRepository
+from ..user.repository import UsersRepository
 
 
 if TYPE_CHECKING:
     from src.core.models import (
-        Product,
+        User,
     )
 
 
@@ -26,27 +26,27 @@ class ValidRelationsInspector:
         self.result = {}
         self.error = None
 
-        if "product_id" in kwargs:
-            self.need_inspect.append(("product_id", kwargs["product_id"]))
+        if "user_id" in kwargs:
+            self.need_inspect.append(("user_id", kwargs["user_id"]))
 
     async def inspect(self):
         while self.need_inspect:
             to_inspect, params = self.need_inspect.pop(0)
             try:
-                if to_inspect == "product_id" and params:
-                    await self.expecting_product_exists(product_id=params)
+                if to_inspect == "user_id" and params:
+                    await self.expecting_user_exists(user_id=params)
             except ValidRelationsException:
                 return self.error
         return self.result
 
-    async def expecting_product_exists(self, product_id: int):
+    async def expecting_user_exists(self, user_id: int):
         # Expecting if chosen product exists
         try:
-            product_repository: ProductsRepository = ProductsRepository(
+            users_repository: UsersRepository = UsersRepository(
                 session=self.session
             )
-            product_orm: "Product" = await product_repository.get_one(id=product_id)
-            self.result['product_orm'] = product_orm
+            user_orm: "User" = await users_repository.user_manager.get(id=user_id)
+            self.result['user_orm'] = user_orm
         except CustomException as exc:
             self.error = ORJSONResponse(
                 status_code=exc.status_code,
