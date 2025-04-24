@@ -7,6 +7,8 @@ from fastapi_users import BaseUserManager, models, schemas, exceptions
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.tools.exceptions import CustomException
+from . import utils
 from .repository import UsersRepository
 from .exceptions import NoSessionException, Errors
 from src.api.v1.auth.exceptions import Errors as Auth_Errors
@@ -85,3 +87,35 @@ class UsersService:
                     "detail": Auth_Errors.user_already_exists_emailed(user_update.email),
                 }
             )
+
+    async def get_one_complex(
+            self,
+            id: int,
+            maximized: bool = True,
+            relations: list | None = [],
+            to_schema: bool = True,
+    ):
+        repository: UsersRepository = UsersRepository(
+            session=self.session
+        )
+        try:
+            returned_orm_model = await repository.get_one_complex(
+                id=id,
+                maximized=maximized,
+                relations=relations,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            return await utils.get_schema_from_orm(
+                returned_orm_model,
+                maximized=maximized,
+                relations=relations
+            )
+        return returned_orm_model

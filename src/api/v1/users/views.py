@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi_filter import FilterDepends
@@ -20,13 +20,29 @@ from src.scrypts.pagination import paginate_result
 from .service import UsersService
 from .filters import UserFilter
 
+
+from src.api.v1.store.votes.schemas import (
+    VoteShort,
+)
+
 from ..auth.dependencies import get_user_manager
 
 
 router = APIRouter()
 
 
-RELATIONS_LIST = []
+RELATIONS_LIST = [
+    {
+        "name": "votes",
+        "usage": "/me/votes",
+        "conditions": "public"
+    },
+    {
+        "name": "votes",
+        "usage": "/{id}/votes",
+        "conditions": "private"
+    },
+]
 
 
 # 1
@@ -69,6 +85,7 @@ async def get_relations(
             "description": "Missing token or inactive user.",
         },
     },
+    description="Getting personal information"
 )
 @RateLimiter.rate_limit()
 async def me(
@@ -83,6 +100,7 @@ async def me(
     response_model=UserRead,
     status_code=status.HTTP_200_OK,
     name="users:patch_current_user",
+    description="Changing personal information"
 )
 @RateLimiter.rate_limit()
 async def update_me(
@@ -118,6 +136,7 @@ router.include_router(
     '',
     response_model=list[UserRead],
     dependencies=[Depends(current_superuser),],
+    description="Getting the list of registered users"
 )
 # No rate limit for superuser
 async def get_users(
@@ -135,6 +154,70 @@ async def get_users(
     )
     result_full = await service.get_all_users(
         filter_model=user_filter,
+    )
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
+
+
+# 4_1
+@router.get(
+    "/me/votes",
+    status_code=status.HTTP_200_OK,
+    description="Getting the list of personal votes"
+)
+@RateLimiter.rate_limit()
+async def get_relations_votes(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        user: models.UP = Depends(current_user),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+        user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+) -> list[VoteShort]:
+    service: UsersService = UsersService(
+        session=session,
+        user_manager=user_manager
+    )
+    result_full = await service.get_one_complex(
+        id=user.id,
+        maximized=False,
+        relations=['votes',]
+    )
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
+
+
+# 4_2
+@router.get(
+    "/{id}/votes",
+    dependencies=[Depends(current_superuser,)],
+    status_code=status.HTTP_200_OK,
+    description="Getting the list of personal votes of user by id"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_relations_votes_by_id(
+        request: Request,
+        id: int,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+        user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+) -> list[VoteShort]:
+    service: UsersService = UsersService(
+        session=session,
+        user_manager=user_manager
+    )
+    result_full = await service.get_one_complex(
+        id=id,
+        maximized=False,
+        relations=['votes',]
     )
     return await paginate_result(
         query_list=result_full,

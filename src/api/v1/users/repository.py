@@ -5,11 +5,16 @@ from fastapi_filter.contrib.sqlalchemy import Filter
 from fastapi_users import BaseUserManager, models
 from sqlalchemy import select, Result
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from src.api.v1.users.exceptions import NoSessionException
 from src.core.models import User
+from src.tools.exceptions import CustomException
 
 logger = logging.getLogger(__name__)
+
+
+CLASS = "User"
 
 
 class UsersRepository:
@@ -20,6 +25,31 @@ class UsersRepository:
     ):
         self.user_manager = user_manager
         self.session = session
+
+    async def get_one_complex(
+            self,
+            id: int = None,
+            maximized: bool = True,
+            relations: list = []
+    ):
+        stmt_filter = select(User).where(User.id == id)
+
+        options_list = []
+
+        if maximized or "votes" in relations:
+            options_list.append(joinedload(User.votes))
+
+        stmt = stmt_filter.options(*options_list)
+
+        result: Result = await self.session.execute(stmt)
+        orm_model: User | None = result.unique().scalar_one_or_none()
+
+        if not orm_model:
+            text_error = f"id={id}"
+            raise CustomException(
+                msg=f"{CLASS} with {text_error} not found"
+            )
+        return orm_model
 
     async def get_all_users(
             self,
