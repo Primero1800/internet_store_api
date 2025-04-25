@@ -11,6 +11,7 @@ from fastapi import (
     Request,
     Query,
 )
+from fastapi.responses import ORJSONResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,6 +49,11 @@ RELATIONS_LIST = [
     {
         "name": "votes",
         "usage": "/{id}/votes",
+        "conditions": "public"
+    },
+    {
+        "name": "posts",
+        "usage": "/{id}/posts",
         "conditions": "public"
     },
 ]
@@ -388,6 +394,39 @@ async def get_relations_votes(
         maximized=False,
         relations=['votes',]
     )
+    if isinstance(result_full, ORJSONResponse):
+        return result_full
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
+
+
+# 11_4
+@router.get(
+    "/{id}/posts",
+    dependencies=[Depends(current_superuser,)],
+    status_code=status.HTTP_200_OK,
+)
+@RateLimiter.rate_limit()
+async def get_relations_posts(
+        request: Request,
+        id: int,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: ProductsService = ProductsService(
+        session=session
+    )
+    result_full = await service.get_one_complex(
+        id=id,
+        maximized=False,
+        relations=['posts',]
+    )
+    if isinstance(result_full, ORJSONResponse):
+        return result_full
     return await paginate_result(
         query_list=result_full,
         page=page,
