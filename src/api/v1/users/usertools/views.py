@@ -413,3 +413,77 @@ async def add_to_comparison(
         product=product,
         to_schema=True,
     )
+
+
+# 14_1
+@router.post(
+    "/me/wishlist-del/{product_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsShort,
+    description="Remove item by product_id from personal wishlist"
+)
+@RateLimiter.rate_limit()
+async def del_from_wishlist(
+        request: Request,
+        product_id: int,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.del_from_list(
+        usertools=usertools,
+        product_id=product_id,
+        del_from='w',
+        to_schema=True,
+    )
+
+
+# 14_2
+@router.post(
+    "/me/comparison-del/{product_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsShort,
+    description="Remove item by product_id from personal comparison list"
+)
+@RateLimiter.rate_limit()
+async def del_from_comparison(
+        request: Request,
+        product_id: int,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.del_from_list(
+        usertools=usertools,
+        product_id=product_id,
+        del_from='c',
+        to_schema=True,
+    )
+
+
+# 14_3
+@router.post(
+    "/me/recently-viewed-del/{product_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsShort,
+    description="remove item by product_id from personal recently viewed list"
+)
+@RateLimiter.rate_limit()
+async def del_from_recently_viewed(
+        request: Request,
+        product_id: int,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.del_from_list(
+        usertools=usertools,
+        product_id=product_id,
+        to_schema=True,
+    )

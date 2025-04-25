@@ -207,3 +207,39 @@ class UserToolsRepository:
             item_to_remove = {first_key: operation_dict.pop(first_key)}
             self.logger.info("Removed from %s: %r" % (verb, item_to_remove))
         return operation_dict
+
+    async def del_from_dict(
+            self,
+            usertools: UserTools,
+            product_id: int,
+            del_from: str = 'rv'
+    ):
+        product_id = str(product_id)
+        if del_from == 'w':
+            item_to_remove = usertools.wishlist.pop(product_id, None)
+            verb = "wishlist"
+        elif del_from == 'c':
+            item_to_remove = usertools.comparison.pop(product_id, None)
+            verb = "comparison list"
+        else: # add_to == 'rv
+            item_to_remove = usertools.recently_viewed.pop(product_id, None)
+            verb = "recently viewed"
+
+        if item_to_remove:
+            self.logger.warning("Removing %s from %s" % (item_to_remove, verb))
+        else:
+            self.logger.error("Item with product_id=%s doesn't exists in %s" % (product_id, verb))
+            raise CustomException(
+                msg="Item with product_id=%s doesn't exists in %s" % (product_id, verb)
+            )
+
+        try:
+            await self.session.commit()
+            await self.session.refresh(usertools)
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                msg=Errors.DATABASE_ERROR
+            )
+        return usertools

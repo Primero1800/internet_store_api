@@ -299,3 +299,32 @@ class UserToolsService:
         if to_schema:
             return await utils.get_short_schema_from_orm(orm_model)
         return orm_model
+
+    async def del_from_list(
+            self,
+            usertools: "UserTools",
+            product_id: int,
+            del_from: str = 'rv',
+            to_schema: bool = False
+    ):
+        repository: UserToolsRepository = UserToolsRepository(
+            session=self.session
+        )
+        try:
+            orm_model = await repository.del_from_dict(
+                usertools=usertools,
+                product_id=product_id,
+                del_from=del_from
+            )
+        except CustomException as exc:
+            self.logger.error(Errors.DATABASE_ERROR, exc_info=exc)
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            return await utils.get_short_schema_from_orm(orm_model)
+        return orm_model
