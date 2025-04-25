@@ -243,3 +243,31 @@ class UserToolsRepository:
                 msg=Errors.DATABASE_ERROR
             )
         return usertools
+
+    async def clear_dict(
+            self,
+            usertools: UserTools,
+            del_from: str = 'rv'
+    ):
+        if del_from == 'w':
+            usertools.wishlist.clear()
+            verb = "wishlist"
+        elif del_from == 'c':
+            usertools.comparison.clear()
+            verb = "comparison list"
+        else:  # add_to == 'rv
+            usertools.recently_viewed.clear()
+            verb = "recently viewed"
+
+        self.logger.warning("Clearing %s" % verb)
+
+        try:
+            await self.session.commit()
+            await self.session.refresh(usertools)
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                msg=Errors.DATABASE_ERROR
+            )
+        return usertools

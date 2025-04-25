@@ -25,6 +25,7 @@ from .schemas import (
     UserToolsShort,
     UserToolsRead,
 )
+from ...store.products.schemas import ProductShort
 
 if TYPE_CHECKING:
     from src.core.models import (
@@ -399,7 +400,7 @@ async def add_to_comparison(
     description="Add item by product_id to personal recently viewed list"
 )
 @RateLimiter.rate_limit()
-async def add_to_comparison(
+async def add_to_recently_viewed(
         request: Request,
         usertools: "UserTools" = Depends(deps.get_or_create_usertools),
         product: "Product" = Depends(deps_products_get_one_simple),
@@ -485,5 +486,140 @@ async def del_from_recently_viewed(
     return await service.del_from_list(
         usertools=usertools,
         product_id=product_id,
+        to_schema=True,
+    )
+
+
+# 15_1
+@router.post(
+    "/me/wishlist-clear",
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsShort,
+    description="Clear personal wishlist"
+)
+@RateLimiter.rate_limit()
+async def clear_wishlist(
+        request: Request,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.clear_list(
+        usertools=usertools,
+        del_from='w',
+        to_schema=True,
+    )
+
+
+# 15_2
+@router.post(
+    "/me/comparison-clear",
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsShort,
+    description="Clear personal comparison list"
+)
+@RateLimiter.rate_limit()
+async def clear_comparison(
+        request: Request,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.clear_list(
+        usertools=usertools,
+        del_from='c',
+        to_schema=True,
+    )
+
+# 15_3
+@router.post(
+    "/me/recently-viewed-clear",
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsShort,
+    description="Clear personal recently viewed list"
+)
+@RateLimiter.rate_limit()
+async def clear_recently_viewed(
+        request: Request,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.clear_list(
+        usertools=usertools,
+        to_schema=True,
+    )
+
+
+# 16_1
+@router.get(
+    "/me/wishlist",
+    status_code=status.HTTP_200_OK,
+    response_model=list[ProductShort],
+    description="Get personal wishlist"
+)
+@RateLimiter.rate_limit()
+async def get_wishlist(
+        request: Request,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.get_list(
+        usertools=usertools,
+        source='w',
+        to_schema=True,
+    )
+
+
+# 16_2
+@router.get(
+    "/me/comparison",
+    status_code=status.HTTP_200_OK,
+    response_model=list[ProductShort],
+    description="Get personal comparison list"
+)
+@RateLimiter.rate_limit()
+async def get_comparison_list(
+        request: Request,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.get_list(
+        usertools=usertools,
+        source='c',
+        to_schema=True,
+    )
+
+
+# 16_1
+@router.get(
+    "/me/recently-viewed",
+    status_code=status.HTTP_200_OK,
+    response_model=list[ProductShort],
+    description="Get personal recently viewed list"
+)
+@RateLimiter.rate_limit()
+async def get_recently_viewed_list(
+        request: Request,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.get_list(
+        usertools=usertools,
         to_schema=True,
     )

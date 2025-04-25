@@ -328,3 +328,58 @@ class UserToolsService:
         if to_schema:
             return await utils.get_short_schema_from_orm(orm_model)
         return orm_model
+
+    async def clear_list(
+            self,
+            usertools: "UserTools",
+            del_from: str = 'rv',
+            to_schema: bool = False
+    ):
+        repository: UserToolsRepository = UserToolsRepository(
+            session=self.session
+        )
+        try:
+            orm_model = await repository.clear_dict(
+                usertools=usertools,
+                del_from=del_from
+            )
+        except CustomException as exc:
+            self.logger.error(Errors.DATABASE_ERROR, exc_info=exc)
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            return await utils.get_short_schema_from_orm(orm_model)
+        return orm_model
+
+    async def get_list(
+            self,
+            usertools: "UserTools",
+            source: str = 'rv',
+            to_schema: bool = False
+    ):
+        if source == 'w':
+            product_ids = [int(key) for key in usertools.wishlist.keys()]
+        elif source == "c":
+            product_ids = [int(key) for key in usertools.comparison.keys()]
+        else: # source == "rv"
+            product_ids = [int(key) for key in usertools.recently_viewed.keys()]
+        if not product_ids:
+            return []
+
+        from ...store.products.service import ProductsService
+        prod_service: ProductsService = ProductsService(
+            session=self.session
+        )
+        products = []
+        for product_id in product_ids:
+            product = await prod_service.get_one_complex(id=product_id)
+            if isinstance(product, ORJSONResponse):
+                return product
+            products.append(product)
+
+        return products
