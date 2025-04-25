@@ -8,7 +8,7 @@ from src.core.models import Post
 
 class PostFilter(Filter):
     order_by: Optional[list[str]] = ['id']
-
+    product_id: Optional[int] = Field(default=None, description="Filter by product", )
     name__like: Optional[str] = Field(default=None, description="Filter by name contains", )
     search_for: Optional[str] = None
 
