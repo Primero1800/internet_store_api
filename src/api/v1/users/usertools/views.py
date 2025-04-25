@@ -27,6 +27,7 @@ from .schemas import (
 if TYPE_CHECKING:
     from src.core.models import (
         UserTools,
+        User
     )
 
 
@@ -248,3 +249,96 @@ async def edit_onel(
         orm_model=orm_model,
         user_id=user_id,
     )
+
+
+# 11_1
+@router.get(
+    "/me/user",
+    status_code=status.HTTP_200_OK,
+    response_model=UserPublicExtended,
+    description="Get the relations user of usertools of current user"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_one_relations_user_me(
+        request: Request,
+        user: "User" = Depends(current_user),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        user_id=user.id,
+        maximized=False,
+        relations=['user']
+    )
+
+
+# 11_2
+@router.get(
+    "/{user_id}/user",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_200_OK,
+    response_model=UserPublicExtended,
+    description="Get the relations user of usertools by user_id"
+)
+@RateLimiter.rate_limit()
+async def get_one_relations_user_id(
+        request: Request,
+        user_id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        user_id=user_id,
+        maximized=False,
+        relations=['user']
+    )
+
+
+# 12_1
+@router.post(
+    "/get-or-create/me",
+    status_code=status.HTTP_201_CREATED,
+    response_model=UserToolsShort,
+    description="Get the usertools by user_id or creating empty one if not exists"
+)
+@RateLimiter.rate_limit()
+async def get_one_or_create(
+        request: Request,
+        user: "User" = Depends(current_user),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.get_or_create(
+        user_id=user.id,
+    )
+
+
+# 12_2
+@router.post(
+    "/get-or-create/{user_id}",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=UserToolsShort,
+    description="Get the usertools by user_id or creating empty one if not exists"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_one_or_create(
+        request: Request,
+        user_id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.get_or_create(
+        user_id=user_id,
+    )
+

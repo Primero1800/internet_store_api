@@ -50,6 +50,7 @@ async def get_schema_from_orm(
     )
 
 
+# /get-or-create/{product_id}
 async def get_or_create(
         product_id: int,
         session: AsyncSession,

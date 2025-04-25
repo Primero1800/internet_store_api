@@ -236,3 +236,21 @@ class UserToolsService:
             user_id=orm_model.user_id,
             to_schema=to_schema,
         )
+
+    async def get_or_create(
+            self,
+            user_id: int
+    ):
+        self.logger.info('Getting %r bound with user_id=%s from database' % (CLASS, user_id))
+        sa_orm_model = await self.get_one(
+            user_id=user_id,
+            to_schema=False
+        )
+        if isinstance(sa_orm_model, ORJSONResponse):
+            self.logger.info('No %r bound with user_id=%s in database' % (CLASS, user_id))
+            self.logger.info('Creating %r bound with user_id=%s in database' % (CLASS, user_id))
+            sa_orm_model = await self.create_one(
+                user_id=user_id,
+                to_schema=False,
+            )
+        return sa_orm_model

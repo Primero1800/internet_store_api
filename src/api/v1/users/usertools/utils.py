@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING, Any
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from ..user.utils import get_short_schema_from_orm as get_short_user_schema_from_orm
 
 from .schemas import (
@@ -46,3 +48,16 @@ async def get_schema_from_orm(
         **short_schema.model_dump(),
         user=user_short
     )
+
+
+# /get-or-create/me
+# /get-or-create/{user_id}
+async def get_or_create(
+        user_id: int,
+        session: AsyncSession,
+) -> "UserTools":
+    from .service import SaleInfoService
+    service = SaleInfoService(
+        session=session
+    )
+    return await service.get_or_create(product_id)
