@@ -1,6 +1,7 @@
 from typing import Dict, Any
 
 from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi.responses import ORJSONResponse
 from fastapi_filter import FilterDepends
 from fastapi_users import BaseUserManager, models, schemas
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +25,9 @@ from .filters import UserFilter
 from src.api.v1.store.votes.schemas import (
     VoteShort,
 )
+from src.api.v1.posts.post.schemas import (
+    PostShort,
+)
 
 from src.api.v1.auth.dependencies import get_user_manager
 
@@ -40,6 +44,16 @@ RELATIONS_LIST = [
     {
         "name": "votes",
         "usage": "/{id}/votes",
+        "conditions": "private"
+    },
+    {
+        "name": "posts",
+        "usage": "/me/posts",
+        "conditions": "public"
+    },
+    {
+        "name": "posts",
+        "usage": "/{id}/posts",
         "conditions": "private"
     },
 ]
@@ -186,6 +200,8 @@ async def get_relations_votes(
         maximized=False,
         relations=['votes',]
     )
+    if isinstance(result_full, ORJSONResponse):
+        return result_full
     return await paginate_result(
         query_list=result_full,
         page=page,
@@ -219,6 +235,76 @@ async def get_relations_votes_by_id(
         maximized=False,
         relations=['votes',]
     )
+    if isinstance(result_full, ORJSONResponse):
+        return result_full
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
+
+
+# 5_1
+@router.get(
+    "/me/posts",
+    status_code=status.HTTP_200_OK,
+    description="Getting the list of personal posts"
+)
+@RateLimiter.rate_limit()
+async def get_relations_posts(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        user: models.UP = Depends(current_user),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+        user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+) -> list[PostShort]:
+    service: UsersService = UsersService(
+        session=session,
+        user_manager=user_manager
+    )
+    result_full = await service.get_one_complex(
+        id=user.id,
+        maximized=False,
+        relations=['posts',]
+    )
+    if isinstance(result_full, ORJSONResponse):
+        return result_full
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
+
+
+# 5_2
+@router.get(
+    "/{id}/posts",
+    dependencies=[Depends(current_superuser,)],
+    status_code=status.HTTP_200_OK,
+    description="Getting the list of personal posts of user by id"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_relations_posts_by_id(
+        request: Request,
+        id: int,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+        user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+) -> list[PostShort]:
+    service: UsersService = UsersService(
+        session=session,
+        user_manager=user_manager
+    )
+    result_full = await service.get_one_complex(
+        id=id,
+        maximized=False,
+        relations=['posts',]
+    )
+    if isinstance(result_full, ORJSONResponse):
+        return result_full
     return await paginate_result(
         query_list=result_full,
         page=page,

@@ -59,6 +59,9 @@ class ProductsRepository:
         if maximized or "votes" in relations:
             options_list.append(joinedload(Product.votes))
 
+        if maximized or "posts" in relations:
+            options_list.append(joinedload(Product.posts))
+
         stmt = stmt_filter.options(*options_list)
 
         result: Result = await self.session.execute(stmt)

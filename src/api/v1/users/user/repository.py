@@ -39,6 +39,9 @@ class UsersRepository:
         if maximized or "votes" in relations:
             options_list.append(joinedload(User.votes))
 
+        if maximized or "posts" in relations:
+            options_list.append(joinedload(User.posts))
+
         stmt = stmt_filter.options(*options_list)
 
         result: Result = await self.session.execute(stmt)
