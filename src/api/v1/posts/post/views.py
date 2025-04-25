@@ -27,7 +27,7 @@ from . import dependencies as deps
 if TYPE_CHECKING:
     from src.core.models import(
         User,
-        Vote,
+        Post,
     )
 
 
@@ -175,4 +175,116 @@ async def get_one_full(
     return await service.get_one_complex(
         id=id,
         maximized=True
+    )
+
+
+# 7
+@router.post(
+    "",
+    dependencies=[Depends(current_user),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=PostRead,
+    description="Create one item (for superuser only)"
+)
+@RateLimiter.rate_limit()
+async def create_one(
+        request: Request,
+        product_id: Optional[int] = Form(default=None, gt=0),
+        name: str = Form(),
+        review: str = Form(),
+        user: "User" = Depends(current_user),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+
+    service: PostsService = PostsService(
+        session=session
+    )
+    return await service.create_one(
+        user=user,
+        product_id=product_id,
+        name=name,
+        review=review,
+    )
+
+
+# 8
+@router.delete(
+    "/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    description="Delete item by id (for superuser and item's author only)"
+)
+@RateLimiter.rate_limit()
+async def delete_one(
+        request: Request,
+        user: "User" = Depends(current_user),
+        orm_model: "Vote" = Depends(deps.get_one_simple),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: PostsService = PostsService(
+        session=session
+    )
+    return await service.delete_one(
+        orm_model=orm_model,
+        user=user
+    )
+
+
+# 9
+@router.put(
+        "/{id}",
+        status_code=status.HTTP_200_OK,
+        response_model=PostRead,
+        description="Edit item by id (for superuser and item's author only)"
+)
+@RateLimiter.rate_limit()
+async def put_one(
+        request: Request,
+        user: "User" = Depends(current_user),
+        orm_model: "Post" = Depends(deps.get_one_simple),
+        product_id: Optional[int] = Form(default=None, gt=0),
+        name: str = Form(),
+        review: str = Form(),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: PostsService = PostsService(
+        session=session
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        user=user,
+        product_id=product_id,
+        name=name,
+        review=review,
+    )
+
+
+# 10
+@router.patch(
+        "/{id}",
+        status_code=status.HTTP_200_OK,
+        response_model=PostRead,
+        description="Partial edit item by id (for superuser and item's author only)"
+)
+@RateLimiter.rate_limit()
+async def patch_one(
+        request: Request,
+        user: "User" = Depends(current_user),
+        orm_model: "Post" = Depends(deps.get_one_simple),
+        product_id: Optional[int] = Form(default=None),
+        reset_product: Optional[bool] = Form(default=None),
+        name: Optional[str] = Form(default=None),
+        review: Optional[str] = Form(default=None),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: PostsService = PostsService(
+        session=session
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        user=user,
+        product_id=product_id,
+        name=name,
+        review=review,
+        reset_product=reset_product,
+        is_partial=True
     )

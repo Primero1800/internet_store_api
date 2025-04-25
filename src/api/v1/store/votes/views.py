@@ -185,6 +185,7 @@ async def get_one_full(
     dependencies=[Depends(current_user),],
     status_code=status.HTTP_201_CREATED,
     response_model=VoteRead,
+    description="Create one item (for superuser only)"
 )
 @RateLimiter.rate_limit()
 async def create_one(
@@ -213,6 +214,7 @@ async def create_one(
 @router.delete(
     "/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    description="Delete item by id (for superuser and item's author only)"
 )
 @RateLimiter.rate_limit()
 async def delete_one(
@@ -234,7 +236,8 @@ async def delete_one(
 @router.put(
         "/{id}",
         status_code=status.HTTP_200_OK,
-        response_model=VoteRead
+        response_model=VoteRead,
+        description="Edit item by id (for superuser and item's author only)"
 )
 @RateLimiter.rate_limit()
 async def put_one(
@@ -264,10 +267,11 @@ async def put_one(
 @router.patch(
         "/{id}",
         status_code=status.HTTP_200_OK,
-        response_model=VoteRead
+        response_model=VoteRead,
+        description="Partial edit item by id (for superuser and item's author only)"
 )
 @RateLimiter.rate_limit()
-async def put_one(
+async def patch_one(
         request: Request,
         user: "User" = Depends(current_user),
         orm_model: "Vote" = Depends(deps.get_one_simple),
