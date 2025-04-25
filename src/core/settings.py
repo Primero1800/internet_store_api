@@ -187,6 +187,9 @@ class Tags(CustomSettings):
     VOTES_PREFIX: str
     VOTES_TAG: str
 
+    POSTS_PREFIX: str
+    POSTS_TAG: str
+
 
 class Users(CustomSettings):
     USERS_PASSWORD_MIN_LENGTH: int
