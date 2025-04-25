@@ -70,9 +70,11 @@ async def get_schema_from_orm(
 
 async def get_short_schema_from_orm(
     orm_model: "Product"
-) -> ProductShort:
+) -> ProductShort | None:
 
     # BRUTE FORCE VARIANT
+    if not orm_model:
+        return None
     return ProductShort(
         **orm_model.to_dict(),
         image_file=await get_main_image_file(orm_model),

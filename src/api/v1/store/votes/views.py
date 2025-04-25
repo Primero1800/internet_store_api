@@ -85,6 +85,7 @@ async def get_relations(
     "",
     response_model=List[VoteShort],
     status_code=status.HTTP_200_OK,
+    description="Get items list"
 )
 @RateLimiter.rate_limit()
 async def get_all(
@@ -111,6 +112,7 @@ async def get_all(
     dependencies=[Depends(current_superuser),],
     response_model=List[VoteRead],
     status_code=status.HTTP_200_OK,
+    description="Get full items list (for superuser only)"
 )
 # @RateLimiter.rate_limit()
 # no rate limit for superuser

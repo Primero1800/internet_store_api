@@ -37,15 +37,15 @@ class PostRead(PostShort):
     user: Any
 
 
-class VoteCreate(BasePost):
+class PostCreate(BasePost):
     pass
 
 
-class VoteUpdate(VoteCreate):
+class PostUpdate(PostCreate):
     pass
 
 
-class VotePartialUpdate(BasePost):
+class PostPartialUpdate(BasePost):
     product_id: Optional[int]
     user_id: Optional[int]
 

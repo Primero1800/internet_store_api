@@ -4,6 +4,7 @@ from src.api.v1.users import router as users_router
 from .auth import router as auth_router
 from .sessions import router as sessions_router
 from .store import router as store_router
+from .posts import router as posts_router
 
 
 from src.core.settings import settings
@@ -31,4 +32,8 @@ router.include_router(
 
 router.include_router(
     store_router,
+)
+
+router.include_router(
+    posts_router,
 )

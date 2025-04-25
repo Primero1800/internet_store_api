@@ -38,8 +38,7 @@ class VotesRepository:
     ):
         stmt_filter = select(Vote).where(Vote.id == id)
 
-        options_list = [
-        ]
+        options_list = []
 
         if maximized or "product" in relations:
             options_list.append(joinedload(Vote.product).joinedload(Product.images))
