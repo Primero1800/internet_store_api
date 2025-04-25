@@ -52,9 +52,9 @@ class UserToolsRead(UserToolsShort):
 
 
 class UserToolsCreate(BaseUserTools):
-    recently_viewed: list[Any] = []
-    wishlist: list[Any] = []
-    comparison: list[Any] = []
+    recently_viewed: dict = {}
+    wishlist: dict = {}
+    comparison: dict = {}
 
 
 class UserToolsUpdate(UserToolsCreate):

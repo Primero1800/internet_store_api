@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, Integer, CheckConstraint, JSON
-from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.config import DBConfigurer
 from src.core.models import Base
-from src.tools.usertools_content import ToolsContent
+
 
 if TYPE_CHECKING:
     from src.core.models import (
@@ -53,18 +53,18 @@ class UserTools(Base):
         server_default='4',
     )
 
-    recently_viewed: Mapped[list[ToolsContent]] = mapped_column(
-        MutableList.as_mutable(JSON),
+    recently_viewed: Mapped[dict] = mapped_column(
+        MutableDict.as_mutable(JSON),
         nullable=False,
     )
 
-    wishlist: Mapped[list[ToolsContent]] = mapped_column(
-        MutableList.as_mutable(JSON),
+    wishlist: Mapped[dict] = mapped_column(
+        MutableDict.as_mutable(JSON),
         nullable=False,
     )
 
-    comparison: Mapped[list[ToolsContent]] = mapped_column(
-        MutableList.as_mutable(JSON),
+    comparison: Mapped[dict] = mapped_column(
+        MutableDict.as_mutable(JSON),
         nullable=False,
     )
 
