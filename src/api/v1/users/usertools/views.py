@@ -17,6 +17,8 @@ from src.scrypts.pagination import paginate_result
 from .service import UserToolsService
 from .filters import UserToolsFilter
 from . import dependencies as deps
+from ...store.products.dependencies import get_one_simple as deps_products_get_one_simple
+from . import utils
 
 
 from .schemas import (
@@ -27,7 +29,8 @@ from .schemas import (
 if TYPE_CHECKING:
     from src.core.models import (
         UserTools,
-        User
+        User,
+        Product,
     )
 
 
@@ -235,7 +238,7 @@ async def delete_one(
 )
 # @RateLimiter.rate_limit()
 # no rate limit for superuser
-async def edit_onel(
+async def edit_one(
         request: Request,
         orm_model: "UserTools" = Depends(deps.get_one),
         user_id: int = Form(gt=0),
@@ -311,7 +314,7 @@ async def get_one_or_create(
         request: Request,
         usertools: "UserTools" = Depends(deps.get_or_create_usertools),
 ):
-    return usertools
+    return await utils.get_short_schema_from_orm(usertools)
 
 
 # 12_2
@@ -334,5 +337,79 @@ async def get_one_or_create(
     )
     return await service.get_or_create(
         user_id=user_id,
+        to_schema=True
     )
 
+
+# 13_1
+@router.post(
+    "/me/wishlist-add/{product_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsShort,
+    description="Add item by product_id to personal wishlist"
+)
+@RateLimiter.rate_limit()
+async def add_to_wishlist(
+        request: Request,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        product: "Product" = Depends(deps_products_get_one_simple),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.add_to_list(
+        usertools=usertools,
+        product=product,
+        add_to='w',
+        to_schema=True,
+    )
+
+
+# 13_2
+@router.post(
+    "/me/comparison-add/{product_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsShort,
+    description="Add item by product_id to personal comparison list"
+)
+@RateLimiter.rate_limit()
+async def add_to_comparison(
+        request: Request,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        product: "Product" = Depends(deps_products_get_one_simple),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.add_to_list(
+        usertools=usertools,
+        product=product,
+        add_to='c',
+        to_schema=True,
+    )
+
+
+# 13_3
+@router.post(
+    "/me/recently-viewed-add/{product_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=UserToolsShort,
+    description="Add item by product_id to personal recently viewed list"
+)
+@RateLimiter.rate_limit()
+async def add_to_comparison(
+        request: Request,
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
+        product: "Product" = Depends(deps_products_get_one_simple),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: UserToolsService = UserToolsService(
+        session=session
+    )
+    return await service.add_to_list(
+        usertools=usertools,
+        product=product,
+        to_schema=True,
+    )

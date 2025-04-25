@@ -1,4 +1,5 @@
 import logging
+from fastapi import status
 from typing import Sequence, TYPE_CHECKING, Union
 
 from sqlalchemy import select, Result
@@ -6,11 +7,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.core.models import UserTools, User
+from src.core.models import UserTools
 from src.tools.exceptions import CustomException
 from .exceptions import Errors
 
 if TYPE_CHECKING:
+    from src.tools.usertools_content import ToolsContent
     from .filters import (
         UserToolsFilter,
     )
@@ -150,3 +152,58 @@ class UserToolsRepository:
             raise CustomException(
                 msg=Errors.already_exists_user_id(instance.user_id)
             )
+
+    async def add_to_dict(
+            self,
+            usertools: UserTools,
+            content: "ToolsContent",
+            add_to: str = 'rv'
+    ):
+        if add_to == 'w':
+            usertools.wishlist = await self.operate_dict(
+                content=content,
+                operation_dict=usertools.wishlist,
+                max_length=usertools.max_length_w,
+                verb='wishlist'
+            )
+        elif add_to == 'c':
+            usertools.comparison = await self.operate_dict(
+                content=content,
+                operation_dict=usertools.comparison,
+                max_length=usertools.max_length_c,
+                verb="comparison_list"
+            )
+        else: # add_to == 'rv
+            usertools.recently_viewed = await self.operate_dict(
+                content=content,
+                operation_dict=usertools.recently_viewed,
+                max_length=usertools.max_length_rv
+            )
+
+        try:
+            await self.session.commit()
+            await self.session.refresh(usertools)
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                msg=Errors.DATABASE_ERROR
+            )
+        return usertools
+
+    async def operate_dict(
+            self,
+            content: "ToolsContent",
+            operation_dict: dict,
+            max_length: int,
+            verb: str = 'recently viewed'
+    ):
+        operation_dict.update(content.to_dict())
+        operation_dict = dict(sorted(operation_dict.items(), key=lambda item: item[1]))
+
+        length = len(operation_dict)
+        if length > max_length:
+            first_key = next(iter(operation_dict))
+            item_to_remove = {first_key: operation_dict.pop(first_key)}
+            self.logger.info("Removed from %s: %r" % (verb, item_to_remove))
+        return operation_dict

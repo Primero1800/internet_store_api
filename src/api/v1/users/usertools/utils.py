@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.tools.usertools_content import ToolsContent
 from ..user.utils import get_short_schema_from_orm as get_short_user_schema_from_orm
 
 from .schemas import (
@@ -22,9 +23,14 @@ async def get_short_schema_from_orm(
     orm_model: "UserTools"
 ) -> UserToolsShort:
 
+    dictionary: dict = {**orm_model.to_dict()}
+    dictionary['wishlist'] = ToolsContent.from_dict(dictionary['wishlist'])
+    dictionary['comparison'] = ToolsContent.from_dict(dictionary['comparison'])
+    dictionary['recently_viewed'] = ToolsContent.from_dict(dictionary['recently_viewed'])
+
     # BRUTE FORCE VARIANT
     return UserToolsShort(
-        **orm_model.to_dict(),
+        **dictionary,
     )
 
 
@@ -56,8 +62,8 @@ async def get_or_create(
         user_id: int,
         session: AsyncSession,
 ) -> "UserTools":
-    from .service import SaleInfoService
-    service = SaleInfoService(
+    from .service import UserToolsService
+    service = UserToolsService(
         session=session
     )
-    return await service.get_or_create(product_id)
+    return await service.get_or_create(user_id)

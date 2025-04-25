@@ -1,11 +1,14 @@
+import datetime
 import logging
 from typing import TYPE_CHECKING, Optional
 
 from fastapi import status
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.tools.exceptions import CustomException
+from src.tools.usertools_content import ToolsContent
 from .repository import UserToolsRepository
 from .exceptions import Errors
 from .validators import ValidRelationsInspector
@@ -19,6 +22,7 @@ if TYPE_CHECKING:
     from .filters import UserToolsFilter
     from src.core.models import (
         UserTools,
+        Product,
     )
 
 CLASS = "UserTools"
@@ -239,7 +243,8 @@ class UserToolsService:
 
     async def get_or_create(
             self,
-            user_id: int
+            user_id: int,
+            to_schema: bool = False
     ):
         self.logger.info('Getting %r bound with user_id=%s from database' % (CLASS, user_id))
         sa_orm_model = await self.get_one(
@@ -253,4 +258,44 @@ class UserToolsService:
                 user_id=user_id,
                 to_schema=False,
             )
+        if to_schema:
+            return await utils.get_short_schema_from_orm(sa_orm_model)
         return sa_orm_model
+
+    async def add_to_list(
+            self,
+            usertools: "UserTools",
+            product: "Product",
+            add_to: str = 'rv',
+            to_schema: bool = False
+    ):
+        if isinstance(product, ORJSONResponse):
+            return product
+
+        content: ToolsContent = ToolsContent(
+            product_id=product.id,
+            added=datetime.datetime.now()
+        )
+
+        repository: UserToolsRepository = UserToolsRepository(
+            session=self.session
+        )
+
+        try:
+            orm_model = await repository.add_to_dict(
+                usertools=usertools,
+                content=content,
+                add_to=add_to
+            )
+        except CustomException as exc:
+            self.logger.error(Errors.DATABASE_ERROR, exc_info=exc)
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            return await utils.get_short_schema_from_orm(orm_model)
+        return orm_model
