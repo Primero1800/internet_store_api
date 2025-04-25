@@ -301,6 +301,7 @@ async def patch_one(
     dependencies=[Depends(current_superuser), ],
     status_code=status.HTTP_200_OK,
     response_model=UserPublicExtended,
+    description="Get item relations user by id (for superuser only)"
 )
 # @RateLimiter.rate_limit()
 # no rate limit for superuser
@@ -323,14 +324,14 @@ async def get_relations_user(
 @router.get(
     "/{id}/product",
     status_code=status.HTTP_200_OK,
-    response_model=ProductShort,
+    description="Get item relations product by id"
 )
 @RateLimiter.rate_limit()
 async def get_relations_product(
         request: Request,
         id: int,
         session: AsyncSession = Depends(DBConfigurer.session_getter)
-):
+) -> ProductShort | None:
     service: VotesService = VotesService(
         session=session
     )

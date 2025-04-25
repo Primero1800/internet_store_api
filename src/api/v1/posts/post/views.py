@@ -288,3 +288,50 @@ async def patch_one(
         reset_product=reset_product,
         is_partial=True
     )
+
+
+# 11_1
+@router.get(
+    "/{id}/user",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_200_OK,
+    response_model=UserPublicExtended,
+    description="Get item relations user by id (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_relations_user(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: PostsService = PostsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id,
+        maximized=False,
+        relations=['user',]
+    )
+
+
+# 11_2
+@router.get(
+    "/{id}/product",
+    status_code=status.HTTP_200_OK,
+    description="Get item relations product by id"
+)
+@RateLimiter.rate_limit()
+async def get_relations_product(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> ProductShort | None:
+    service: PostsService = PostsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id,
+        maximized=False,
+        relations=['product',]
+    )
