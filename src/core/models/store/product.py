@@ -21,6 +21,7 @@ if TYPE_CHECKING:
         AdditionalInformation,
         SaleInformation,
         Vote,
+        Post,
     )
 
 
@@ -99,6 +100,11 @@ class Product(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
         'Vote',
         back_populates='product',
         cascade="all, delete"
+    )
+
+    posts: Mapped[list['Post']] = relationship(
+        'Post',
+        back_populates='product',
     )
 
     def __str__(self):

@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from src.core.models import (
         Vote,
         UserTools,
+        Post,
     )
 
 
@@ -54,6 +55,12 @@ class User(Base, IDIntPkMixin, SQLAlchemyBaseUserTable[int]):
     usertools: Mapped['UserTools'] = relationship(
         "UserTools",
         back_populates="user",
+    )
+
+    posts: Mapped[list['Post']] = relationship(
+        'Post',
+        back_populates='user',
+        cascade='all, delete'
     )
 
     def __str__(self):
