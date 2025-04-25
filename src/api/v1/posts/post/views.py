@@ -12,7 +12,7 @@ from fastapi_filter import FilterDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.scrypts.pagination import paginate_result
-from .service import PostService
+from .service import PostsService
 from .schemas import (
     PostRead,
     PostShort,
