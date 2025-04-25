@@ -309,15 +309,9 @@ async def get_one_relations_user_id(
 @RateLimiter.rate_limit()
 async def get_one_or_create(
         request: Request,
-        user: "User" = Depends(current_user),
-        session: AsyncSession = Depends(DBConfigurer.session_getter)
+        usertools: "UserTools" = Depends(deps.get_or_create_usertools),
 ):
-    service: UserToolsService = UserToolsService(
-        session=session
-    )
-    return await service.get_or_create(
-        user_id=user.id,
-    )
+    return usertools
 
 
 # 12_2
