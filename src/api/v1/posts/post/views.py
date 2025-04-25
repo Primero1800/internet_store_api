@@ -131,3 +131,48 @@ async def get_all_full(
         page=page,
         size=size,
     )
+
+
+# 5
+@router.get(
+    "/{id}",
+    status_code=status.HTTP_200_OK,
+    response_model=PostShort,
+    description="Get item by id"
+)
+@RateLimiter.rate_limit()
+async def get_one(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: PostsService = PostsService(
+        session=session
+    )
+    return await service.get_one(
+        id=id,
+    )
+
+
+# 6
+@router.get(
+    "/{id}/full",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=PostRead,
+    description="Get full item by id (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_one_full(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: PostsService = PostsService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id,
+        maximized=True
+    )
