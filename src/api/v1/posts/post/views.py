@@ -184,7 +184,7 @@ async def get_one_full(
     dependencies=[Depends(current_user),],
     status_code=status.HTTP_201_CREATED,
     response_model=PostRead,
-    description="Create one item (for superuser only)"
+    description="Create one item"
 )
 @RateLimiter.rate_limit()
 async def create_one(
