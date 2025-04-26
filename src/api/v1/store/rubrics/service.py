@@ -80,7 +80,7 @@ class RubricsService:
                 }
             )
         if to_schema:
-            await utils.get_short_schema_from_orm(returned_orm_model)
+            return await utils.get_short_schema_from_orm(returned_orm_model)
         return returned_orm_model
 
     async def get_one_complex(
