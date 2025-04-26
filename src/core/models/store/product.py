@@ -22,6 +22,7 @@ if TYPE_CHECKING:
         SaleInformation,
         Vote,
         Post,
+        CartItem,
     )
 
 
@@ -105,6 +106,12 @@ class Product(IDIntPkMixin, Title3FieldMixin, DescriptionMixin, Base):
     posts: Mapped[list['Post']] = relationship(
         'Post',
         back_populates='product',
+    )
+
+    cart_items: Mapped[list['CartItem']] = relationship(
+        'CartItem',
+        back_populates='product',
+        cascade="all, delete"
     )
 
     def __str__(self):
