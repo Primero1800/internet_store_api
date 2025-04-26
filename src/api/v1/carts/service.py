@@ -7,13 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.tools.exceptions import CustomException
 from . import utils
-from .repository import PostsRepository
+from .repository import CartsRepository
 from .schemas import (
     CartCreate,
     CartUpdate,
     CartPartialUpdate,
 )
-# from .exceptions import Errors
+from .exceptions import Errors
 # from .validators import ValidRelationsInspector
 
 
@@ -53,7 +53,7 @@ class CartsService:
             self,
             filter_model: "CartFilter"
     ):
-        repository: PostsRepository = PostsRepository(
+        repository: CartsRepository = CartsRepository(
             session=self.session
         )
         result = []
@@ -61,3 +61,63 @@ class CartsService:
         for orm_model in listed_orm_models:
             result.append(await utils.get_schema_from_orm(orm_model=orm_model))
         return result
+
+    async def get_one(
+            self,
+            id: int,
+            to_schema: bool = True
+    ):
+        repository: CartsRepository = CartsRepository(
+            session=self.session
+        )
+        try:
+            returned_orm_model = await repository.get_one(
+                id=id,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            return await utils.get_short_schema_from_orm(orm_model=returned_orm_model)
+        return returned_orm_model
+
+    async def get_one_complex(
+            self,
+            id: int = None,
+            maximized: bool = True,
+            relations: list | None = [],
+            to_schema: bool = True,
+    ):
+        repository: CartsRepository = CartsRepository(
+            session=self.session
+        )
+        try:
+            returned_orm_model = await repository.get_one_complex(
+                id=id,
+                maximized=maximized,
+                relations=relations,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            if not maximized and not relations:
+                return await utils.get_short_schema_from_orm(
+                    returned_orm_model
+                )
+            return await utils.get_schema_from_orm(
+                returned_orm_model,
+                maximized=maximized,
+                relations=relations,
+            )
+        return returned_orm_model

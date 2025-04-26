@@ -17,7 +17,7 @@ class CartShort(BaseCart):
 
 
 class CartRead(CartShort):
-    pass
+    user: Any | None
 
 
 class CartCreate(BaseCart):
