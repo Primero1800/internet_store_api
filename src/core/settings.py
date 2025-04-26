@@ -190,6 +190,9 @@ class Tags(CustomSettings):
     POSTS_PREFIX: str
     POSTS_TAG: str
 
+    CARTS_PREFIX: str
+    CARTS_TAG: str
+
 
 class Users(CustomSettings):
     USERS_PASSWORD_MIN_LENGTH: int

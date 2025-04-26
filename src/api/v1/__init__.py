@@ -5,6 +5,7 @@ from .auth import router as auth_router
 from .sessions import router as sessions_router
 from .store import router as store_router
 from .posts import router as posts_router
+from .carts import router as carts_router
 
 
 from src.core.settings import settings
@@ -36,4 +37,10 @@ router.include_router(
 
 router.include_router(
     posts_router,
+)
+
+router.include_router(
+    carts_router,
+    prefix=settings.tags.CARTS_PREFIX,
+    tags=[settings.tags.CARTS_TAG]
 )
