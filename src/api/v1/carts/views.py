@@ -142,6 +142,27 @@ async def get_all_full(
 
 # 5_1
 @router.get(
+    "/me",
+    status_code=status.HTTP_200_OK,
+    response_model=CartShort,
+    description="Get personal item"
+)
+@RateLimiter.rate_limit()
+async def get_one_of_me(
+        request: Request,
+        user: "User" = Depends(current_user),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: CartsService = CartsService(
+        session=session
+    )
+    return await service.get_one(
+        id=user.id,
+    )
+
+
+# 5_2
+@router.get(
     "/{id}",
     dependencies=[Depends(current_superuser), ],
     status_code=status.HTTP_200_OK,
@@ -151,27 +172,6 @@ async def get_all_full(
 # @RateLimiter.rate_limit()
 # no rate limit for superuser
 async def get_one_by_id(
-        request: Request,
-        id: int,
-        session: AsyncSession = Depends(DBConfigurer.session_getter)
-):
-    service: CartsService = CartsService(
-        session=session
-    )
-    return await service.get_one(
-        id=id,
-    )
-
-
-# 5_2
-@router.get(
-    "/me",
-    status_code=status.HTTP_200_OK,
-    response_model=CartShort,
-    description="Get personal item"
-)
-@RateLimiter.rate_limit()
-async def get_one_of_me(
         request: Request,
         id: int,
         session: AsyncSession = Depends(DBConfigurer.session_getter)
