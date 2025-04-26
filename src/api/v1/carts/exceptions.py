@@ -12,3 +12,7 @@ class Errors:
     ALREADY_EXISTS = f"{CLASS} already exists"
 
     NO_RIGHTS = "You are not authorized for this operation"
+
+    @staticmethod
+    def already_exists_id(user_id: int):
+        return f"{CLASS} with user_id={user_id} already exists"

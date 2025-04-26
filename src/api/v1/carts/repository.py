@@ -9,7 +9,7 @@ from sqlalchemy.orm import joinedload
 
 from src.core.models import Cart, CartItem, Product
 from src.tools.exceptions import CustomException
-# from .exceptions import Errors
+from .exceptions import Errors
 
 if TYPE_CHECKING:
     from .schemas import (
@@ -114,3 +114,32 @@ class CartsRepository:
     ):
         orm_model: Cart = Cart(**instance.model_dump())
         return orm_model
+
+    async def create_one_empty(
+            self,
+            orm_model: Cart
+    ):
+        try:
+            self.session.add(orm_model)
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+            self.logger.info("%r %r was successfully created" % (CLASS, orm_model))
+        except IntegrityError as error:
+            self.logger.error(f"Error while orm_model creating", exc_info=error)
+            raise CustomException(
+                msg=Errors.already_exists_id(user_id=orm_model.user_id)
+            )
+
+    async def delete_one(
+            self,
+            orm_model: Cart,
+    ) -> None:
+        try:
+            self.logger.info(f"Deleting %r from database" % orm_model)
+            await self.session.delete(orm_model)
+            await self.session.commit()
+        except IntegrityError as exc:
+            self.logger.error("Error while deleting data from database", exc_info=exc)
+            raise CustomException(
+                msg="Error while deleting %r from database" % orm_model
+            )

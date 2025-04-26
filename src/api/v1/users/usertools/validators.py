@@ -40,7 +40,7 @@ class ValidRelationsInspector:
         return self.result
 
     async def expecting_user_exists(self, user_id: int):
-        # Expecting if chosen product exists
+        # Expecting if chosen user exists
         try:
             users_repository: UsersRepository = UsersRepository(
                 session=self.session,

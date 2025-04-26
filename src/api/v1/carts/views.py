@@ -26,11 +26,12 @@ from src.api.v1.users.user.dependencies import (
 from src.core.config import DBConfigurer, RateLimiter
 from ..store.products.schemas import ProductShort
 from src.api.v1.users.user.schemas import UserPublicExtended
-# from . import dependencies as deps
+from . import dependencies as deps
 
 if TYPE_CHECKING:
     from src.core.models import(
         User,
+        Cart
     )
 
 
@@ -231,56 +232,49 @@ async def get_one_full_by_id(
 
 
 # 7
-# @router.post(
-#     "",
-#     dependencies=[Depends(current_user),],
-#     status_code=status.HTTP_201_CREATED,
-#     response_model=CartRead,
-#     description="Create one item"
-# )
+@router.post(
+    "",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=CartRead,
+    description="Create one item (for superuser only)"
+)
 # @RateLimiter.rate_limit()
-# async def create_one(
-#         request: Request,
-#         product_id: Optional[int] = Form(default=None, gt=0),
-#         name: str = Form(),
-#         review: str = Form(),
-#         user: "User" = Depends(current_user),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter)
-# ):
-#
-#     service: CartsService = CartsService(
-#         session=session
-#     )
-#     return await service.create_one(
-#         user=user,
-#         product_id=product_id,
-#         name=name,
-#         review=review,
-#     )
+# no rate limit for superuser
+async def create_one(
+        request: Request,
+        id: int = Form(gt=0),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+
+    service: CartsService = CartsService(
+        session=session
+    )
+    return await service.create_one(
+        id=id,
+    )
 
 
-# 8_1
-# @router.delete(
-#     "/{id}",
-#     dependencies=[Depends(current_superuser), ],
-#     status_code=status.HTTP_204_NO_CONTENT,
-#     description="Delete item by id (for superuser only)"
-# )
-# # @RateLimiter.rate_limit()
-# # no rate limit for superuser
-# async def delete_one_by_id(
-#         request: Request,
-#         user: "User" = Depends(current_user),
-#         orm_model: "Vote" = Depends(deps.get_one_simple),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter),
-# ):
-#     service: CartsService = CartsService(
-#         session=session
-#     )
-#     return await service.delete_one(
-#         orm_model=orm_model,
-#         user=user
-#     )
+# 8
+@router.delete(
+    "/{id}",
+    dependencies=[Depends(current_superuser), ],
+    status_code=status.HTTP_204_NO_CONTENT,
+    description="Delete item by id (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def delete_one_by_id(
+        request: Request,
+        orm_model: "Cart" = Depends(deps.get_one_simple),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: CartsService = CartsService(
+        session=session
+    )
+    return await service.delete_one(
+        orm_model=orm_model,
+    )
 
 
 # 8_2
