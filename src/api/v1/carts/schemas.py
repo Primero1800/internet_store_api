@@ -4,6 +4,8 @@ from typing import Annotated, Optional, Any
 
 from pydantic import BaseModel, ConfigDict, Field, conint
 
+from src.api.v1.carts.mixins import TotalCostMixin
+
 
 class BaseCart(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -11,7 +13,7 @@ class BaseCart(BaseModel):
     user_id: int
 
 
-class CartShort(BaseCart):
+class CartShort(TotalCostMixin, BaseCart):
     created: datetime
     cart_items: list[Any]
 
