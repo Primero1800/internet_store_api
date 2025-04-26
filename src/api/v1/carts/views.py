@@ -277,23 +277,26 @@ async def delete_one_by_id(
     )
 
 
-# 8_2
-# @router.delete(
-#     "/me",
-#     status_code=status.HTTP_204_NO_CONTENT,
-#     description="Delete personal item"
-# )
+# 9
+@router.put(
+        "/{id}",
+        dependencies=[Depends(current_superuser), ],
+        status_code=status.HTTP_200_OK,
+        response_model=CartRead,
+        description="Rearrange item by id (for superuser only)"
+)
 # @RateLimiter.rate_limit()
-# async def delete_one_by_id(
-#         request: Request,
-#         user: "User" = Depends(current_user),
-#         orm_model: "Vote" = Depends(deps.get_one_simple),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter),
-# ):
-#     service: CartsService = CartsService(
-#         session=session
-#     )
-#     return await service.delete_one(
-#         orm_model=orm_model,
-#         user=user
-#     )
+# no rate limit for superuser
+async def put_one(
+        request: Request,
+        orm_model: "Cart" = Depends(deps.get_one_simple),
+        user_id: int = Form(gt=0),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: CartsService = CartsService(
+        session=session
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        id=user_id,
+    )

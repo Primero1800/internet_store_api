@@ -185,3 +185,57 @@ class CartsService:
                     "detail": exc.msg,
                 }
             )
+
+    async def edit_one(
+            self,
+            orm_model: "Cart",
+            id: int,
+            is_partial: bool = False
+    ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+        repository: CartsRepository = CartsRepository(
+            session=self.session,
+        )
+
+        # catching ValidationError in exception_handler
+        updating_dictionary = {
+            "user_id": id
+        }
+        if is_partial:
+            instance: CartPartialUpdate = CartPartialUpdate(**updating_dictionary)
+        else:
+            instance: CartUpdate = CartUpdate(**updating_dictionary)
+
+        dict_to_validate = {}
+        if isinstance(id, int):
+            dict_to_validate['user_id'] = id
+        inspector = ValidRelationsInspector(
+            session=self.session,
+            **dict_to_validate
+        )
+        result = await inspector.inspect()
+        if isinstance(result, ORJSONResponse):
+            return result
+        # product_orm = result["product_orm"] if "product_orm" in result else None
+
+        try:
+            await repository.edit_one_empty(
+                instance=instance,
+                orm_model=orm_model,
+                is_partial=is_partial,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+
+        self.logger.info("%s %r was successfully edited" % (CLASS, orm_model))
+
+        return await self.get_one_complex(
+            id=orm_model.user_id
+        )
