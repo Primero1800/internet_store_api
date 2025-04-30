@@ -212,3 +212,20 @@ class CartsRepository:
             raise CustomException(
                 msg=Errors.item_already_exists_id(cart_id=orm_model.cart_id, product_id=orm_model.product_id)
             )
+
+    async def clear_cart(
+            self,
+            cart: Cart,
+    ):
+        try:
+            for item in cart.cart_items:
+                await self.session.delete(item)
+            await self.session.commit()
+            await self.session.refresh(cart)
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                msg=Errors.DATABASE_ERROR
+            )
+        return cart

@@ -463,3 +463,47 @@ async def get_one_full_or_create_by_id(
         to_schema=True,
         maximized=True,
     )
+
+
+# 12_1
+@router.post(
+    "/clear/me",
+    status_code=status.HTTP_200_OK,
+    response_model=CartShort,
+    description="Clear personal item or creating empty one if not exists"
+)
+@RateLimiter.rate_limit()
+async def clear_me_or_create(
+        request: Request,
+        cart: "Cart" = Depends(deps.get_or_create_cart),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: CartsService = CartsService(
+        session=session
+    )
+    return await service.clear_cart(
+        cart=cart
+    )
+
+
+# 12_2
+@router.post(
+    "/clear/{user_id}",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    response_model=CartShort,
+    description="Clear personal item by user_id or creating empty one if not exists (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def clear_by_id_or_create(
+        request: Request,
+        user_id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: CartsService = CartsService(
+        session=session
+    )
+    return await service.clear_cart(
+        user_id=user_id
+    )

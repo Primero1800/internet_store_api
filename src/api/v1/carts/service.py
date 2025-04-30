@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Optional, Iterable
 
 from fastapi import status
 from fastapi.responses import ORJSONResponse
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.tools.exceptions import CustomException
@@ -359,7 +360,6 @@ class CartsService:
             )
         return returned_orm_model
 
-
     async def create_one_item(
             self,
             cart: "Cart",
@@ -417,3 +417,33 @@ class CartsService:
             product_id=product_id,
             to_schema=to_schema
         )
+
+    async def clear_cart(
+            self,
+            cart: Optional["Cart"] = None,
+            user_id: Optional[int] = None,
+            to_schema: bool = False
+    ):
+        if not cart:
+            cart: "Cart" = await self.get_or_create(
+                user_id=user_id
+            )
+        repository: CartsRepository = CartsRepository(
+            session=self.session
+        )
+        try:
+            orm_model = await repository.clear_cart(
+                cart=cart
+            )
+        except CustomException as exc:
+            self.logger.error(Errors.DATABASE_ERROR, exc_info=exc)
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            return await utils.get_short_schema_from_orm(orm_model)
+        return orm_model
