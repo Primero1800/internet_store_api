@@ -385,6 +385,7 @@ class CartsService:
 
         if not product_orm.available or product_orm.quantity < quantity:
             return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
                 content={
                     "message": Errors.HANDLER_MESSAGE,
                     "detail": f"Item can't be added to {CLASS}: not enough quantity",

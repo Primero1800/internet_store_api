@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Optional
 
+from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .schemas import (
@@ -73,7 +74,10 @@ async def get_short_schema_from_orm(
 
 async def get_short_item_schema_from_orm(
         orm_model: "CartItem"
-) -> CartItemShort:
+) -> CartItemShort | ORJSONResponse:
+
+    if isinstance(orm_model, ORJSONResponse):
+        return orm_model
 
     # BRUTE FORCE VARIANT
     return CartItemShort(
@@ -83,7 +87,11 @@ async def get_short_item_schema_from_orm(
 
 async def get_item_schema_from_orm(
         orm_model: "CartItem"
-) -> CartItemRead:
+) -> CartItemRead | ORJSONResponse:
+
+    if isinstance(orm_model, ORJSONResponse):
+        return orm_model
+
     from ..store.products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
     return CartItemRead(
         **orm_model.to_dict(),
