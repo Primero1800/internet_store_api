@@ -85,7 +85,7 @@ class CartItem(IDIntPkMixin, Base):
     )
 
     def __str__(self):
-        return f"{self.__class__.__name__}(cart_id={self.cart_id}, prduct_id={self.product_id})"
+        return f"{self.__class__.__name__}(cart_id={self.cart_id}, product_id={self.product_id})"
 
     def __repr__(self):
         return str(self)

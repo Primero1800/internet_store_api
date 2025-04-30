@@ -16,3 +16,11 @@ class Errors:
     @staticmethod
     def already_exists_id(user_id: int):
         return f"{CLASS} with user_id={user_id} already exists"
+
+    @staticmethod
+    def item_already_exists_id(cart_id: int, product_id: int):
+        return f"{CLASS}Item with cart_id={cart_id}  and product_id={product_id} already exists"
+
+    @staticmethod
+    def item_not_exists_id(cart_id: int, product_id: int):
+        return f"Product with id={product_id} doesn't exists in {CLASS} with user_id={cart_id}"
