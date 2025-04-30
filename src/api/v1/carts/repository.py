@@ -16,6 +16,8 @@ if TYPE_CHECKING:
         CartCreate,
         CartUpdate,
         CartPartialUpdate,
+        CartItemCreate,
+        CartItemUpdate,
     )
     from .filters import CartFilter
 
@@ -164,4 +166,49 @@ class CartsRepository:
             self.logger.error("Error occurred while editing data in database", exc_info=exc)
             raise CustomException(
                 msg=Errors.already_exists_id(instance.user_id)
+            )
+
+    async def get_one_item_complex(
+            self,
+            cart_id: int,
+            product_id: int,
+            maximized: bool = True,
+    ):
+        stmt_filter = select(CartItem).where(CartItem.cart_id == cart_id).where(CartItem.product_id == product_id)
+
+        options_list = []
+        if maximized:
+            options_list.append(joinedload(CartItem.product).joinedload(Product.images))
+        stmt = stmt_filter.options(*options_list)
+
+        result: Result = await self.session.execute(stmt)
+        orm_model: Cart | None = result.unique().scalar_one_or_none()
+
+        if not orm_model:
+            text_error = f"cart_id={cart_id} and product_id={product_id}"
+            raise CustomException(
+                msg=f"{CLASS}Item with {text_error} not found"
+            )
+        return orm_model
+
+    async def get_item_orm_model_from_schema(
+            self,
+            instance: Union["CartItemCreate", "CartItemUpdate"]
+    ):
+        orm_model: CartItem = CartItem(**instance.model_dump())
+        return orm_model
+
+    async def create_one_empty_item(
+            self,
+            orm_model: CartItem
+    ):
+        try:
+            self.session.add(orm_model)
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+            self.logger.info("%sItem %r was successfully created" % (CLASS, orm_model))
+        except IntegrityError as error:
+            self.logger.error(f"Error while orm_model creating", exc_info=error)
+            raise CustomException(
+                msg=Errors.item_already_exists_id(cart_id=orm_model.cart_id, product_id=orm_model.product_id)
             )

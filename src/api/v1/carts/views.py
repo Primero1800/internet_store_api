@@ -15,7 +15,7 @@ from src.scrypts.pagination import paginate_result
 from .service import CartsService
 from .schemas import (
     CartRead,
-    CartShort,
+    CartShort, CartItemShort, CartItemRead,
 )
 from .filters import CartFilter
 from src.api.v1.users.user.dependencies import (
@@ -32,7 +32,8 @@ from . import utils
 if TYPE_CHECKING:
     from src.core.models import(
         User,
-        Cart
+        Cart,
+        CartItem,
     )
 
 
@@ -339,7 +340,7 @@ async def get_one_full_of_me_or_create(
     dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_201_CREATED,
     response_model=CartShort,
-    description="Get the cart by user_id or creating empty one if not exists"
+    description="Get the cart by user_id or creating empty one if not exists (for superuser only)"
 )
 # @RateLimiter.rate_limit()
 # no rate limit for superuser
@@ -363,7 +364,7 @@ async def get_one_or_create_by_id(
     dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_201_CREATED,
     response_model=CartRead,
-    description="Get the item full by user_id or creating empty one if not exists"
+    description="Get the item full by user_id or creating empty one if not exists (for superuser only)"
 )
 # @RateLimiter.rate_limit()
 # no rate limit for superuser
@@ -377,6 +378,88 @@ async def get_one_full_or_create_by_id(
     )
     return await service.get_or_create(
         user_id=user_id,
+        to_schema=True,
+        maximized=True,
+    )
+
+
+# 11_1
+@router.post(
+    "/get-or-create-item/me",
+    status_code=status.HTTP_201_CREATED,
+    response_model=CartItemShort,
+    description="Get cart_item of personal cart or creating one if not exists"
+)
+@RateLimiter.rate_limit()
+async def get_one_item_of_me_or_create(
+        request: Request,
+        cart_item: "CartItem" = Depends(deps.get_or_create_cart_item)
+):
+    return await utils.get_short_item_schema_from_orm(cart_item)
+
+
+# 11_2
+@router.post(
+    "/get-or-create-item/me/full",
+    status_code=status.HTTP_201_CREATED,
+    response_model=CartItemRead,
+    description="Get cart_item full of personal cart or creating empty one if not exists"
+)
+@RateLimiter.rate_limit()
+async def get_one_item_full_of_me_or_create(
+        request: Request,
+        cart_item: "CartItem" = Depends(deps.get_or_create_cart_item)
+):
+    return await utils.get_item_schema_from_orm(cart_item)
+
+
+# 11_3
+@router.post(
+    "/get-or-create-item/{user_id}",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=CartItemShort,
+    description="Get cart_item of user by user_id or creating empty one if not exists (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_one_or_create_by_id(
+        request: Request,
+        user_id: int,
+        product_id: int = Form(gt=0),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: CartsService = CartsService(
+        session=session
+    )
+    return await service.get_or_create_item(
+        user_id=user_id,
+        product_id=product_id,
+    )
+
+
+# 11_4
+@router.post(
+    "/get-or-create-item/{user_id}/full",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=CartItemRead,
+    description="Get cart_item of user by user_id or creating empty one if not exists (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_one_full_or_create_by_id(
+        request: Request,
+        user_id: int,
+        product_id: int = Form(gt=0),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: CartsService = CartsService(
+        session=session
+    )
+    return await service.get_or_create_item(
+        user_id=user_id,
+        product_id=product_id,
         to_schema=True,
         maximized=True,
     )
