@@ -124,7 +124,8 @@ class CartsService:
 
     async def create_one(
             self,
-            id: int
+            id: int,
+            to_schema: bool = True
     ):
         repository: CartsRepository = CartsRepository(
             session=self.session
@@ -161,7 +162,8 @@ class CartsService:
 
         self.logger.info("%s %r was successfully created" % (CLASS, orm_model))
         return await self.get_one_complex(
-            id=orm_model.user_id
+            id=orm_model.user_id,
+            to_schema=to_schema
         )
 
     async def delete_one(
@@ -239,3 +241,29 @@ class CartsService:
         return await self.get_one_complex(
             id=orm_model.user_id
         )
+
+    async def get_or_create(
+            self,
+            user_id: int,
+            to_schema: bool = False,
+            maximized: bool = False,
+    ):
+        self.logger.info('Getting %r bound with user_id=%s from database' % (CLASS, user_id))
+        sa_orm_model = await self.get_one_complex(
+            id=user_id,
+            to_schema=False
+        )
+        if isinstance(sa_orm_model, ORJSONResponse):
+            self.logger.info('No %r bound with user_id=%s in database' % (CLASS, user_id))
+            self.logger.info('Creating %r bound with user_id=%s in database' % (CLASS, user_id))
+            sa_orm_model = await self.create_one(
+                id=user_id,
+                to_schema=False,
+            )
+
+        if to_schema:
+            if not maximized:
+                return await utils.get_short_schema_from_orm(sa_orm_model)
+            else:
+                return await utils.get_schema_from_orm(sa_orm_model)
+        return sa_orm_model
