@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from .schemas import (
     CartRead,
     CartShort,
@@ -77,3 +79,16 @@ async def get_short_item_schema_from_orm(
     return CartItemShort(
         **orm_model.to_dict()
     )
+
+
+# /get-or-create/me
+# /get-or-create/{user_id}
+async def get_or_create(
+        user_id: int,
+        session: AsyncSession,
+) -> "Cart":
+    from .service import CartsService
+    service = CartsService(
+        session=session
+    )
+    return await service.get_or_create(user_id)
