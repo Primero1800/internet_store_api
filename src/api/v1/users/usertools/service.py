@@ -2,8 +2,6 @@ import datetime
 import logging
 from typing import TYPE_CHECKING, Optional
 
-from fastapi import status
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 

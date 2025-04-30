@@ -535,6 +535,7 @@ async def clear_comparison(
         to_schema=True,
     )
 
+
 # 15_3
 @router.post(
     "/me/recently-viewed-clear",
