@@ -429,6 +429,9 @@ class CartsService:
             cart: "Cart" = await self.get_or_create(
                 user_id=user_id
             )
+        if isinstance(cart, ORJSONResponse):
+            return cart
+
         repository: CartsRepository = CartsRepository(
             session=self.session
         )
