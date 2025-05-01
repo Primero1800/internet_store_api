@@ -150,6 +150,7 @@ class RunConfig(CustomSettings):
 class Sessions(CustomSettings):
     SESSIONS_MAX_AGE: int
     SESSIONS_SECRET_KEY: str
+    SESSION_CART: str
 
 
 class Tags(CustomSettings):
