@@ -44,6 +44,14 @@ cookie = SessionCookie(
     cookie_params=cookie_params,
 )
 
+cookie_or_none = SessionCookie(
+    cookie_name="x-session-id",
+    identifier="general_verifier",
+    auto_error=False,
+    secret_key=settings.sessions.SESSIONS_SECRET_KEY,
+    cookie_params=cookie_params,
+)
+
 
 # SESSION BACKEND #############################
 
@@ -90,6 +98,16 @@ class BasicVerifier(SessionVerifier[UUID, SessionData]):
 verifier = BasicVerifier(
     identifier="general_verifier",
     auto_error=True,
+    backend=BACKEND,
+    auth_http_exception=HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Invalid session"
+    ),
+)
+
+verifier_or_none = BasicVerifier(
+    identifier="general_verifier",
+    auto_error=False,
     backend=BACKEND,
     auth_http_exception=HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
