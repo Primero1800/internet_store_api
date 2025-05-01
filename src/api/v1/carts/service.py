@@ -14,6 +14,7 @@ from .schemas import (
     CartUpdate,
     CartPartialUpdate,
     CartItemCreate,
+    CartItemPartialUpdate,
 )
 from .exceptions import Errors
 from .validators import ValidRelationsInspector
@@ -23,6 +24,8 @@ if TYPE_CHECKING:
     from src.core.models import (
         Cart,
         User,
+        Product,
+        CartItem,
     )
     from .filters import CartFilter
 
@@ -450,4 +453,73 @@ class CartsService:
             )
         if to_schema:
             return await utils.get_short_schema_from_orm(orm_model)
+        return orm_model
+
+    async def change_quantity(
+            self,
+            delta: Optional[int] = None,
+            absolute: Optional[int] = None,
+            cart_item: Optional["CartItem"] = None,
+            user_id: Optional[int] = None,
+            product_id: Optional[int] = None,
+            to_schema: bool = True,
+    ):
+        if not cart_item:
+            cart_item: "CartItem" = await self.get_or_create_item(
+                product_id=product_id,
+                user_id=user_id,
+            )
+        if isinstance(cart_item, ORJSONResponse):
+            return cart_item
+        dict_to_validate = {
+            'product_id': cart_item.product_id
+        }
+        inspector = ValidRelationsInspector(
+            session=self.session,
+            **dict_to_validate
+        )
+        result = await inspector.inspect()
+        if isinstance(result, ORJSONResponse):
+            return result
+        product_orm: "Product" = result["product_orm"] if "product_orm" in result else None
+
+        new_quantity = (cart_item.quantity + delta) if delta else absolute
+        repository: CartsRepository = CartsRepository(
+            session=self.session
+        )
+        if new_quantity <= 0:
+            self.logger.warning("New product quantity <= 0. CartItem will be deleted from cart")
+            try:
+                return await repository.delete_cart_item(cart_item)
+            except CustomException as exc:
+                return ORJSONResponse(
+                    status_code=exc.status_code,
+                    content={
+                        "message": Errors.HANDLER_MESSAGE,
+                        "detail": exc.msg,
+                    }
+                )
+
+        new_quantity = min(new_quantity, product_orm.quantity)
+        self.logger.info("New CartItem quantity will be set on %s" % new_quantity)
+        instance: CartItemPartialUpdate = CartItemPartialUpdate(
+            quantity=new_quantity
+        )
+
+        try:
+            orm_model = await repository.edit_cart_item(
+                instance=instance,
+                orm_model=cart_item,
+                is_partial=True,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            return await utils.get_short_item_schema_from_orm(orm_model)
         return orm_model

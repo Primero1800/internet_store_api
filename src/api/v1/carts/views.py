@@ -507,3 +507,55 @@ async def clear_by_id_or_create(
     return await service.clear_cart(
         user_id=user_id
     )
+
+
+# 13_1
+@router.post(
+    "/change-quantity/me",
+    status_code=status.HTTP_200_OK,
+    description="Increase or decrease quantity of personal item or creating empty one if not exists"
+)
+@RateLimiter.rate_limit()
+async def change_item_quantity_of_me(
+        request: Request,
+        delta: Optional[int] = Form(default=None),
+        absolute: Optional[int] = Form(ge=0, default=None),
+        cart_item: "CartItem" = Depends(deps.get_or_create_cart_item),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+) -> CartItemShort | None:
+    service: CartsService = CartsService(
+        session=session
+    )
+    return await service.change_quantity(
+        cart_item=cart_item,
+        delta=delta,
+        absolute=absolute,
+    )
+
+
+# 13_2
+@router.post(
+    "/change-quantity/{user_id}",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_200_OK,
+    description="Increase or decrease quantity of item by user_id or creating empty one if not exists (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def change_item_quantity_of_user_id(
+        request: Request,
+        user_id: int,
+        product_id: int = Form(gt=0),
+        delta: Optional[int] = Form(default=None),
+        absolute: Optional[int] = Form(ge=0, default=None),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+) -> CartItemShort | None:
+    service: CartsService = CartsService(
+        session=session
+    )
+    return await service.change_quantity(
+        user_id=user_id,
+        product_id=product_id,
+        delta=delta,
+        absolute=absolute,
+    )

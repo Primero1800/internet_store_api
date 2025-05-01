@@ -18,6 +18,7 @@ if TYPE_CHECKING:
         CartPartialUpdate,
         CartItemCreate,
         CartItemUpdate,
+        CartItemPartialUpdate,
     )
     from .filters import CartFilter
 
@@ -229,3 +230,42 @@ class CartsRepository:
                 msg=Errors.DATABASE_ERROR
             )
         return cart
+
+    async def delete_cart_item(
+            self,
+            orm_model: CartItem,
+    ) -> None:
+        try:
+            self.logger.info(f"Deleting %r from database" % orm_model)
+            await self.session.delete(orm_model)
+            await self.session.commit()
+        except IntegrityError as exc:
+            self.logger.error("Error while deleting data from database", exc_info=exc)
+            raise CustomException(
+                msg="Error while deleting %r from database" % orm_model
+            )
+
+    async def edit_cart_item(
+            self,
+            orm_model: CartItem,
+            instance: Union["CartItemUpdate", "CartItemPartialUpdate"],
+            is_partial: bool = False
+    ):
+        for key, val in instance.model_dump(
+                exclude_unset=is_partial,
+                exclude_none=is_partial,
+        ).items():
+            setattr(orm_model, key, val)
+
+        self.logger.warning(f"Editing %r in database" % orm_model)
+        try:
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+            self.logger.info("%sItem %r was successfully edited" % (CLASS, orm_model))
+            return orm_model
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                msg=Errors.DATABASE_ERROR
+            )
