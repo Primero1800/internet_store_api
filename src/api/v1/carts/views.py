@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Dict, Any
+from typing import TYPE_CHECKING, List, Optional, Dict, Any, Union
 
 from fastapi import (
     APIRouter,
@@ -8,9 +8,12 @@ from fastapi import (
     Request,
     Query,
 )
+from fastapi.responses import ORJSONResponse
 from fastapi_filter import FilterDepends
+from fastapi_sessions.backends.session_backend import BackendError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.sessions.fastapi_sessions_config import SessionData, cookie, cookie_or_none
 from src.scrypts.pagination import paginate_result
 from .service import CartsService
 from .schemas import (
@@ -41,6 +44,22 @@ RELATIONS_LIST = []
 
 
 router = APIRouter()
+
+
+@router.get(    #####################################################################################################################3
+    "/test",
+    dependencies=[Depends(cookie_or_none)],
+    status_code=status.HTTP_200_OK,
+    description="test"
+)
+async def test(
+        cart_type: Union["User", SessionData, ORJSONResponse] = Depends(deps.user_cookie_or_error)
+):
+    if isinstance(cart_type, ORJSONResponse):
+        return cart_type
+    if isinstance(cart_type, SessionData):
+        return cart_type
+    return cart_type
 
 
 # 1
@@ -304,6 +323,22 @@ async def put_one(
 async def get_one_of_me_or_create(
         request: Request,
         cart: "Cart" = Depends(deps.get_or_create_cart),
+):
+    return await utils.get_short_schema_from_orm(cart)
+
+
+# 10_1_1
+@router.post(
+    "/get-or-create-sessioned/me",
+    dependencies=[Depends(cookie_or_none)],
+    status_code=status.HTTP_201_CREATED,
+    response_model=CartShort,
+    description="Get personal item or creating empty one if not exists"
+)
+@RateLimiter.rate_limit()
+async def get_one_of_me_or_create_sessioned(
+        request: Request,
+        cart: "Cart" = Depends(deps.get_or_create_cart_sessioned),
 ):
     return await utils.get_short_schema_from_orm(cart)
 
