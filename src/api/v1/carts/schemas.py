@@ -62,3 +62,9 @@ class CartItemCreate(CartItemShort):
 
 class CartItemUpdate(BaseCartItem):
     pass
+
+
+class CartItemPartialUpdate(BaseCartItem):
+    product_id: Optional[int] = None
+    price: Optional[Decimal] = None,
+    quantity: Optional[int] = None,
