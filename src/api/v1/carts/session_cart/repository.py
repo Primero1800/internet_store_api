@@ -1,5 +1,4 @@
 import logging
-import uuid
 from datetime import datetime
 from typing import Union, TYPE_CHECKING
 
@@ -9,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.v1.sessions.service import SessionsService
 from src.core.sessions.fastapi_sessions_config import (
     SessionData,
-    BACKEND as backend,
 )
 from src.core.settings import settings
 from src.tools.exceptions import CustomException
@@ -46,16 +44,13 @@ class SessionCartsRepository:
             maximized: bool = True,
             relations: list = []
     ):
-        print('333333333333333333333333', cart_type) #####################################################
         if not CART in cart_type.data:
             text_error = f"user_id={id}"
             raise CustomException(
                 msg=f"{CLASS} with {text_error} not found"
             )
         cart = cart_type.data[CART]
-        print('3333333333333333333333333 rep 55', cart) ###############################################################################
         result = SessionCart(**cart)
-        print('3333333333333333333333333 rep 57', result.created, type(result.created))  ################################################################
         return result
 
     async def get_orm_model_from_schema(
@@ -63,7 +58,6 @@ class SessionCartsRepository:
             instance: Union["CartCreate", "CartUpdate", "CartPartialUpdate"],
     ):
         orm_model: SessionCart = SessionCart(**instance.model_dump())
-        print('TIIIMEEEEEEEEEEE', orm_model.created, orm_model.to_dict())
         return orm_model
 
     async def create_one_empty(
@@ -84,9 +78,5 @@ class SessionCartsRepository:
                 status_code=result.status_code,
                 msg=result.content.get("detail")
             )
-        print('2222222222222222222222222222 rep 84', result, type(result)) #######################################################
         result =  SessionCart(**result.data[CART])
-        print('222222222222222 rep 86', result, type(result), result.created, type(result.created)) ####################################################################
         return result
-
-
