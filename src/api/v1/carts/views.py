@@ -37,18 +37,7 @@ if TYPE_CHECKING:
     )
 
 
-RELATIONS_LIST = [
-    {
-        "name": "user",
-        "usage": "/{id}/user",
-        "conditions": "private"
-    },
-    {
-        "name": "user",
-        "usage": "/me/user",
-        "conditions": "public"
-    },
-]
+RELATIONS_LIST = []
 
 
 router = APIRouter()
