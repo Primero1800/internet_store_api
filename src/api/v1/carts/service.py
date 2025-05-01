@@ -523,3 +523,37 @@ class CartsService:
         if to_schema:
             return await utils.get_short_item_schema_from_orm(orm_model)
         return orm_model
+
+    async def delete_item(
+            self,
+            cart: "Cart",
+            product_id: int
+    ):
+        repository: CartsRepository = CartsRepository(
+            session=self.session
+        )
+        try:
+            item_orm_model = await repository.get_one_item_complex(
+                cart_id=cart.user_id,
+                product_id=product_id,
+                maximized=False,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+        try:
+            return await self.delete_one(orm_model=item_orm_model)
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE,
+                    "detail": exc.msg,
+                }
+            )
+

@@ -559,3 +559,25 @@ async def change_item_quantity_of_user_id(
         delta=delta,
         absolute=absolute,
     )
+
+
+# 14_1
+@router.delete(
+    "/me/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    description="Delete item from personal cart by product_id"
+)
+@RateLimiter.rate_limit()
+async def delete_item_of_me(
+        request: Request,
+        product_id: int,
+        cart: "Cart" = Depends(deps.get_or_create_cart),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: CartsService = CartsService(
+        session=session
+    )
+    return await service.delete_item(
+        cart=cart,
+        product_id=product_id
+    )
