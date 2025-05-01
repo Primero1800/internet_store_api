@@ -1,11 +1,12 @@
 import logging
-from typing import TYPE_CHECKING, Optional, Iterable
+from typing import TYPE_CHECKING, Optional, Iterable, Any
 
 from fastapi import status
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.sessions.fastapi_sessions_config import SessionData
 from src.tools.exceptions import CustomException
 from . import utils
 from .repository import CartsRepository
@@ -17,6 +18,7 @@ from .schemas import (
     CartItemPartialUpdate,
 )
 from .exceptions import Errors
+from .session_cart.repository import SessionCartsRepository
 from .validators import ValidRelationsInspector
 
 
@@ -152,7 +154,6 @@ class CartsService:
         result = await inspector.inspect()
         if isinstance(result, ORJSONResponse):
             return result
-        # product_orm = result["product_orm"] if "product_orm" in result else None
 
         try:
             await repository.create_one_empty(orm_model=orm_model)
