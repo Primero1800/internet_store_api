@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +15,7 @@ if TYPE_CHECKING:
         Cart,
         CartItem,
     )
+    from src.api.v1.carts.session_cart import SessionCart
 
 
 async def get_schema_from_orm(
@@ -56,7 +57,7 @@ async def get_schema_from_orm(
 
 
 async def get_short_schema_from_orm(
-        orm_model: "Cart"
+        orm_model: Union["Cart", "SessionCart"]
 ) -> CartShort:
 
     cart_item_shorts = None
