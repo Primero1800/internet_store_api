@@ -1,8 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, Any, Annotated
+from typing import Optional, Any
 
-from pydantic import Field, conint, condecimal
+from pydantic import conint, condecimal
 
 
 @dataclass
@@ -37,9 +37,9 @@ class SessionCart:
 
     user: Optional[Any] = None
 
-    created: str = datetime.now().isoformat()
+    created: datetime = datetime.now()
 
-    cart_items: dict[int, SessionCartItem] = dict
+    cart_items: list[SessionCartItem] = field(default_factory=list)
 
     def __str__(self):
         return f"{self.__class__.__name__}()"
@@ -51,6 +51,5 @@ class SessionCart:
         return {
             "user_id": self.user_id,
             "user": self.user,
-            "created": datetime.fromisoformat(self.created),
-            "cart_items": self.cart_items.values()
+            "created": self.created,
         }
