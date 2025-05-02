@@ -8,12 +8,10 @@ from fastapi import (
     Request,
     Query,
 )
-from fastapi.responses import ORJSONResponse
 from fastapi_filter import FilterDepends
-from fastapi_sessions.backends.session_backend import BackendError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.sessions.fastapi_sessions_config import SessionData, cookie, cookie_or_none
+from src.core.sessions.fastapi_sessions_config import cookie_or_none
 from src.scrypts.pagination import paginate_result
 from .service import CartsService
 from .schemas import (
@@ -24,7 +22,6 @@ from .filters import CartFilter
 from src.api.v1.users.user.dependencies import (
     current_superuser,
     current_user,
-    current_user_or_none,
 )
 from src.core.config import DBConfigurer, RateLimiter
 from ..store.products.schemas import ProductShort
@@ -38,28 +35,16 @@ if TYPE_CHECKING:
         Cart,
         CartItem,
     )
+    from src.api.v1.carts.session_cart import (
+        SessionCart,
+        SessionCartItem,
+    )
 
 
 RELATIONS_LIST = []
 
 
 router = APIRouter()
-
-
-@router.get(    #####################################################################################################################3
-    "/test",
-    dependencies=[Depends(cookie_or_none)],
-    status_code=status.HTTP_200_OK,
-    description="test"
-)
-async def test(
-        cart_type: Union["User", SessionData, ORJSONResponse] = Depends(deps.user_cookie_or_error)
-):
-    if isinstance(cart_type, ORJSONResponse):
-        return cart_type
-    if isinstance(cart_type, SessionData):
-        return cart_type
-    return cart_type
 
 
 # 1
@@ -172,6 +157,22 @@ async def get_one_of_me(
     )
 
 
+# 5_1_1
+@router.get(
+    "/me-sessioned",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(cookie_or_none),],
+    response_model=CartShort,
+    description="Get personal item"
+)
+@RateLimiter.rate_limit()
+async def get_one_of_me(
+        request: Request,
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_sessioned),
+):
+    return await utils.get_short_schema_from_orm(cart)
+
+
 # 5_2
 @router.get(
     "/{id}",
@@ -215,6 +216,22 @@ async def get_one_full_of_me(
         id=user.id,
         maximized=True
     )
+
+
+# 6_1_1
+@router.get(
+    "/me-sessioned/full",
+    dependencies=[Depends(cookie_or_none),],
+    status_code=status.HTTP_200_OK,
+    response_model=CartRead,
+    description="Get personal item"
+)
+@RateLimiter.rate_limit()
+async def get_one_full_of_me_sessioned(
+        request: Request,
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_sessioned),
+):
+    return await utils.get_schema_from_orm(cart)
 
 
 # 6_2
@@ -329,7 +346,7 @@ async def get_one_of_me_or_create(
 
 # 10_1_1
 @router.post(
-    "/get-or-create-sessioned/me",
+    "/get-or-create/me-sessioned",
     dependencies=[Depends(cookie_or_none)],
     status_code=status.HTTP_201_CREATED,
     response_model=CartShort,
@@ -338,7 +355,7 @@ async def get_one_of_me_or_create(
 @RateLimiter.rate_limit()
 async def get_one_of_me_or_create_sessioned(
         request: Request,
-        cart: "Cart" = Depends(deps.get_or_create_cart_sessioned),
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_sessioned),
 ):
     return await utils.get_short_schema_from_orm(cart)
 
@@ -354,6 +371,22 @@ async def get_one_of_me_or_create_sessioned(
 async def get_one_full_of_me_or_create(
         request: Request,
         cart: "Cart" = Depends(deps.get_or_create_cart),
+):
+    return await utils.get_schema_from_orm(cart)
+
+
+# 10_1_1
+@router.post(
+    "/get-or-create/me-sessioned/full",
+    dependencies=[Depends(cookie_or_none)],
+    status_code=status.HTTP_201_CREATED,
+    response_model=CartRead,
+    description="Get personal item full or creating empty one if not exists"
+)
+@RateLimiter.rate_limit()
+async def get_one__full_of_me_or_create_sessioned(
+        request: Request,
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_sessioned),
 ):
     return await utils.get_schema_from_orm(cart)
 
@@ -422,6 +455,22 @@ async def get_one_item_of_me_or_create(
     return await utils.get_short_item_schema_from_orm(cart_item)
 
 
+# 11_1_1
+@router.post(
+    "/get-or-create-item/me-sessioned",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(cookie_or_none),],
+    response_model=CartItemShort,
+    description="Get cart_item of personal cart or creating one if not exists"
+)
+@RateLimiter.rate_limit()
+async def get_one_item_of_me_sessioned_or_create(
+        request: Request,
+        cart_item: Union["CartItem", "SessionCartItem"] = Depends(deps.get_or_create_cart_item_sessioned),
+):
+    return await utils.get_short_item_schema_from_orm(cart_item)
+
+
 # 11_2
 @router.post(
     "/get-or-create-item/me/full",
@@ -433,6 +482,22 @@ async def get_one_item_of_me_or_create(
 async def get_one_item_full_of_me_or_create(
         request: Request,
         cart_item: "CartItem" = Depends(deps.get_or_create_cart_item)
+):
+    return await utils.get_item_schema_from_orm(cart_item)
+
+
+# 11_2_1
+@router.post(
+    "/get-or-create-item/me-sessioned/full",
+    dependencies=[Depends(cookie_or_none),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=CartItemRead,
+    description="Get cart_item full of personal cart or creating empty one if not exists"
+)
+@RateLimiter.rate_limit()
+async def get_one_item_full_of_me_sessioned_or_create(
+        request: Request,
+        cart_item: Union["CartItem", "SessionCartItem"] = Depends(deps.get_or_create_cart_item_sessioned)
 ):
     return await utils.get_item_schema_from_orm(cart_item)
 
