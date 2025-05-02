@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 async def get_schema_from_orm(
-        orm_model: "Cart",
+        orm_model: Union["Cart", "SessionCart"],
         maximized: bool = True,
         relations: list | None = [],
 ):
@@ -27,16 +27,17 @@ async def get_schema_from_orm(
 
     # short_schema: CartShort = await get_short_schema_from_orm(orm_model=orm_model)
 
+    dict_to_push_to_schema = orm_model.to_dict()
+    if 'user' in dict_to_push_to_schema:
+        del dict_to_push_to_schema['user']
+
     cart_items = None
     if maximized or 'products' in relations:
         cart_items = []
         from ..store.products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
         for cart_item in orm_model.cart_items:
             cart_items.append(
-                CartItemRead(
-                    **cart_item.to_dict(),
-                    product=await get_short_product_schema_from_orm(cart_item.product)
-                )
+                await get_item_schema_from_orm(cart_item)
             )
         if 'products' in relations:
             return cart_items
@@ -50,7 +51,7 @@ async def get_schema_from_orm(
             return user_short
 
     return CartRead(
-        **orm_model.to_dict(),
+        **dict_to_push_to_schema,
         cart_items=cart_items,
         user=user_short
     )
@@ -92,11 +93,16 @@ async def get_short_item_schema_from_orm(
 
 
 async def get_item_schema_from_orm(
-        orm_model: "CartItem"
+        orm_model: Union["CartItem", dict]
 ) -> CartItemRead | ORJSONResponse:
 
     if isinstance(orm_model, ORJSONResponse):
         return orm_model
+
+    if isinstance(orm_model, dict): # For SessionCartItem
+        return CartItemRead(
+            **orm_model,
+        )
 
     from ..store.products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
     return CartItemRead(
