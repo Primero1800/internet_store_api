@@ -77,3 +77,19 @@ async def get_or_create_cart_sessioned(
     )
     return await service.get_or_create(cart_type=cart_type)
 
+
+async def get_or_create_cart_item_sessioned(
+        product_id: int = Form(gt=0),
+        cart: Union["Cart", "SessionCart"] = Depends(get_or_create_cart_sessioned),
+        session_data: SessionData = Depends(verifier_or_none),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> "CartItem":
+    service: CartsService = CartsService(
+        session=session,
+        session_data=session_data
+    )
+    return await service.get_or_create_item(
+        cart=cart,
+        product_id=product_id
+    )
+
