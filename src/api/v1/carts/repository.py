@@ -1,6 +1,6 @@
 import logging
 from fastapi import status
-from typing import Sequence, TYPE_CHECKING, Union
+from typing import Sequence, TYPE_CHECKING, Union, Any
 
 from sqlalchemy import select, Result
 from sqlalchemy.exc import IntegrityError
@@ -37,9 +37,12 @@ class CartsRepository:
     async def get_one_complex(
             self,
             id: int = None,
+            cart_type: Any = None,
             maximized: bool = True,
             relations: list = []
     ):
+        id = id if id else cart_type.id
+
         stmt_filter = select(Cart).where(Cart.user_id == id)
 
         options_list = []
@@ -113,7 +116,7 @@ class CartsRepository:
 
     async def get_orm_model_from_schema(
             self,
-            instance: Union["CartCreate", "CartUpdate", "CartPartialUpdate"]
+            instance: Union["CartCreate", "CartUpdate", "CartPartialUpdate"],
     ):
         orm_model: Cart = Cart(**instance.model_dump())
         return orm_model
@@ -201,7 +204,7 @@ class CartsRepository:
 
     async def create_one_empty_item(
             self,
-            orm_model: CartItem
+            orm_model: CartItem,
     ):
         try:
             self.session.add(orm_model)
