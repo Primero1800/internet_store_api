@@ -30,7 +30,7 @@ from . import dependencies as deps
 from . import utils
 
 if TYPE_CHECKING:
-    from src.core.models import(
+    from src.core.models import (
         User,
         Cart,
         CartItem,
@@ -121,7 +121,6 @@ async def get_all_full(
         request: Request,
         page: int = Query(1, gt=0),
         size: int = Query(10, gt=0),
-        user_is_registered: Optional[bool] = Query(default=None, description="Filter carts of registered users"),
         filter_model: CartFilter = FilterDepends(CartFilter),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ):
@@ -651,7 +650,8 @@ async def change_item_quantity_of_me(
     "/change-quantity/{user_id}",
     dependencies=[Depends(current_superuser),],
     status_code=status.HTTP_200_OK,
-    description="Increase or decrease quantity of item by user_id or creating empty one if not exists (for superuser only)"
+    description="Increase or decrease quantity of item by user_id or "
+                "creating empty one if not exists (for superuser only)"
 )
 # @RateLimiter.rate_limit()
 # no rate limit for superuser
