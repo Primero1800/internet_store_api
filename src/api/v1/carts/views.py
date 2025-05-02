@@ -11,7 +11,7 @@ from fastapi import (
 from fastapi_filter import FilterDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.sessions.fastapi_sessions_config import cookie_or_none
+from src.core.sessions.fastapi_sessions_config import cookie_or_none, SessionData, verifier_or_none
 from src.scrypts.pagination import paginate_result
 from .service import CartsService
 from .schemas import (
@@ -569,6 +569,30 @@ async def clear_me_or_create(
 ):
     service: CartsService = CartsService(
         session=session
+    )
+    return await service.clear_cart(
+        cart=cart
+    )
+
+
+# 12_1_1
+@router.post(
+    "/clear/me-sessioned",
+    dependencies=[Depends(cookie_or_none),],
+    status_code=status.HTTP_200_OK,
+    response_model=CartShort,
+    description="Clear personal item or creating empty one if not exists"
+)
+@RateLimiter.rate_limit()
+async def clear_me_sessioned_or_create(
+        request: Request,
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_sessioned),
+        session_data: SessionData = Depends(verifier_or_none),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: CartsService = CartsService(
+        session=session,
+        session_data=session_data
     )
     return await service.clear_cart(
         cart=cart

@@ -91,12 +91,12 @@ class SessionCartsRepository:
             self,
             orm_model: SessionCartItem,
     ):
-        session_service: SessionsService = SessionsService()
 
         cart = self.session_data.data[CART]
         cart.setdefault('cart_items', [])
         cart['cart_items'].append(orm_model.to_dict())
 
+        session_service: SessionsService = SessionsService()
         result = await session_service.update_session(
             session_data=self.session_data,
             data_to_update={
@@ -125,6 +125,29 @@ class SessionCartsRepository:
         raise CustomException(
             msg=Errors.item_not_exists_id(cart_id=None, product_id=product_id)
         )
+
+    async def clear_cart(
+            self,
+            cart: SessionCart
+    ):
+        cart = self.session_data.data[CART]
+        cart['cart_items'] = []
+
+        session_service: SessionsService = SessionsService()
+        result = await session_service.update_session(
+            session_data=self.session_data,
+            data_to_update={
+                CART: cart
+            },
+            session_id=self.session_data.session_id
+        )
+        if isinstance(result, ORJSONResponse):
+            raise CustomException(
+                status_code=result.status_code,
+                msg=result.content.get("detail")
+            )
+        return result.data[CART]
+
 
     @staticmethod
     async def dict_to_orm(
