@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING, Optional, Iterable
 
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +11,8 @@ from src.core.sessions.fastapi_sessions_config import (
 )
 from src.core.settings import settings
 from src.tools.exceptions import CustomException
-from . import SessionCart
+from . import SessionCart, SessionCartItem
+from ..exceptions import Errors
 
 if TYPE_CHECKING:
     from ..schemas import (
@@ -30,10 +31,8 @@ CART = settings.sessions.SESSION_CART
 class SessionCartsRepository:
     def __init__(
             self,
-            session_data: SessionData,
-            # session: AsyncSession,
+            session_data: SessionData
     ):
-        # self.session=session,
         self.session_data = session_data
         self.logger = logging.getLogger(__name__)
 
@@ -60,6 +59,13 @@ class SessionCartsRepository:
         orm_model: SessionCart = SessionCart(**instance.model_dump())
         return orm_model
 
+    async def get_item_orm_model_from_schema(
+            self,
+            instance: Union["CartItemCreate", "CartItemUpdate"]
+    ):
+        orm_model: SessionCartItem = SessionCartItem(**instance.model_dump())
+        return orm_model
+
     async def create_one_empty(
             self,
             orm_model: SessionCart
@@ -80,3 +86,48 @@ class SessionCartsRepository:
             )
         result =  SessionCart(**result.data[CART])
         return result
+
+    async def create_one_empty_item(
+            self,
+            orm_model: SessionCartItem,
+    ):
+        session_service: SessionsService = SessionsService()
+
+        cart = self.session_data.data[CART]
+        cart.setdefault('cart_items', [])
+        cart['cart_items'].append(orm_model.to_dict())
+
+        result = await session_service.update_session(
+            session_data=self.session_data,
+            data_to_update={
+                CART: cart
+            },
+            session_id=self.session_data.session_id
+        )
+        if isinstance(result, ORJSONResponse):
+            raise CustomException(
+                status_code=result.status_code,
+                msg=result.content.get("detail")
+            )
+
+    async def get_one_item_complex(
+            self,
+            product_id: int,
+            cart_id: Optional[int] = None,
+            maximized: bool = True,
+    ):
+        cart = self.session_data.data[CART]
+
+        for cart_item in cart['cart_items']:
+            if cart_item['product_id'] == product_id:
+                result = await SessionCartsRepository.dict_to_orm(**cart_item)
+                return result
+        raise CustomException(
+            msg=Errors.item_not_exists_id(cart_id=None, product_id=product_id)
+        )
+
+    @staticmethod
+    async def dict_to_orm(
+            **kwargs
+    ):
+        return SessionCartItem(**kwargs)
