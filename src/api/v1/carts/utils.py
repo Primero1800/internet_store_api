@@ -74,11 +74,16 @@ async def get_short_schema_from_orm(
 
 
 async def get_short_item_schema_from_orm(
-        orm_model: "CartItem"
+        orm_model: Union["CartItem",dict]
 ) -> CartItemShort | ORJSONResponse:
 
     if isinstance(orm_model, ORJSONResponse):
         return orm_model
+
+    if isinstance(orm_model, dict): # For SessionCartItem
+        return CartItemShort(
+            **orm_model
+        )
 
     # BRUTE FORCE VARIANT
     return CartItemShort(
