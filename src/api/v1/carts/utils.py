@@ -15,7 +15,7 @@ if TYPE_CHECKING:
         Cart,
         CartItem,
     )
-    from src.api.v1.carts.session_cart import SessionCart
+    from src.api.v1.carts.session_cart import SessionCart, SessionCartItem
 
 
 async def get_schema_from_orm(
@@ -93,21 +93,26 @@ async def get_short_item_schema_from_orm(
 
 
 async def get_item_schema_from_orm(
-        orm_model: Union["CartItem", dict]
+        orm_model: Union["CartItem", "SessionCartItem", dict]
 ) -> CartItemRead | ORJSONResponse:
 
     if isinstance(orm_model, ORJSONResponse):
         return orm_model
 
-    if isinstance(orm_model, dict): # For SessionCartItem
-        return CartItemRead(
-            **orm_model,
-        )
+    if isinstance(orm_model, dict): # For SessionCartItem straight as dict
+        dict_to_push = orm_model
+        product = dict_to_push.pop("product")
+    elif not orm_model.cart_id: # For SessionCartItem
+        dict_to_push = orm_model.to_dict()
+        product = dict_to_push.pop("product")
+    else:
+        dict_to_push = orm_model.to_dict()
+        from ..store.products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
+        product = await get_short_product_schema_from_orm(orm_model.product)
 
-    from ..store.products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
     return CartItemRead(
-        **orm_model.to_dict(),
-        product=await get_short_product_schema_from_orm(orm_model.product)
+        **dict_to_push,
+        product=product
     )
 
 

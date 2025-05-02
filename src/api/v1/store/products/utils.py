@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from fastapi import status
 
 from src.tools.exceptions import CustomException
@@ -69,15 +69,23 @@ async def get_schema_from_orm(
 
 
 async def get_short_schema_from_orm(
-    orm_model: "Product"
+    orm_model: Union["Product", dict]
 ) -> ProductShort | None:
 
     # BRUTE FORCE VARIANT
     if not orm_model:
         return None
+
+    if isinstance(orm_model, dict):     # inspecting if user is session dictionary
+        dict_to_push = orm_model
+        image_file = orm_model.pop('image_file')
+    else:
+        dict_to_push = orm_model.to_dict()
+        image_file = await get_main_image_file(orm_model)
+
     return ProductShort(
-        **orm_model.to_dict(),
-        image_file=await get_main_image_file(orm_model),
+        **dict_to_push,
+        image_file=image_file
     )
 
 
