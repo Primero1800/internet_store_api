@@ -1,15 +1,10 @@
-class Errors:
+from src.tools.errors_base import ErrorsBase
 
-    HANDLER_MESSAGE = "Handled by Rubrics exception handler"
 
-    DATABASE_ERROR = "Error occurred while changing database data"
+class Errors(ErrorsBase):
+    CLASS = "Rubric"
+    _CLASS = "rubric"
 
-    NOT_EXISTS = "Rubric doesn't exist"
-
-    ALREADY_EXISTS = "Rubric already exists"
-
-    @staticmethod
-    def already_exists_titled(title: str):
-        return "Rubric %r already exists" % title
-
-    IMAGE_SAVING_ERROR = "Error occurred while saving image"
+    @classmethod
+    def already_exists_titled(cls, title: str):
+        return "%s %r already exists" % (cls.CLASS, title)
