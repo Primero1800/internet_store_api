@@ -621,4 +621,3 @@ class CartsService:
                     "detail": exc.msg,
                 }
             )
-
