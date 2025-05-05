@@ -24,8 +24,6 @@ from src.api.v1.users.user.dependencies import (
     current_user,
 )
 from src.core.config import DBConfigurer, RateLimiter
-from ..store.products.schemas import ProductShort
-from src.api.v1.users.user.schemas import UserPublicExtended
 from . import dependencies as deps
 from . import utils
 
@@ -99,7 +97,7 @@ async def get_all(
     service: CartsService = CartsService(
         session=session
     )
-    result_full = await service.get_all(filter_model=filter_model)
+    result_full = await service.get_all(filter_model=filter_model, db_carts=user_is_registered)
     return await paginate_result(
         query_list=result_full,
         page=page,
@@ -121,13 +119,14 @@ async def get_all_full(
         request: Request,
         page: int = Query(1, gt=0),
         size: int = Query(10, gt=0),
+        user_is_registered: Optional[bool] = Query(default=None, description="Filter carts of registered users"),
         filter_model: CartFilter = FilterDepends(CartFilter),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ):
     service: CartsService = CartsService(
         session=session
     )
-    result_full = await service.get_all_full(filter_model=filter_model)
+    result_full = await service.get_all_full(filter_model=filter_model, db_carts=user_is_registered)
     return await paginate_result(
         query_list=result_full,
         page=page,

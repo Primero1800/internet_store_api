@@ -1,8 +1,6 @@
-from decimal import Decimal
 from typing import Optional
 
 from fastapi_filter.contrib.sqlalchemy import Filter
-from pydantic import Field
 
 from src.core.models import Cart
 

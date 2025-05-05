@@ -52,27 +52,45 @@ class CartsService:
     async def get_all(
             self,
             filter_model: "CartFilter",
+            db_carts: Optional[bool] = None
     ):
-        repository: CartsRepository = CartsRepository(
-            session=self.session
-        )
         result = []
-        listed_orm_models = await repository.get_all(filter_model=filter_model)
-        for orm_model in listed_orm_models:
-            result.append(await utils.get_short_schema_from_orm(orm_model=orm_model))
+        if db_carts is True or db_carts is None:
+            repository: CartsRepository = CartsRepository(
+                session=self.session
+            )
+            listed_orm_models = await repository.get_all(filter_model=filter_model)
+            for orm_model in listed_orm_models:
+                result.append(await utils.get_short_schema_from_orm(orm_model=orm_model))
+        if db_carts is False or db_carts is None:
+            repository: SessionCartsRepository = SessionCartsRepository(
+                session_data=self.session_data
+            )
+            listed_orm_models = await repository.get_all()
+            for orm_model in listed_orm_models:
+                result.append(await utils.get_short_schema_from_orm(orm_model=orm_model))
         return result
 
     async def get_all_full(
             self,
-            filter_model: "CartFilter"
+            filter_model: "CartFilter",
+            db_carts: Optional[bool] = None
     ):
-        repository: CartsRepository = CartsRepository(
-            session=self.session
-        )
         result = []
-        listed_orm_models = await repository.get_all_full(filter_model=filter_model)
-        for orm_model in listed_orm_models:
-            result.append(await utils.get_schema_from_orm(orm_model=orm_model))
+        if db_carts is True or db_carts is None:
+            repository: CartsRepository = CartsRepository(
+                session=self.session
+            )
+            listed_orm_models = await repository.get_all_full(filter_model=filter_model)
+            for orm_model in listed_orm_models:
+                result.append(await utils.get_schema_from_orm(orm_model=orm_model))
+        if db_carts is False or db_carts is None:
+            repository: SessionCartsRepository = SessionCartsRepository(
+                session_data=self.session_data
+            )
+            listed_orm_models = await repository.get_all()
+            for orm_model in listed_orm_models:
+                result.append(await utils.get_schema_from_orm(orm_model=orm_model))
         return result
 
     async def get_one(

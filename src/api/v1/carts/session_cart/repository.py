@@ -52,6 +52,18 @@ class SessionCartsRepository:
         result = SessionCart(**cart)
         return result
 
+    async def get_all(
+            self,
+    ) -> list:
+        session_service: SessionsService = SessionsService()
+        all_sessions = await session_service.get_all()
+        result = []
+        for session_data in all_sessions:
+            if hasattr(session_data, 'data') and CART in session_data.data:
+                cart = SessionCart(**session_data.data[CART])
+                result.append(cart)
+        return result
+
     async def get_orm_model_from_schema(
             self,
             instance: Union["CartCreate", "CartUpdate", "CartPartialUpdate"],
@@ -146,7 +158,7 @@ class SessionCartsRepository:
                 status_code=result.status_code,
                 msg=result.content.get("detail")
             )
-        return result.data[CART]
+        return SessionCart(**cart)
 
     @staticmethod
     async def dict_to_orm(
