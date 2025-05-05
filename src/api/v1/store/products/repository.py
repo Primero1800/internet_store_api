@@ -220,10 +220,10 @@ class ProductsRepository:
             await self.session.refresh(orm_model)
             self.logger.info("Rubrics were successfully added to product")
         except IntegrityError as exc:
-            self.logger.error(Errors.DATABASE_ERROR, exc_info=exc)
+            self.logger.error(Errors.DATABASE_ERROR(), exc_info=exc)
             raise CustomException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                msg=Errors.DATABASE_ERROR
+                msg=Errors.DATABASE_ERROR()
             )
 
     async def delete_one(

@@ -1,22 +1,11 @@
-from typing import Any
+from src.tools.errors_base import ErrorsBase
 
 
-class Errors:
+class Errors(ErrorsBase):
 
-    HANDLER_MESSAGE = "Handled by Products exception handler"
+    CLASS = "Product"
+    _CLASS = "product"
 
-    DATABASE_ERROR = "Error occurred while changing database data"
-
-    NOT_EXISTS = "Product doesn't exist"
-
-    ALREADY_EXISTS = "Product already exists"
-
-    @staticmethod
-    def already_exists_titled(title: str):
-        return "Product %r already exists" % title
-
-    @staticmethod
-    def integrity_error_detailed(exc: Any):
-        return f"{Errors.DATABASE_ERROR}: {exc!r}"
-
-    IMAGE_SAVING_ERROR = "Error occurred while saving image"
+    @classmethod
+    def already_exists_titled(cls, title: str):
+        return "%s %r already exists" % (cls.CLASS, title)

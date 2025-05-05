@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class ErrorsBase:
     CLASS = "Object"
     _CLASS = "object"
@@ -49,3 +52,7 @@ class ErrorsBase:
     @staticmethod
     def IMAGE_SAVING_ERROR():
         return "Error occurred while saving image"
+
+    @classmethod
+    def integrity_error_detailed(cls, exc: Any):
+        return f"{cls.DATABASE_ERROR()}: {exc!r}"

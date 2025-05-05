@@ -54,7 +54,7 @@ class ValidRelationsInspector:
             self.error = ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -75,7 +75,7 @@ class ValidRelationsInspector:
             self.error = ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -93,7 +93,7 @@ class ValidRelationsInspector:
             self.error = ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
