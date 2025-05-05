@@ -77,7 +77,7 @@ class SaleInfoService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -105,7 +105,7 @@ class SaleInfoService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -150,7 +150,7 @@ class SaleInfoService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -178,7 +178,7 @@ class SaleInfoService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -234,7 +234,7 @@ class SaleInfoService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -280,7 +280,7 @@ class SaleInfoService:
                 return ORJSONResponse(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     content={
-                        "message": Errors.HANDLER_MESSAGE,
+                        "message": Errors.HANDLER_MESSAGE(),
                         "detail": "Values 'votes' both must be valid integers",
                     }
                 )
@@ -311,7 +311,7 @@ class SaleInfoService:
                 return ORJSONResponse(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     content={
-                        "message": Errors.HANDLER_MESSAGE,
+                        "message": Errors.HANDLER_MESSAGE(),
                         "detail": "Value 'vote_add' must be valid integer",
                     }
                 )
@@ -337,7 +337,7 @@ class SaleInfoService:
                 return ORJSONResponse(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     content={
-                        "message": Errors.HANDLER_MESSAGE,
+                        "message": Errors.HANDLER_MESSAGE(),
                         "detail": "Value 'vote_add' must be valid integer",
                     }
                 )

@@ -1,22 +1,12 @@
 from typing import Any
 
-CLASS = "Sale Information"
+from src.tools.errors_base import ErrorsBase
 
 
-class Errors:
+class Errors(ErrorsBase):
+    CLASS = "Sale Information"
+    _CLASS = "SaleInfo"
 
-    HANDLER_MESSAGE = f"Handled by {CLASS} exception handler"
-
-    DATABASE_ERROR = "Error occurred while changing database data"
-
-    NOT_EXISTS = f"{CLASS} of product doesn't exist"
-
-    ALREADY_EXISTS = f"{CLASS} of product already exists"
-
-    @staticmethod
-    def already_exists_product_id(product_id: int):
-        return "%s of product id=%r already exists" % (CLASS, product_id)
-
-    @staticmethod
-    def integrity_error_detailed(exc: Any):
-        return f"{Errors.DATABASE_ERROR}: {exc!r}"
+    @classmethod
+    def already_exists_product_id(cls, product_id: int):
+        return "%s of product id=%r already exists" % (cls.CLASS, product_id)
