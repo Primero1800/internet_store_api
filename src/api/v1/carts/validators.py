@@ -1,21 +1,9 @@
-from typing import TYPE_CHECKING, Type
-
-from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.tools.exceptions import CustomException
 from src.tools.inspector import (
     ValidRelationsInspectorBase,
     ValidRelationsException,
 )
-from ..store.products.repository import ProductsRepository
-
-if TYPE_CHECKING:
-    from src.core.models import (
-        Product,
-        User,
-    )
-    from src.tools.errors_base import ErrorsBase
 
 
 class ValidRelationsInspector(ValidRelationsInspectorBase):
