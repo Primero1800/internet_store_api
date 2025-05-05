@@ -148,9 +148,76 @@ class SessionCartsRepository:
             )
         return result.data[CART]
 
-
     @staticmethod
     async def dict_to_orm(
             **kwargs
     ):
         return SessionCartItem(**kwargs)
+
+    async def edit_cart_item(
+            self,
+            orm_model: SessionCartItem,
+            instance: Union["CartItemUpdate", "CartItemPartialUpdate"],
+            is_partial: bool = False
+    ):
+        for key, val in instance.model_dump(
+                exclude_unset=is_partial,
+                exclude_none=is_partial,
+        ).items():
+            setattr(orm_model, key, val)
+
+        self.logger.warning(f"Editing %r in database" % orm_model)
+
+        cart = self.session_data.data[CART]
+        cart_items = cart['cart_items']
+
+        # Ищем индекс элемента с нужным product_id
+        index_to_replace = -1
+        for i, item in enumerate(cart_items):
+            if item.get("product_id") == orm_model.product_id:
+                index_to_replace = i
+                break
+        # Если элемент найден, заменяем его
+        if index_to_replace != -1:
+            cart_items[index_to_replace] = orm_model.to_dict()
+
+        session_service: SessionsService = SessionsService()
+        result = await session_service.update_session(
+            session_data=self.session_data,
+            data_to_update={
+                CART: cart
+            },
+            session_id=self.session_data.session_id
+        )
+        if isinstance(result, ORJSONResponse):
+            raise CustomException(
+                status_code=result.status_code,
+                msg=result.content.get("detail")
+            )
+
+        return orm_model
+
+    async def delete_cart_item(
+            self,
+            orm_model: SessionCartItem,
+    ) -> None:
+
+        cart = self.session_data.data[CART]
+        cart_items = cart['cart_items']
+
+        if isinstance(orm_model, SessionCartItem):  # Отфильтровываем элемент с равным product_id
+            cart['cart_items'] = [item for item in cart_items if item['product_id'] != orm_model.product_id]
+
+        session_service: SessionsService = SessionsService()
+        result = await session_service.update_session(
+            session_data=self.session_data,
+            data_to_update={
+                CART: cart
+            },
+            session_id=self.session_data.session_id
+        )
+        if isinstance(result, ORJSONResponse):
+            raise CustomException(
+                status_code=result.status_code,
+                msg=result.content.get("detail")
+            )
