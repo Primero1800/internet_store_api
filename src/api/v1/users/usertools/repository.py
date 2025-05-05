@@ -112,7 +112,7 @@ class UserToolsRepository:
         except IntegrityError as error:
             self.logger.error(f"Error while orm_model creating", exc_info=error)
             raise CustomException(
-                msg=Errors.ALREADY_EXISTS
+                msg=Errors.ALREADY_EXISTS()
             )
 
     async def delete_one(
@@ -187,7 +187,7 @@ class UserToolsRepository:
             self.logger.error("Error occurred while editing data in database", exc_info=exc)
             raise CustomException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                msg=Errors.DATABASE_ERROR
+                msg=Errors.DATABASE_ERROR()
             )
         return usertools
 
@@ -240,7 +240,7 @@ class UserToolsRepository:
             self.logger.error("Error occurred while editing data in database", exc_info=exc)
             raise CustomException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                msg=Errors.DATABASE_ERROR
+                msg=Errors.DATABASE_ERROR()
             )
         return usertools
 
@@ -268,6 +268,6 @@ class UserToolsRepository:
             self.logger.error("Error occurred while editing data in database", exc_info=exc)
             raise CustomException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                msg=Errors.DATABASE_ERROR
+                msg=Errors.DATABASE_ERROR()
             )
         return usertools

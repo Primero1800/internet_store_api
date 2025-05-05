@@ -78,7 +78,7 @@ class UserToolsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -106,7 +106,7 @@ class UserToolsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -151,7 +151,7 @@ class UserToolsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -179,7 +179,7 @@ class UserToolsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -227,7 +227,7 @@ class UserToolsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -286,11 +286,11 @@ class UserToolsService:
                 add_to=add_to
             )
         except CustomException as exc:
-            self.logger.error(Errors.DATABASE_ERROR, exc_info=exc)
+            self.logger.error(Errors.DATABASE_ERROR(), exc_info=exc)
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -315,11 +315,11 @@ class UserToolsService:
                 del_from=del_from
             )
         except CustomException as exc:
-            self.logger.error(Errors.DATABASE_ERROR, exc_info=exc)
+            self.logger.error(Errors.DATABASE_ERROR(), exc_info=exc)
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -342,11 +342,11 @@ class UserToolsService:
                 del_from=del_from
             )
         except CustomException as exc:
-            self.logger.error(Errors.DATABASE_ERROR, exc_info=exc)
+            self.logger.error(Errors.DATABASE_ERROR(), exc_info=exc)
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
