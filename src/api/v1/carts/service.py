@@ -109,7 +109,7 @@ class CartsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -146,7 +146,7 @@ class CartsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -200,7 +200,7 @@ class CartsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -229,7 +229,7 @@ class CartsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -276,7 +276,7 @@ class CartsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -372,7 +372,7 @@ class CartsService:
                     return cart_item if cart.user_id else await SessionCartsRepository.dict_to_orm(**cart_item)
         return ORJSONResponse(
             content={
-                "message": Errors.HANDLER_MESSAGE,
+                "message": Errors.HANDLER_MESSAGE(),
                 "detail": Errors.item_not_exists_id(cart.user_id, product_id)
             }
         )
@@ -402,7 +402,7 @@ class CartsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -448,7 +448,7 @@ class CartsService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": f"Item can't be added to {CLASS}: not enough quantity",
                 }
             )
@@ -473,7 +473,7 @@ class CartsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -512,11 +512,11 @@ class CartsService:
                 cart=cart
             )
         except CustomException as exc:
-            self.logger.error(Errors.DATABASE_ERROR, exc_info=exc)
+            self.logger.error(Errors.DATABASE_ERROR(), exc_info=exc)
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -569,7 +569,7 @@ class CartsService:
                 return ORJSONResponse(
                     status_code=exc.status_code,
                     content={
-                        "message": Errors.HANDLER_MESSAGE,
+                        "message": Errors.HANDLER_MESSAGE(),
                         "detail": exc.msg,
                     }
                 )
@@ -590,7 +590,7 @@ class CartsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -625,7 +625,7 @@ class CartsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -635,7 +635,7 @@ class CartsService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )

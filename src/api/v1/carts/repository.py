@@ -230,7 +230,7 @@ class CartsRepository:
             self.logger.error("Error occurred while editing data in database", exc_info=exc)
             raise CustomException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                msg=Errors.DATABASE_ERROR
+                msg=Errors.DATABASE_ERROR()
             )
         return cart
 
@@ -270,5 +270,5 @@ class CartsRepository:
             self.logger.error("Error occurred while editing data in database", exc_info=exc)
             raise CustomException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                msg=Errors.DATABASE_ERROR
+                msg=Errors.DATABASE_ERROR()
             )

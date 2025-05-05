@@ -62,7 +62,7 @@ async def user_cookie_or_error(
     return ORJSONResponse(
         status_code=status.HTTP_403_FORBIDDEN,
         content={
-            "message": Errors.HANDLER_MESSAGE,
+            "message": Errors.HANDLER_MESSAGE(),
             "detail": "No authentication or session provided",
         }
     )
