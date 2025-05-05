@@ -38,15 +38,15 @@ class AuthService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": Errors.BAD_CREDENTIALS_OR_NOT_ACTIVE,
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": Errors.BAD_CREDENTIALS_OR_NOT_ACTIVE(),
                 }
             )
         if requires_verification and not user.is_verified:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Errors.user_not_verified_emailed(user.email),
                 }
             )
@@ -76,7 +76,7 @@ class AuthService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Errors.user_already_exists_emailed(user_create_schema.email),
                 }
             )
@@ -85,7 +85,7 @@ class AuthService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Errors.invalid_password_reasoned(e.reason),
                 }
             )
@@ -104,7 +104,7 @@ class AuthService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Errors.user_not_exists_mailed(email),
                 }
             )
@@ -112,7 +112,7 @@ class AuthService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Errors.inactive_user_emailed(email),
                 }
             )
@@ -120,7 +120,7 @@ class AuthService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Errors.verify_user_already_verified_emailed(email),
                 }
             )
@@ -141,16 +141,16 @@ class AuthService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": Errors.VERIFY_USER_BAD_TOKEN
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": Errors.invalid_token("verify")
                 }
             )
         except exceptions.UserAlreadyVerified:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": Errors.VERIFY_USER_ALREADY_VERIFIED
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": Errors.VERIFY_USER_ALREADY_VERIFIED()
                 }
 
             )
@@ -172,8 +172,8 @@ class AuthService:
             return ORJSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": Errors.DATABASE_ERROR
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": Errors.DATABASE_ERROR()
                 }
             )
 
@@ -188,7 +188,7 @@ class AuthService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Errors.user_not_exists_mailed(email)
                 }
             )
@@ -198,7 +198,7 @@ class AuthService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Errors.inactive_user_emailed(email)
                 }
             )
@@ -221,7 +221,7 @@ class AuthService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": Errors.INVALID_RESET_PASSWORD_TOKEN
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": Errors.invalid_token("reset password")
                 }
             )
