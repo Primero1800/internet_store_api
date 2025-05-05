@@ -112,7 +112,7 @@ class AddInfoRepository:
         except IntegrityError as error:
             self.logger.error(f"Error while orm_model creating", exc_info=error)
             raise CustomException(
-                msg=Errors.ALREADY_EXISTS
+                msg=Errors.ALREADY_EXISTS()
             )
 
     async def delete_one(
