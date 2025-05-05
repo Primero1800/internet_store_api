@@ -1,19 +1,14 @@
 from src.tools.exceptions import CustomException
+from src.tools.errors_base import ErrorsBase
 
-CLASS = "User"
 
+class Errors(ErrorsBase):
+    CLASS = "User"
+    _CLASS = "user"
 
-class Errors:
-
-    HANDLER_MESSAGE = f"Handled by {CLASS}s exception handler"
-
-    DATABASE_ERROR = "Error occurred while changing database data"
-
-    NOT_FOUND = f"{CLASS} not found"
-
-    @staticmethod
-    def user_not_found_id(id: int):
-        return f"{CLASS} with id={id} not found"
+    @classmethod
+    def user_not_found_id(cls, id: int):
+        return f"{cls.CLASS} with id={id} not found"
 
 
 class NoSessionException(CustomException):

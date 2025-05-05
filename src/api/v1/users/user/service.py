@@ -44,7 +44,7 @@ class UsersService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -53,8 +53,8 @@ class UsersService:
             return ORJSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": Errors.DATABASE_ERROR,
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": Errors.DATABASE_ERROR(),
                 }
             )
 
@@ -74,7 +74,7 @@ class UsersService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Auth_Errors.invalid_password_reasoned(e.reason),
                 }
             )
@@ -83,7 +83,7 @@ class UsersService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Auth_Errors.user_already_exists_emailed(user_update.email),
                 }
             )
@@ -108,7 +108,7 @@ class UsersService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
