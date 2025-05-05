@@ -17,8 +17,8 @@ if TYPE_CHECKING:
 
 
 async def inspecting_rubric_ids(
+        rubric_ids: str | list,
         inspector: ValidRelationsInspectorBase,
-        rubric_ids: str | list
 ):
     # Expecting if rubric_ids format valid
     try:
@@ -34,7 +34,7 @@ async def inspecting_rubric_ids(
         raise ValidRelationsException()
 
 
-async def inspecting_rubric_exists(
+async def inspecting_rubrics_exist(
         rubric_ids: list,
         inspector: ValidRelationsInspectorBase,
         errors: Type["ErrorsBase"] = Errors,
