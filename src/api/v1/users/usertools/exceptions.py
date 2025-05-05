@@ -4,8 +4,8 @@ from src.tools.errors_base import ErrorsBase
 
 
 class Errors(ErrorsBase):
-    CLASS = "UserTools"
-    _CLASS = "user_tools"
+    CLASS = "UserTool"
+    _CLASS = "user_tool"
 
     @classmethod
     def already_exists_user_id(cls, user_id: int):
