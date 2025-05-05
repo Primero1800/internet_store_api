@@ -41,3 +41,7 @@ class ErrorsBase:
     @staticmethod
     def INVALID_TOKEN():
         return "Invalid token"
+
+    @staticmethod
+    def INVALID_SESSION():
+        return "Invalid session"

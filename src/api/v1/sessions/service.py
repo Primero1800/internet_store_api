@@ -95,11 +95,11 @@ class SessionsService:
         try:
             await backend.create(session_id, data)
         except BackendError as exc:
-            self.logger.error("%r: %r" % (Errors.SESSION_EXISTS, user.email), exc_info=exc)
+            self.logger.error("%r: %r" % (Errors.SESSION_EXISTS(), user.email), exc_info=exc)
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Errors.session_exists_mailed(user.email),
                 }
             )
@@ -116,11 +116,11 @@ class SessionsService:
             session_id = SessionsService.get_session_id(user)
         result = await backend.read(session_id)
         if not result:
-            self.logger.error("%r: %r" % (Errors.SETTING_NOT_EXISTING_SESSION, session_id))
+            self.logger.error("%r: %r" % (Errors.SETTING_NOT_EXISTING_SESSION(), session_id))
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Errors.setting_not_existing_session_emailed(user.email),
                 }
             )
@@ -155,12 +155,12 @@ class SessionsService:
         try:
             await backend.update(session_id, session_data)
         except BackendError as exc:
-            self.logger.warning("%r, %r" % (Errors.UPDATING_NOT_EXISTS_SESSION, session_id))
+            self.logger.warning("%r, %r" % (Errors.UPDATING_NOT_EXISTS_SESSION(), session_id))
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": Errors.UPDATING_NOT_EXISTS_SESSION,
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": Errors.UPDATING_NOT_EXISTS_SESSION(),
                 }
             )
         return await self.returning_session_data_after_operation(session_id)
@@ -181,8 +181,8 @@ class SessionsService:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": Errors.UPDATING_NOT_EXISTS_SESSION,
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": Errors.UPDATING_NOT_EXISTS_SESSION(),
                 }
             )
         return await self.returning_session_data_after_operation(session_id)
@@ -193,11 +193,11 @@ class SessionsService:
     ):
         result = await backend.read(session_id)
         if not result:
-            self.logger.error("%r: %r" % (Errors.READ_EXISTING_SESSION_ERROR, session_id))
+            self.logger.error("%r: %r" % (Errors.READ_EXISTING_SESSION_ERROR(), session_id))
             return ORJSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": Errors.read_existing_session_error_id(session_id),
                 }
             )
