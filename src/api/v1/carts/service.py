@@ -247,7 +247,6 @@ class CartsService:
         result = await inspector.inspect()
         if isinstance(result, ORJSONResponse):
             return result
-        # product_orm = result["product_orm"] if "product_orm" in result else None
 
         try:
             await repository.edit_one_empty(
@@ -311,7 +310,6 @@ class CartsService:
             to_schema: bool = False,
             maximized: bool = False,
     ):
-        print('111111111111111111 ser 312', cart, type(cart)) #######################################################################################
         if not cart:
             cart: Union["Cart", "SessionCart"] = await self.get_or_create(
                 user_id=user_id
@@ -350,11 +348,9 @@ class CartsService:
             to_schema: bool = False
     ):
         if hasattr(cart, "cart_items") and isinstance(cart.cart_items, Iterable):
-            print('222222222222222 ser 353    CART_ITEMS:', cart.cart_items) ###########################################################################
             for cart_item in cart.cart_items:
                 product_id_to_compare = cart_item.product_id if cart.user_id else cart_item['product_id']
                 if product_id_to_compare == product_id:
-                    print('222222 ser 357           cart_item', cart_item) #############################################
                     return cart_item if cart.user_id else await SessionCartsRepository.dict_to_orm(**cart_item)
         return ORJSONResponse(
             content={
@@ -392,7 +388,6 @@ class CartsService:
                     "detail": exc.msg,
                 }
             )
-        print('99999999 ser 393 ret_orm_mod', returned_orm_model) ########################################################
         if to_schema:
             if not maximized:
                 return await utils.get_short_item_schema_from_orm(
@@ -427,11 +422,9 @@ class CartsService:
             **dict_to_validate
         )
         result = await inspector.inspect()
-        print('33333333 ser 422 inspector result', result) ####################################################################################
         if isinstance(result, ORJSONResponse):
             return result
         product_orm = result["product_orm"] if "product_orm" in result else None
-        print('33333333 ser 426 prod_orm', result)  ####################################################################################
 
         if not product_orm.available or product_orm.quantity < quantity:
             return ORJSONResponse(
@@ -453,7 +446,6 @@ class CartsService:
 
         if orm_model.cart_id is None:           # Is SessionCartItem
             orm_model.product = (await product_utils.get_short_schema_from_orm(product_orm)).model_dump()
-        print('3333333333333 ser 435    ORM_MODEL', orm_model, type(orm_model)) ########################################################################
 
         try:
             await repository.create_one_empty_item(
@@ -590,12 +582,21 @@ class CartsService:
 
     async def delete_item(
             self,
-            cart: "Cart",
+            cart: Union["Cart", "SessionCart"],
             product_id: int
     ):
-        repository: CartsRepository = CartsRepository(
-            session=self.session
-        )
+
+        if isinstance(cart, ORJSONResponse):
+            return cart
+
+        if cart.user_id:
+            repository: CartsRepository = CartsRepository(
+                session=self.session
+            )
+        else:
+            repository: SessionCartsRepository = SessionCartsRepository(
+                session_data=self.session_data
+            )
         try:
             item_orm_model = await repository.get_one_item_complex(
                 cart_id=cart.user_id,
@@ -611,7 +612,7 @@ class CartsService:
                 }
             )
         try:
-            return await self.delete_one(orm_model=item_orm_model)
+            return await repository.delete_cart_item(orm_model=item_orm_model)
         except CustomException as exc:
             return ORJSONResponse(
                 status_code=exc.status_code,
