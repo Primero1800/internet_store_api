@@ -1,6 +1,7 @@
 CLASS = "Cart"
 _CLASS = "cart"
 
+
 class Errors:
 
     HANDLER_MESSAGE = f"Handled by {CLASS}s exception handler"
@@ -22,5 +23,5 @@ class Errors:
         return f"{CLASS}Item with cart_id={cart_id}  and product_id={product_id} already exists"
 
     @staticmethod
-    def item_not_exists_id(cart_id: int, product_id: int):
+    def item_not_exists_id(cart_id: int | None, product_id: int):
         return f"Product with id={product_id} doesn't exists in {CLASS} with user_id={cart_id}"
