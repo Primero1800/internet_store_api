@@ -1,5 +1,6 @@
 from src.tools.errors_base import ErrorsBase
 
+
 class Errors(ErrorsBase):
     CLASS = "Brand"
     _CLASS = "brand"
