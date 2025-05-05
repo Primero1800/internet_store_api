@@ -68,7 +68,7 @@ async def user_cookie_or_error(
     )
 
 
-async def get_or_create_cart_sessioned(
+async def get_or_create_cart_session(
         cart_type: Union["User", SessionData, ORJSONResponse] = Depends(user_cookie_or_error),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ) -> Union["Cart", "SessionCart"]:
@@ -78,9 +78,9 @@ async def get_or_create_cart_sessioned(
     return await service.get_or_create(cart_type=cart_type)
 
 
-async def get_or_create_cart_item_sessioned(
+async def get_or_create_cart_item_session(
         product_id: int = Form(gt=0),
-        cart: Union["Cart", "SessionCart"] = Depends(get_or_create_cart_sessioned),
+        cart: Union["Cart", "SessionCart"] = Depends(get_or_create_cart_session),
         session_data: SessionData = Depends(verifier_or_none),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ) -> "CartItem":

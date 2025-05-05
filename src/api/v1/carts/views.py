@@ -158,7 +158,7 @@ async def get_one_of_me(
 
 # 5_1_1
 @router.get(
-    "/me-sessioned",
+    "/me-session",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cookie_or_none),],
     response_model=CartShort,
@@ -167,7 +167,7 @@ async def get_one_of_me(
 @RateLimiter.rate_limit()
 async def get_one_of_me(
         request: Request,
-        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_sessioned),
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_session),
 ):
     return await utils.get_short_schema_from_orm(cart)
 
@@ -219,16 +219,16 @@ async def get_one_full_of_me(
 
 # 6_1_1
 @router.get(
-    "/me-sessioned/full",
+    "/me-session/full",
     dependencies=[Depends(cookie_or_none),],
     status_code=status.HTTP_200_OK,
     response_model=CartRead,
     description="Get personal item"
 )
 @RateLimiter.rate_limit()
-async def get_one_full_of_me_sessioned(
+async def get_one_full_of_me_session(
         request: Request,
-        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_sessioned),
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_session),
 ):
     return await utils.get_schema_from_orm(cart)
 
@@ -345,16 +345,16 @@ async def get_one_of_me_or_create(
 
 # 10_1_1
 @router.post(
-    "/get-or-create/me-sessioned",
+    "/get-or-create/me-session",
     dependencies=[Depends(cookie_or_none)],
     status_code=status.HTTP_201_CREATED,
     response_model=CartShort,
     description="Get personal item or creating empty one if not exists"
 )
 @RateLimiter.rate_limit()
-async def get_one_of_me_or_create_sessioned(
+async def get_one_of_me_or_create_session(
         request: Request,
-        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_sessioned),
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_session),
 ):
     return await utils.get_short_schema_from_orm(cart)
 
@@ -376,16 +376,16 @@ async def get_one_full_of_me_or_create(
 
 # 10_1_1
 @router.post(
-    "/get-or-create/me-sessioned/full",
+    "/get-or-create/me-session/full",
     dependencies=[Depends(cookie_or_none)],
     status_code=status.HTTP_201_CREATED,
     response_model=CartRead,
     description="Get personal item full or creating empty one if not exists"
 )
 @RateLimiter.rate_limit()
-async def get_one__full_of_me_or_create_sessioned(
+async def get_one__full_of_me_or_create_session(
         request: Request,
-        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_sessioned),
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_session),
 ):
     return await utils.get_schema_from_orm(cart)
 
@@ -456,16 +456,16 @@ async def get_one_item_of_me_or_create(
 
 # 11_1_1
 @router.post(
-    "/get-or-create-item/me-sessioned",
+    "/get-or-create-item/me-session",
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(cookie_or_none),],
     response_model=CartItemShort,
     description="Get cart_item of personal cart or creating one if not exists"
 )
 @RateLimiter.rate_limit()
-async def get_one_item_of_me_sessioned_or_create(
+async def get_one_item_of_me_session_or_create(
         request: Request,
-        cart_item: Union["CartItem", "SessionCartItem"] = Depends(deps.get_or_create_cart_item_sessioned),
+        cart_item: Union["CartItem", "SessionCartItem"] = Depends(deps.get_or_create_cart_item_session),
 ):
     return await utils.get_short_item_schema_from_orm(cart_item)
 
@@ -487,16 +487,16 @@ async def get_one_item_full_of_me_or_create(
 
 # 11_2_1
 @router.post(
-    "/get-or-create-item/me-sessioned/full",
+    "/get-or-create-item/me-session/full",
     dependencies=[Depends(cookie_or_none),],
     status_code=status.HTTP_201_CREATED,
     response_model=CartItemRead,
     description="Get cart_item full of personal cart or creating empty one if not exists"
 )
 @RateLimiter.rate_limit()
-async def get_one_item_full_of_me_sessioned_or_create(
+async def get_one_item_full_of_me_session_or_create(
         request: Request,
-        cart_item: Union["CartItem", "SessionCartItem"] = Depends(deps.get_or_create_cart_item_sessioned)
+        cart_item: Union["CartItem", "SessionCartItem"] = Depends(deps.get_or_create_cart_item_session)
 ):
     return await utils.get_item_schema_from_orm(cart_item)
 
@@ -576,16 +576,16 @@ async def clear_me_or_create(
 
 # 12_1_1
 @router.post(
-    "/clear/me-sessioned",
+    "/clear/me-session",
     dependencies=[Depends(cookie_or_none),],
     status_code=status.HTTP_200_OK,
     response_model=CartShort,
     description="Clear personal item or creating empty one if not exists"
 )
 @RateLimiter.rate_limit()
-async def clear_me_sessioned_or_create(
+async def clear_me_session_or_create(
         request: Request,
-        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_sessioned),
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_session),
         session_data: SessionData = Depends(verifier_or_none),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ):
@@ -647,17 +647,17 @@ async def change_item_quantity_of_me(
 
 # 13_1_1
 @router.post(
-    "/change-quantity/me-sessioned",
+    "/change-quantity/me-session",
     dependencies=[Depends(cookie_or_none,)],
     status_code=status.HTTP_200_OK,
     description="Increase or decrease quantity of personal item or creating empty one if not exists"
 )
 @RateLimiter.rate_limit()
-async def change_item_quantity_of_me(
+async def change_item_quantity_of_me_session(
         request: Request,
         delta: Optional[int] = Form(default=None),
         absolute: Optional[int] = Form(ge=0, default=None),
-        cart_item: Union["CartItem", "SessionCartItem"] = Depends(deps.get_or_create_cart_item_sessioned),
+        cart_item: Union["CartItem", "SessionCartItem"] = Depends(deps.get_or_create_cart_item_session),
         session_data: SessionData = Depends(verifier_or_none),
         session: AsyncSession = Depends(DBConfigurer.session_getter),
 ) -> CartItemShort | None:
@@ -716,6 +716,31 @@ async def delete_item_of_me(
 ):
     service: CartsService = CartsService(
         session=session
+    )
+    return await service.delete_item(
+        cart=cart,
+        product_id=product_id
+    )
+
+
+# 14_1_1
+@router.delete(
+    "/me-session/{product_id}",
+    dependencies=[Depends(cookie_or_none),],
+    status_code=status.HTTP_204_NO_CONTENT,
+    description="Delete item from personal cart by product_id"
+)
+@RateLimiter.rate_limit()
+async def delete_item_of_me_session(
+        request: Request,
+        product_id: int,
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_session),
+        session_data: SessionData = Depends(verifier_or_none),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: CartsService = CartsService(
+        session=session,
+        session_data=session_data,
     )
     return await service.delete_item(
         cart=cart,
