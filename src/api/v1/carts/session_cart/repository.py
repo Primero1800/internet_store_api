@@ -142,8 +142,7 @@ class SessionCartsRepository:
             self,
             cart: SessionCart
     ):
-        cart = self.session_data.data[CART]
-        cart['cart_items'] = []
+        cart.cart_items.clear()
 
         session_service: SessionsService = SessionsService()
         result = await session_service.update_session(
@@ -158,7 +157,7 @@ class SessionCartsRepository:
                 status_code=result.status_code,
                 msg=result.content.get("detail")
             )
-        return SessionCart(**cart)
+        return cart
 
     @staticmethod
     async def dict_to_orm(

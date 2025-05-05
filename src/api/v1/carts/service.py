@@ -489,7 +489,7 @@ class CartsService:
             self,
             cart: Optional[Union["Cart", "SessionCart"]] = None,
             user_id: Optional[int] = None,
-            to_schema: bool = False
+            to_schema: bool = True
     ):
         if not cart:
             cart: "Cart" = await self.get_or_create(
