@@ -58,8 +58,11 @@ async def get_schema_from_orm(
 
 
 async def get_short_schema_from_orm(
-        orm_model: Union["Cart", "SessionCart"]
-) -> CartShort:
+        orm_model: Union["Cart", "SessionCart", ORJSONResponse]
+) -> CartShort | ORJSONResponse:
+
+    if isinstance(orm_model, ORJSONResponse):
+        return orm_model
 
     cart_item_shorts = None
     if hasattr(orm_model, "cart_items"):
