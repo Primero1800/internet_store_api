@@ -1,15 +1,9 @@
-class Errors:
+from src.tools.errors_base import ErrorsBase
 
-    HANDLER_MESSAGE = "Handled by Brands exception handler"
+class Errors(ErrorsBase):
+    CLASS = "Brand"
+    _CLASS = "brand"
 
-    DATABASE_ERROR = "Error occurred while changing database data"
-
-    NOT_EXISTS = "Brand doesn't exist"
-
-    ALREADY_EXISTS = "Brand already exists"
-
-    @staticmethod
-    def already_exists_titled(title: str):
-        return "Brand %r already exists" % title
-
-    IMAGE_SAVING_ERROR = "Error occurred while saving image"
+    @classmethod
+    def already_exists_titled(cls, title: str):
+        return "%s %r already exists" % (cls.CLASS, title)

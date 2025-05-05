@@ -45,3 +45,7 @@ class ErrorsBase:
     @staticmethod
     def INVALID_SESSION():
         return "Invalid session"
+
+    @staticmethod
+    def IMAGE_SAVING_ERROR():
+        return "Error occurred while saving image"
