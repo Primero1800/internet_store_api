@@ -79,7 +79,7 @@ class VotesService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -107,7 +107,7 @@ class VotesService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -166,7 +166,7 @@ class VotesService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -206,14 +206,14 @@ class VotesService:
             if not user.is_superuser and user.id != orm_model.user_id:
                 raise CustomException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    msg=Errors.NO_RIGHTS
+                    msg=Errors.NO_RIGHTS()
                 )
             result = await repository.delete_one(orm_model=orm_model)
         except CustomException as exc:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )
@@ -260,8 +260,8 @@ class VotesService:
             return ORJSONResponse(
                 status_code=status.HTTP_403_FORBIDDEN,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
-                    "detail": Errors.NO_RIGHTS,
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": Errors.NO_RIGHTS(),
                 }
             )
 
@@ -292,7 +292,7 @@ class VotesService:
             return ORJSONResponse(
                 status_code=exc.status_code,
                 content={
-                    "message": Errors.HANDLER_MESSAGE,
+                    "message": Errors.HANDLER_MESSAGE(),
                     "detail": exc.msg,
                 }
             )

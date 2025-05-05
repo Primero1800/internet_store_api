@@ -1,15 +1,10 @@
-class Errors:
+from src.tools.errors_base import ErrorsBase
 
-    HANDLER_MESSAGE = "Handled by Votes exception handler"
 
-    DATABASE_ERROR = "Error occurred while changing database data"
+class Errors(ErrorsBase):
+    CLASS = "Vote"
+    _CLASS = "vote"
 
-    NOT_EXISTS = "Vote doesn't exist"
-
-    ALREADY_EXISTS = "Vote already exists"
-
-    NO_RIGHTS = "You are not authorized for this operation"
-
-    @staticmethod
-    def already_exists_titled(user_id: int, product_id: int):
-        return "Vote user_id=%s and product_id=%s already exists" % (user_id, product_id)
+    @classmethod
+    def already_exists_titled(cls, user_id: int, product_id: int):
+        return "%s user_id=%s and product_id=%s already exists" % (cls.CLASS, user_id, product_id)
