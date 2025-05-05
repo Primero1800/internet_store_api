@@ -1,11 +1,7 @@
-class Errors:
+from src.tools.errors_base import ErrorsBase
 
-    HANDLER_MESSAGE = "Handled by Posts exception handler"
 
-    DATABASE_ERROR = "Error occurred while changing database data"
+class Errors(ErrorsBase):
 
-    NOT_EXISTS = "Post doesn't exist"
-
-    ALREADY_EXISTS = "Post already exists"
-
-    NO_RIGHTS = "You are not authorized for this operation"
+    CLASS = "Post"
+    _CLASS = "post"

@@ -120,7 +120,7 @@ class PostsRepository:
             self.logger.error(f"Error while orm_model creating", exc_info=error)
             raise CustomException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                msg=Errors.DATABASE_ERROR
+                msg=Errors.DATABASE_ERROR()
             )
 
     async def delete_one(
@@ -161,5 +161,5 @@ class PostsRepository:
             self.logger.error("Error occurred while editing data in database", exc_info=exc)
             raise CustomException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                msg=Errors.DATABASE_ERROR
+                msg=Errors.DATABASE_ERROR()
             )
