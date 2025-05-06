@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Optional, Union
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.settings import settings
 from .schemas import (
     CartRead,
     CartShort,
@@ -14,8 +15,10 @@ if TYPE_CHECKING:
     from src.core.models import (
         Cart,
         CartItem,
+        User,
     )
     from src.api.v1.carts.session_cart import SessionCart, SessionCartItem
+    from src.core.sessions.fastapi_sessions_config import SessionData
 
 
 async def get_schema_from_orm(
@@ -148,4 +151,22 @@ async def get_or_create_item(
         user_id=user_id,
         cart=cart,
         product_id=product_id,
+    )
+
+
+async def serve_carts_after_logging(
+        user: "User",
+        session_cart: "SessionCart",
+        session: AsyncSession,
+        session_data: "SessionData",
+):
+    from .service import CartsService
+    service = CartsService(
+        session=session,
+        session_data=session_data
+    )
+    user_cart = await service.get_or_create(user_id=user.id)
+    await service.sum_carts(
+        user_cart=user_cart,
+        session_cart=session_cart,
     )

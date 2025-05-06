@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 from typing import TYPE_CHECKING, Optional, Iterable, Any, Union
 
 from fastapi import status
@@ -337,14 +338,13 @@ class CartsService:
         item_orm_model = await self.get_one_item_complex(
             cart=cart,
             product_id=product_id,
-            to_schema=False
         )
         if isinstance(item_orm_model, ORJSONResponse):
             self.logger.info(
-                'No %sItem bound with cart_id=%s and product_id=%s in database' % (CLASS, cart.user_id, product_id)
+                'No %sItem with cart_id=%s and product_id=%s in database' % (CLASS, cart.user_id, product_id)
             )
             self.logger.info(
-                'Creating %sItem bound with cart_id=%s and product_id=%s in database' % (CLASS, cart.user_id, product_id)
+                'Creating %sItem with cart_id=%s and product_id=%s in database' % (CLASS, cart.user_id, product_id)
             )
             item_orm_model = await self.create_one_item(
                 cart=cart,
@@ -363,7 +363,6 @@ class CartsService:
             self,
             cart: Union["Cart", "SessionCart"],
             product_id: int,
-            to_schema: bool = False
     ):
         if hasattr(cart, "cart_items") and isinstance(cart.cart_items, Iterable):
             for cart_item in cart.cart_items:
@@ -421,7 +420,8 @@ class CartsService:
             cart: Union["Cart", "SessionCart"],
             product_id: int,
             quantity: int = 1,
-            to_schema: bool = True
+            to_schema: bool = True,
+            original_price: Optional[Decimal] = None
     ):
         if not cart.user_id is None:
             repository: CartsRepository = CartsRepository(
@@ -444,7 +444,8 @@ class CartsService:
             return result
         product_orm = result["product_orm"] if "product_orm" in result else None
 
-        if not product_orm.available or product_orm.quantity < quantity:
+        quantity = min(quantity, product_orm.quantity)
+        if not product_orm.available or quantity < 1:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
@@ -456,7 +457,7 @@ class CartsService:
         # catching ValidationError in exception_handler
         instance: CartItemCreate = CartItemCreate(
             product_id=product_orm.id,
-            price=product_orm.price,
+            price=original_price if original_price else product_orm.price,
             cart_id=cart.user_id,
             quantity=quantity,
         )
@@ -561,8 +562,11 @@ class CartsService:
             repository: SessionCartsRepository = SessionCartsRepository(
                 session_data=self.session_data
             )
-        if new_quantity <= 0:
-            self.logger.warning("New product quantity <= 0. CartItem will be deleted from cart")
+        if new_quantity <= 0 or not product_orm.available:
+            if product_orm.available:
+                self.logger.warning("New product quantity <= 0. CartItem will be deleted from cart")
+            else:
+                self.logger.warning("Chosen product is not available. CartItem will be deleted from cart")
             try:
                 return await repository.delete_cart_item(cart_item)
             except CustomException as exc:
@@ -639,3 +643,49 @@ class CartsService:
                     "detail": exc.msg,
                 }
             )
+
+    async def sum_carts(
+            self,
+            user_cart: "Cart",
+            session_cart: "SessionCart"
+    ):
+
+        for dict_item in session_cart.cart_items:
+
+            orm_model_item = await self.get_one_item_complex(
+                cart=user_cart,
+                product_id=dict_item["product_id"],
+            )
+
+            if isinstance(orm_model_item, ORJSONResponse):  # Item doesn't exist in Cart
+                orm_model_item = await self.create_one_item(
+                    cart=user_cart,
+                    product_id=dict_item['product_id'],
+                    quantity=dict_item["quantity"],
+                    original_price=dict_item["price"],
+                    to_schema=False
+                )
+                if isinstance(orm_model_item, ORJSONResponse):
+                    self.logger.error("Error occurred while replacing item from SessionCart to Cart")
+                else:
+                    self.logger.info("New CartItem was successfully created according SessionCartItem")
+
+            else:           # Item already exists in Cart
+                orm_model_item = await self.change_quantity(
+                    absolute=orm_model_item.quantity + dict_item["quantity"],
+                    cart_item=orm_model_item,
+                    to_schema=False
+                )
+                if isinstance(orm_model_item, ORJSONResponse):
+                    self.logger.error("Error occurred while changing quantity of item in Cart according SessionCart")
+                else:
+                    self.logger.info("CartItem's quantity was successfully created according SessionCartItem")
+
+        # Clearing SessionCart after adding items to Cart
+        repository: SessionCartsRepository = SessionCartsRepository(
+            session_data=self.session_data
+        )
+        await repository.clear_cart(
+            cart=session_cart
+        )
+        self.logger.info("SessionCart was successfully cleared after adding items to Cart")
