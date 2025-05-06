@@ -1,4 +1,5 @@
 import logging
+from typing import Union, TYPE_CHECKING
 
 from fastapi import (
     APIRouter,
@@ -17,14 +18,20 @@ from src.api.v1.auth.backend import (
     auth_backend,
 )
 from src.api.v1.auth.dependencies import get_user_manager
-from src.core.config import RateLimiter
+from src.core.config import RateLimiter, DBConfigurer
+from src.core.sessions.fastapi_sessions_config import cookie_or_none, SessionData, verifier_or_none
 from .service import AuthService
 from src.api.v1.users.user.dependencies import current_user_token
 from src.api.v1.users.user.schemas import (
     UserRead,
     UserCreate,
 )
+from ..carts.dependencies import get_or_create_cart_session
 
+if TYPE_CHECKING:
+    from src.core.models import Cart
+    from src.api.v1.carts.session_cart import SessionCart
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +41,7 @@ router = APIRouter()
 @router.post(
         "/login",
         name=f"auth:{auth_backend.name}.login",
+        dependencies=[Depends(cookie_or_none),],
 )
 @RateLimiter.rate_limit()
 async def login(
@@ -41,15 +49,21 @@ async def login(
     credentials: OAuth2PasswordRequestForm = Depends(),
     user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
     strategy: Strategy[models.UP, models.ID] = Depends(auth_backend.get_strategy),
+    session_cart: Union["Cart", "SessionCart"] = Depends(get_or_create_cart_session),
+    session: "AsyncSession" = Depends(DBConfigurer.session_getter),
+    session_data: SessionData = Depends(verifier_or_none),
 ):
     service = AuthService(
         user_manager=user_manager,
         backend=auth_backend,
+        session=session,
+        session_data=session_data
     )
     return await service.login(
         request=request,
         credentials=credentials,
         strategy=strategy,
+        session_cart=session_cart,
     )
 
 

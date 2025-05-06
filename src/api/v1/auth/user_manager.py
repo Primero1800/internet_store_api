@@ -104,7 +104,8 @@ class UserManager(IntegerIDMixin, BaseUserManager["User", Integer]):
         task_send_mail.apply_async(args=(schema.model_dump(),))
 
     async def on_after_login(
-            self, user: "User",
+            self,
+            user: "User",
             request: Optional["Request"] = None,
             response: Optional["Response"] = None,
     ):

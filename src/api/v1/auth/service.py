@@ -1,5 +1,5 @@
 import logging
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 
 from fastapi.responses import ORJSONResponse
 from fastapi_users import BaseUserManager, models, exceptions
@@ -8,12 +8,16 @@ from fastapi_users.authentication import Strategy, AuthenticationBackend
 from fastapi_users.exceptions import InvalidResetPasswordToken
 from pydantic import EmailStr
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.settings import settings
 from .exceptions import Errors
 
 if TYPE_CHECKING:
-    from src.core.models import User
+    from src.core.models import User, Cart
     from src.api.v1.users.user.schemas import UserUpdateExtended
+    from src.api.v1.carts.session_cart import SessionCart
+    from src.core.sessions.fastapi_sessions_config import SessionData
 
 
 class AuthService:
@@ -21,15 +25,20 @@ class AuthService:
         self,
         user_manager: BaseUserManager[models.UP, models.ID] | None = None,
         backend: AuthenticationBackend[models.UP, models.ID] | None = None,
+        session: AsyncSession | None = None,
+        session_data: Union["SessionData", None] = None
     ):
         self.user_manager = user_manager
         self.backend = backend
         self.logger = logging.getLogger(__name__)
+        self.session = session
+        self.session_data = session_data
 
     async def login(
             self,
             request: Request,
             credentials: Any,
+            session_cart: Union["Cart", "SessionCart"],
             strategy: Strategy[models.UP, models.ID],
             requires_verification: bool = False
     ):
@@ -51,7 +60,21 @@ class AuthService:
                 }
             )
         response = await self.backend.login(strategy, user)
-        await self.user_manager.on_after_login(user, request, response)
+        await self.user_manager.on_after_login(
+            user,
+            request,
+            response,
+        )
+
+        if settings.carts.SUMMARY_POLICY_AFTER_LOGIN:
+            from ..carts.utils import serve_carts_after_logging
+            await serve_carts_after_logging(
+                user=user,
+                session_cart=session_cart,
+                session=self.session,
+                session_data=self.session_data
+            )
+
         return response
 
     async def logout(
