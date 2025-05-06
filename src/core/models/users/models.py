@@ -18,6 +18,8 @@ if TYPE_CHECKING:
         UserTools,
         Post,
         Cart,
+        Person,
+        Address,
     )
 
 
@@ -67,6 +69,18 @@ class User(Base, IDIntPkMixin, SQLAlchemyBaseUserTable[int]):
 
     cart: Mapped['Cart'] = relationship(
         "Cart",
+        back_populates="user",
+        cascade='all, delete'
+    )
+
+    person: Mapped['Person'] = relationship(
+        "Person",
+        back_populates="user",
+        cascade='all, delete'
+    )
+
+    address: Mapped['Address'] = relationship(
+        "Address",
         back_populates="user",
         cascade='all, delete'
     )
