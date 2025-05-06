@@ -689,3 +689,20 @@ class CartsService:
             cart=session_cart
         )
         self.logger.info("SessionCart was successfully cleared after adding items to Cart")
+
+    async def normalize_items_quantity(
+            self,
+            cart: Union["Cart", "SessionCart"],
+    ):
+        self.logger.warning("Normalizing cart items quantity according product quantity before ordering")
+        for cart_item in cart.cart_items:
+            if isinstance(cart_item, dict):
+                cart_item = await SessionCartsRepository.dict_to_orm(**cart_item)
+
+            orm_model = await self.change_quantity(
+                cart_item=cart_item,
+                absolute=cart_item.quantity,
+                to_schema=False,
+            )
+            if isinstance(orm_model, ORJSONResponse):
+                self.logger.error("Error occurred while normalizing item quantity")

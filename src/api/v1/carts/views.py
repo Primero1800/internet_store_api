@@ -745,3 +745,26 @@ async def delete_item_of_me_session(
         cart=cart,
         product_id=product_id
     )
+
+
+# 15
+@router.get(
+    "/me-session/normalize",
+    dependencies=[Depends(cookie_or_none),],
+    status_code=status.HTTP_204_NO_CONTENT,
+    description="Normalize items quantity according products quantity before ordering"
+)
+@RateLimiter.rate_limit()
+async def normalize_quantity_of_me_session(
+        request: Request,
+        cart: Union["Cart", "SessionCart"] = Depends(deps.get_or_create_cart_session),
+        session_data: SessionData = Depends(verifier_or_none),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: CartsService = CartsService(
+        session=session,
+        session_data=session_data,
+    )
+    return await service.normalize_items_quantity(
+        cart=cart,
+    )

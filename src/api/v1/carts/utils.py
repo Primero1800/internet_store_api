@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Optional, Union
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.settings import settings
 from .schemas import (
     CartRead,
     CartShort,
@@ -169,4 +168,20 @@ async def serve_carts_after_logging(
     await service.sum_carts(
         user_cart=user_cart,
         session_cart=session_cart,
+    )
+
+
+# /me-session/normalize
+async def serve_normalize_item_quantity(
+        cart: Union["Cart", "SessionCart"],
+        session: AsyncSession,
+        session_data: "SessionData",
+):
+    from .service import CartsService
+    service: CartsService = CartsService(
+        session=session,
+        session_data=session_data
+    )
+    await service.normalize_items_quantity(
+        cart=cart
     )
