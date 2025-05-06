@@ -82,6 +82,10 @@ class Auth(CustomSettings):
         )
 
 
+class Carts(CustomSettings):
+    SUMMARY_POLICY_AFTER_LOGIN: bool = False
+
+
 class DB(CustomSettings):
 
     # DB_NAME: str = os.getenv('DB_NAME_TEST') if 'pytest' in sys.modules else os.getenv('DB_NAME')
@@ -201,6 +205,7 @@ class Users(CustomSettings):
 
 class Settings(CustomSettings):
     app: AppSettings = AppSettings()
+    carts: Carts = Carts()
     logging: LoggingConfig = LoggingConfig()
     run: RunConfig = RunConfig()
     tags: Tags = Tags()

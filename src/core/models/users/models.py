@@ -20,6 +20,7 @@ if TYPE_CHECKING:
         Cart,
         Person,
         Address,
+        Order,
     )
 
 
@@ -83,6 +84,11 @@ class User(Base, IDIntPkMixin, SQLAlchemyBaseUserTable[int]):
         "Address",
         back_populates="user",
         cascade='all, delete'
+    )
+
+    orders: Mapped[list['Order']] = relationship(
+        "Order",
+        back_populates="user",
     )
 
     def __str__(self):
