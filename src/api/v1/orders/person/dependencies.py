@@ -18,27 +18,26 @@ if TYPE_CHECKING:
 
 
 async def get_person_session(
-        cart_type: Union["User", "SessionData", ORJSONResponse] = Depends(user_cookie_or_error),
+        obj_type: Union["User", "SessionData", ORJSONResponse] = Depends(user_cookie_or_error),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ) -> Union["Person", "SessionPerson"]:
     service: PersonsService = PersonsService(
         session=session
     )
-    print('11111111 dep 27', cart_type, type(cart_type)) #######################################################################################
     return await service.get_one(
-        cart_type=cart_type,
+        obj_type=obj_type,
         to_schema=False,
     )
 
 
 async def get_person_session_full(
-        cart_type: Union["User", "SessionData", ORJSONResponse] = Depends(user_cookie_or_error),
+        obj_type: Union["User", "SessionData", ORJSONResponse] = Depends(user_cookie_or_error),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ) -> Union["Person", "SessionPerson"]:
     service: PersonsService = PersonsService(
         session=session
     )
     return await service.get_one_complex(
-        cart_type=cart_type,
+        obj_type=obj_type,
         to_schema=False,
     )
