@@ -155,6 +155,8 @@ class Sessions(CustomSettings):
     SESSIONS_MAX_AGE: int
     SESSIONS_SECRET_KEY: str
     SESSION_CART: str
+    SESSION_PERSON: str
+    SESSION_ADDRESS: str
 
 
 class Tags(CustomSettings):
