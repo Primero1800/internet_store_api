@@ -198,6 +198,15 @@ class Tags(CustomSettings):
     CARTS_PREFIX: str
     CARTS_TAG: str
 
+    ORDERS_PREFIX: str
+    ORDERS_TAG: str
+
+    PERSONS_PREFIX: str
+    PERSONS_TAG: str
+
+    ADDRESSES_PREFIX: str
+    ADDRESSES_TAG: str
+
 
 class Users(CustomSettings):
     USERS_PASSWORD_MIN_LENGTH: int
