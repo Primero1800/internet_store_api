@@ -21,7 +21,6 @@ from .schemas import (
 from .filters import PersonFilter
 from src.api.v1.users.user.dependencies import current_superuser, current_user_or_none
 from src.core.config import DBConfigurer, RateLimiter
-from src.api.v1.users.user.schemas import UserPublicExtended
 from . import dependencies as deps
 from . import utils
 
@@ -280,7 +279,7 @@ async def delete_one(
 
 # 9
 @router.patch(
-        "/me",
+        "/me-session",
         status_code=status.HTTP_200_OK,
         dependencies=[Depends(cookie_or_none),],
         response_model=PersonRead,
@@ -309,111 +308,42 @@ async def patch_one(
     )
 
 
-#
-#
-# # 9
-# @router.put(
-#         "/{id}",
-#         status_code=status.HTTP_200_OK,
-#         response_model=PostRead,
-#         description="Edit item by id (for superuser and item's author only)"
-# )
+# 10_1
+@router.get(
+        "/me-session/user",
+        status_code=status.HTTP_200_OK,
+        dependencies=[Depends(cookie_or_none), ],
+        description="Get personal item's relation 'user'"
+)
+@RateLimiter.rate_limit()
+async def get_personal_relations_user(
+        request: Request,
+        orm_model: Union["Person", "SessionPerson"] = Depends(deps.get_one_session_full),
+):
+    return await utils.get_schema_from_orm(
+        orm_model=orm_model,
+        relations=['user',],
+    )
+
+
+# 10_2
+@router.get(
+        "/{user_id}/user",
+        status_code=status.HTTP_200_OK,
+        dependencies=[Depends(current_superuser), ],
+        description="Get item's relation 'user' by user_id (for superuser only)"
+)
 # @RateLimiter.rate_limit()
-# async def put_one(
-#         request: Request,
-#         user: "User" = Depends(current_user),
-#         orm_model: "Post" = Depends(deps.get_one_simple),
-#         product_id: Optional[int] = Form(default=None, gt=0),
-#         name: str = Form(),
-#         review: str = Form(),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter),
-# ):
-#     service: PostsService = PostsService(
-#         session=session
-#     )
-#     return await service.edit_one(
-#         orm_model=orm_model,
-#         user=user,
-#         product_id=product_id,
-#         name=name,
-#         review=review,
-#     )
-#
-#
-# # 10
-# @router.patch(
-#         "/{id}",
-#         status_code=status.HTTP_200_OK,
-#         response_model=PostRead,
-#         description="Partial edit item by id (for superuser and item's author only)"
-# )
-# @RateLimiter.rate_limit()
-# async def patch_one(
-#         request: Request,
-#         user: "User" = Depends(current_user),
-#         orm_model: "Post" = Depends(deps.get_one_simple),
-#         product_id: Optional[int] = Form(default=None),
-#         reset_product: Optional[bool] = Form(default=None),
-#         name: Optional[str] = Form(default=None),
-#         review: Optional[str] = Form(default=None),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter),
-# ):
-#     service: PostsService = PostsService(
-#         session=session
-#     )
-#     return await service.edit_one(
-#         orm_model=orm_model,
-#         user=user,
-#         product_id=product_id,
-#         name=name,
-#         review=review,
-#         reset_product=reset_product,
-#         is_partial=True
-#     )
-#
-#
-# # 11_1
-# @router.get(
-#     "/{id}/user",
-#     dependencies=[Depends(current_superuser), ],
-#     status_code=status.HTTP_200_OK,
-#     response_model=UserPublicExtended,
-#     description="Get item relations user by id (for superuser only)"
-# )
-# # @RateLimiter.rate_limit()
-# # no rate limit for superuser
-# async def get_relations_user(
-#         request: Request,
-#         id: int,
-#         session: AsyncSession = Depends(DBConfigurer.session_getter)
-# ):
-#     service: PostsService = PostsService(
-#         session=session
-#     )
-#     return await service.get_one_complex(
-#         id=id,
-#         maximized=False,
-#         relations=['user',]
-#     )
-#
-#
-# # 11_2
-# @router.get(
-#     "/{id}/product",
-#     status_code=status.HTTP_200_OK,
-#     description="Get item relations product by id"
-# )
-# @RateLimiter.rate_limit()
-# async def get_relations_product(
-#         request: Request,
-#         id: int,
-#         session: AsyncSession = Depends(DBConfigurer.session_getter)
-# ) -> ProductShort | None:
-#     service: PostsService = PostsService(
-#         session=session
-#     )
-#     return await service.get_one_complex(
-#         id=id,
-#         maximized=False,
-#         relations=['product',]
-#     )
+# no rate limit for superuser
+async def get_relations_user_by_user_id(
+        request: Request,
+        user_id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: PersonsService = PersonsService(
+        session=session,
+    )
+    return await service.get_one_complex(
+        user_id=user_id,
+        relations=['user',]
+    )
