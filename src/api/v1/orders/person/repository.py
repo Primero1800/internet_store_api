@@ -1,13 +1,13 @@
 import logging
 from fastapi import status
-from typing import Sequence, TYPE_CHECKING, Union, Optional, Any
+from typing import Sequence, TYPE_CHECKING, Union
 
 from sqlalchemy import select, Result
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.core.models import Person, User
+from src.core.models import Person
 from src.tools.exceptions import CustomException
 from .exceptions import Errors
 
@@ -131,4 +131,27 @@ class PersonsRepository:
             self.logger.error("Error while deleting data from database", exc_info=exc)
             raise CustomException(
                 msg="Error while deleting %r from database" % orm_model
+            )
+
+    async def edit_one_empty(
+            self,
+            instance:  Union["PersonUpdate", "PersonPartialUpdate"],
+            orm_model: Person,
+            is_partial: bool = False
+    ):
+        for key, val in instance.model_dump(
+                exclude_unset=is_partial,
+                exclude_none=is_partial,
+        ).items():
+            setattr(orm_model, key, val)
+
+        self.logger.warning(f"Editing %r in database" % orm_model)
+        try:
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                msg=Errors.DATABASE_ERROR()
             )

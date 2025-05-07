@@ -246,7 +246,6 @@ class PostsService:
         result = await inspector.inspect()
         if isinstance(result, ORJSONResponse):
             return result
-        # product_orm = result["product_orm"] if "product_orm" in result else None
 
         try:
             await repository.edit_one_empty(

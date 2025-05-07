@@ -239,3 +239,57 @@ class PersonsService:
                     "detail": exc.msg,
                 }
             )
+
+    async def edit_one(
+            self,
+            orm_model: Union["Person", "SessionPerson"],
+            firstname: Optional[str] = None,
+            lastname: Optional[str] = None,
+            company_name: Optional[str] = None,
+            is_partial: bool = False,
+            to_schema: bool = True,
+    ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
+        if isinstance(orm_model.user_id, int):
+            repository: PersonsRepository = PersonsRepository(
+                session=self.session,
+            )
+        else:
+            repository: SessionPersonsRepository = SessionPersonsRepository(
+                session_data=self.session_data
+            )
+
+        # catching ValidationError in exception_handler
+        updating_dictionary = {
+            "company_name": company_name,
+            "firstname": firstname,
+            "lastname": lastname,
+        }
+        if is_partial:
+            instance: PersonPartialUpdate = PersonPartialUpdate(**updating_dictionary)
+        else:
+            instance: PersonUpdate = PersonUpdate(**updating_dictionary)
+
+        try:
+            await repository.edit_one_empty(
+                instance=instance,
+                orm_model=orm_model,
+                is_partial=is_partial,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": exc.msg,
+                }
+            )
+
+        self.logger.info("%s %r was successfully edited" % (CLASS, orm_model))
+        return await self.get_one_complex(
+            user_id=orm_model.user_id,
+            obj_type=self.session_data,
+            to_schema=to_schema,
+        )

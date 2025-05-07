@@ -6,7 +6,7 @@ from fastapi import (
     Depends,
     status,
     Request,
-    Query, Body,
+    Query,
 )
 from fastapi_filter import FilterDepends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -276,6 +276,38 @@ async def delete_one(
     return await service.delete_one(
         orm_model=orm_model,
     )
+
+
+# 9
+@router.patch(
+        "/me",
+        status_code=status.HTTP_200_OK,
+        dependencies=[Depends(cookie_or_none),],
+        response_model=PersonRead,
+        description="Partial edit personal item"
+)
+@RateLimiter.rate_limit()
+async def patch_one(
+        request: Request,
+        firstname: Optional[str] = Form(min_length=2, max_length=100, default=None),
+        lastname: Optional[str] = Form(max_length=50, default=None),
+        company_name: Optional[str] = Form(min_length=2, max_length=100, default=None),
+        orm_model: Union["Person", "SessionPerson"] = Depends(deps.get_one_session),
+        session_data: "SessionData" = Depends(verifier_or_none),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: PersonsService = PersonsService(
+        session=session,
+        session_data=session_data
+    )
+    return await service.edit_one(
+        orm_model=orm_model,
+        firstname=firstname,
+        lastname=lastname,
+        company_name=company_name,
+        is_partial=True
+    )
+
 
 #
 #

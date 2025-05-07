@@ -81,6 +81,8 @@ class SessionPersonsRepository:
                 status_code=status.HTTP_403_FORBIDDEN,
                 msg=Errors.ALREADY_EXISTS()
             )
+
+        self.logger.warning(f"Creating %r in session" % orm_model)
         session_service: SessionsService = SessionsService()
 
         result = await session_service.update_session(
@@ -91,6 +93,38 @@ class SessionPersonsRepository:
             session_id=self.session_data.session_id
         )
         if isinstance(result, ORJSONResponse):
+            self.logger.error("Error occurred while creating data in session")
+            raise CustomException(
+                status_code=result.status_code,
+                msg=result.content.get("detail")
+            )
+        result = SessionPerson(**result.data[PERSON])
+        return result
+
+    async def edit_one_empty(
+            self,
+            instance:  Union["PersonUpdate", "PersonPartialUpdate"],
+            orm_model: SessionPerson,
+            is_partial: bool = False
+    ):
+        for key, val in instance.model_dump(
+                exclude_unset=is_partial,
+                exclude_none=is_partial,
+        ).items():
+            setattr(orm_model, key, val)
+
+        self.logger.warning(f"Editing %r in session" % orm_model)
+        session_service: SessionsService = SessionsService()
+
+        result = await session_service.update_session(
+            session_data=self.session_data,
+            data_to_update={
+                PERSON: orm_model.to_dict()
+            },
+            session_id=self.session_data.session_id
+        )
+        if isinstance(result, ORJSONResponse):
+            self.logger.error("Error occurred while editing data in session")
             raise CustomException(
                 status_code=result.status_code,
                 msg=result.content.get("detail")
