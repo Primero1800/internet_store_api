@@ -118,3 +118,17 @@ class PersonsRepository:
                 status_code=status.HTTP_403_FORBIDDEN,
                 msg=Errors.already_exists_id(orm_model.user_id)
             )
+
+    async def delete_one(
+            self,
+            orm_model: Person,
+    ) -> None:
+        try:
+            self.logger.info(f"Deleting %r from database" % orm_model)
+            await self.session.delete(orm_model)
+            await self.session.commit()
+        except IntegrityError as exc:
+            self.logger.error("Error while deleting data from database", exc_info=exc)
+            raise CustomException(
+                msg="Error while deleting %r from database" % orm_model
+            )
