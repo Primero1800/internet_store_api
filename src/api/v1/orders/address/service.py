@@ -198,7 +198,7 @@ class AddressesService:
             address=address,
             city=city,
             postcode=postcode,
-            email=email,
+            email=user.email if user else email,
             phonenumber=phonenumber,
         )
         orm_model = await repository.get_orm_model_from_schema(instance=instance)
@@ -272,7 +272,7 @@ class AddressesService:
             "address": address,
             "city": city,
             "postcode": postcode,
-            "email": email,
+            "email": None if isinstance(orm_model.user_id, int) else email,
             "phonenumber": phonenumber,
         }
         if is_partial:
