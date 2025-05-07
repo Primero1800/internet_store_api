@@ -26,7 +26,6 @@ from .validators import ValidRelationsInspector
 if TYPE_CHECKING:
     from src.core.models import (
         Cart,
-        User,
         Product,
         CartItem,
     )
