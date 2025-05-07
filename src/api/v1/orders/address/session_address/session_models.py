@@ -10,7 +10,7 @@ class SessionAddress:
     address: Annotated[str, Field(min_length=6, max_length=100)]
     city: Annotated[str, Field(min_length=2, max_length=50)]
     postcode: Annotated[str | None, Field(max_length=16, default=None)]
-    email: Annotated[str, Field(min_length=6, max_length=320)]
+    email: Annotated[str | None, Field(min_length=6, max_length=320, default=None),]
     phonenumber: Annotated[str, Field(min_length=6, max_length=16)]
 
     user_id: Optional[int] = None

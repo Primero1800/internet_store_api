@@ -43,7 +43,8 @@ class Address(Base):
     )
 
     email: Mapped[str] = mapped_column(
-        String(length=320), unique=True, index=True, nullable=False
+        String(length=320),
+        nullable=True
     )
 
     phonenumber: Mapped[str] = mapped_column(
