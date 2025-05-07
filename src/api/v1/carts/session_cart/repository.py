@@ -1,9 +1,7 @@
 import logging
-from datetime import datetime
-from typing import Union, TYPE_CHECKING, Optional, Iterable
+from typing import Union, TYPE_CHECKING, Optional
 
 from fastapi.responses import ORJSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.v1.sessions.service import SessionsService
 from src.core.sessions.fastapi_sessions_config import (
