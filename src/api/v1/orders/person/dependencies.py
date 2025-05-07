@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from src.api.v1.orders.person.session_person import SessionPerson
 
 
-async def get_person_session(
+async def get_one_session(
         obj_type: Union["User", "SessionData", ORJSONResponse] = Depends(user_cookie_or_error),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ) -> Union["Person", "SessionPerson"]:
@@ -30,7 +30,7 @@ async def get_person_session(
     )
 
 
-async def get_person_session_full(
+async def get_one_session_full(
         obj_type: Union["User", "SessionData", ORJSONResponse] = Depends(user_cookie_or_error),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ) -> Union["Person", "SessionPerson"]:
@@ -39,5 +39,18 @@ async def get_person_session_full(
     )
     return await service.get_one_complex(
         obj_type=obj_type,
+        to_schema=False,
+    )
+
+
+async def get_one_simple(
+        user_id: int,
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+) -> "Person":
+    service: PersonsService = PersonsService(
+        session=session
+    )
+    return await service.get_one(
+        user_id=user_id,
         to_schema=False,
     )
