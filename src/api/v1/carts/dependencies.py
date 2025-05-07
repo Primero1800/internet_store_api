@@ -1,14 +1,15 @@
 from typing import TYPE_CHECKING, Union
-from fastapi import Depends, Form, status
+from fastapi import Depends, Form
 from fastapi.responses import ORJSONResponse
-from fastapi_sessions.backends.session_backend import BackendError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import DBConfigurer
 from src.core.sessions.fastapi_sessions_config import verifier_or_none, SessionData
 from .service import CartsService
-from .exceptions import Errors
-from ..users.user.dependencies import current_user, current_user_or_none
+from ..users.user.dependencies import (
+    current_user,
+    user_cookie_or_error,
+)
 
 if TYPE_CHECKING:
     from src.core.models import Cart, User, CartItem
@@ -51,23 +52,6 @@ async def get_or_create_cart_item(
     )
 
 
-async def user_cookie_or_error(
-        user: "User" = Depends(current_user_or_none),
-        session_data: SessionData = Depends(verifier_or_none),
-) -> Union["User", SessionData, ORJSONResponse]:
-    if user:
-        return user
-    if session_data and not isinstance(session_data, BackendError):
-        return session_data
-    return ORJSONResponse(
-        status_code=status.HTTP_403_FORBIDDEN,
-        content={
-            "message": Errors.HANDLER_MESSAGE(),
-            "detail": "No authentication or session provided",
-        }
-    )
-
-
 async def get_or_create_cart_session(
         cart_type: Union["User", SessionData, ORJSONResponse] = Depends(user_cookie_or_error),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
@@ -92,4 +76,3 @@ async def get_or_create_cart_item_session(
         cart=cart,
         product_id=product_id
     )
-
