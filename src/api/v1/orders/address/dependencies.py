@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.v1.users.user.dependencies import user_cookie_or_error
 from src.core.config import DBConfigurer
 
-.service import AddressesService
+from .service import AddressesService
 
 if TYPE_CHECKING:
     from src.core.models import (
