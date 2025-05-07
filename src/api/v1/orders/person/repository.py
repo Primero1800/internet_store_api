@@ -1,6 +1,6 @@
 import logging
 from fastapi import status
-from typing import Sequence, TYPE_CHECKING, Union
+from typing import Sequence, TYPE_CHECKING, Union, Optional, Any
 
 from sqlalchemy import select, Result
 from sqlalchemy.exc import IntegrityError
@@ -35,7 +35,7 @@ class PersonsRepository:
             self,
             user_id: int = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list = [],
     ):
         stmt_filter = select(Person).where(Person.user_id == user_id)
 

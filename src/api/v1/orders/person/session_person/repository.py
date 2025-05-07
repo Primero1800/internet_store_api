@@ -33,19 +33,24 @@ class SessionPersonsRepository:
 
     async def get_one_complex(
             self,
-            cart_type: SessionData,
             user_id: int = None,
             maximized: bool = True,
             relations: list = []
     ):
-        if not PERSON in cart_type.data:
+        if not PERSON in self.session_data.data:
             text_error = f"user_id={user_id}"
             raise CustomException(
                 msg=f"{CLASS} with {text_error} not found"
             )
-        person = cart_type.data[PERSON]
+        person = self.session_data.data[PERSON]
         result = SessionPerson(**person)
         return result
+
+    async def get_one(
+            self,
+            user_id: int = None,
+    ):
+        return await self.get_one_complex()
 
     async def get_all(
             self,

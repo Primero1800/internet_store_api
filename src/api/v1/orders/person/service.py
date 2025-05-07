@@ -86,3 +86,80 @@ class PersonsService:
             for orm_model in listed_orm_models:
                 result.append(await utils.get_schema_from_orm(orm_model=orm_model))
         return result
+
+    async def get_one(
+            self,
+            cart_type: Any = None,
+            user_id: Optional[int] = None,
+            to_schema: bool = True
+    ):
+        if isinstance(cart_type, ORJSONResponse):
+            return cart_type
+        if cart_type and isinstance(cart_type, SessionData):
+            repository: SessionPersonsRepository = SessionPersonsRepository(
+                session_data=cart_type
+            )
+        else:
+            repository: PersonsRepository = PersonsRepository(
+                session=self.session
+            )
+        try:
+            print('2222 rep 107', cart_type.id if hasattr(cart_type, "id") else user_id, cart_type) #########################################
+            returned_orm_model = await repository.get_one(
+                user_id=cart_type.id if hasattr(cart_type, "id") else user_id
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            return await utils.get_short_schema_from_orm(orm_model=returned_orm_model)
+        return returned_orm_model
+
+    async def get_one_complex(
+            self,
+            user_id: int = None,
+            cart_type: Any = None,
+            maximized: bool = True,
+            relations: list | None = [],
+            to_schema: bool = True,
+    ):
+        if isinstance(cart_type, ORJSONResponse):
+            return cart_type
+        if cart_type and isinstance(cart_type, SessionData):
+            repository: SessionPersonsRepository = SessionPersonsRepository(
+                session_data=cart_type
+            )
+        else:
+            repository: PersonsRepository = PersonsRepository(
+                session=self.session
+            )
+        try:
+            returned_orm_model = await repository.get_one_complex(
+                user_id=cart_type.id if hasattr(cart_type, "id") else user_id,
+                maximized=maximized,
+                relations=relations,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": exc.msg,
+                }
+            )
+        if to_schema:
+            if not maximized and not relations:
+                return await utils.get_short_schema_from_orm(
+                    returned_orm_model
+                )
+            return await utils.get_schema_from_orm(
+                returned_orm_model,
+                maximized=maximized,
+                relations=relations,
+            )
+        return returned_orm_model

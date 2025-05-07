@@ -15,11 +15,14 @@ if TYPE_CHECKING:
 
 
 async def get_schema_from_orm(
-        orm_model: Union["Person", "SessionPerson"],
+        orm_model: Union["Person", "SessionPerson", ORJSONResponse],
         maximized: bool = True,
         relations: list | None = [],
 ) -> Any:
     # BRUTE FORCE VARIANT
+
+    if isinstance(orm_model, ORJSONResponse):
+        return orm_model
 
     # short_schema: CartShort = await get_short_schema_from_orm(orm_model=orm_model)
 
