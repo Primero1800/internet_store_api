@@ -218,3 +218,24 @@ class PersonsService:
             obj_type=self.session_data,
             to_schema=to_schema,
         )
+
+    async def delete_one(
+            self,
+            orm_model: "Person",
+    ):
+        if orm_model and isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
+        repository: PersonsRepository = PersonsRepository(
+            session=self.session
+        )
+        try:
+            return await repository.delete_one(orm_model=orm_model)
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": exc.msg,
+                }
+            )

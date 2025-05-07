@@ -157,7 +157,7 @@ async def get_all_full(
 @RateLimiter.rate_limit()
 async def get_one_of_me(
         request: Request,
-        person: Union["Person", "SessionPerson"] = Depends(deps.get_person_session),
+        person: Union["Person", "SessionPerson"] = Depends(deps.get_one_session),
 ):
     return await utils.get_short_schema_from_orm(person)
 
@@ -196,7 +196,7 @@ async def get_one(
 @RateLimiter.rate_limit()
 async def get_one_full_of_me_session(
         request: Request,
-        person: Union["Person", "SessionPerson"] = Depends(deps.get_person_session_full),
+        person: Union["Person", "SessionPerson"] = Depends(deps.get_one_session_full),
 ):
     return await utils.get_schema_from_orm(person)
 
@@ -256,65 +256,27 @@ async def create_one(
     )
 
 
-
-
-
-
-
-#
-#
-
-#
-#
-# # 7
-# @router.post(
-#     "",
-#     dependencies=[Depends(current_user),],
-#     status_code=status.HTTP_201_CREATED,
-#     response_model=PostRead,
-#     description="Create one item"
-# )
+# 8
+@router.delete(
+    "/{user_id}",
+    dependencies=[Depends(current_superuser),],
+    status_code=status.HTTP_204_NO_CONTENT,
+    description="Delete item by user_id (for superuser only)"
+)
 # @RateLimiter.rate_limit()
-# async def create_one(
-#         request: Request,
-#         product_id: Optional[int] = Form(default=None, gt=0),
-#         name: str = Form(),
-#         review: str = Form(),
-#         user: "User" = Depends(current_user),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter)
-# ):
-#
-#     service: PostsService = PostsService(
-#         session=session
-#     )
-#     return await service.create_one(
-#         user=user,
-#         product_id=product_id,
-#         name=name,
-#         review=review,
-#     )
-#
-#
-# # 8
-# @router.delete(
-#     "/{id}",
-#     status_code=status.HTTP_204_NO_CONTENT,
-#     description="Delete item by id (for superuser and item's author only)"
-# )
-# @RateLimiter.rate_limit()
-# async def delete_one(
-#         request: Request,
-#         user: "User" = Depends(current_user),
-#         orm_model: "Vote" = Depends(deps.get_one_simple),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter),
-# ):
-#     service: PostsService = PostsService(
-#         session=session
-#     )
-#     return await service.delete_one(
-#         orm_model=orm_model,
-#         user=user
-#     )
+# no rate limit for superuser
+async def delete_one(
+        request: Request,
+        orm_model: "Person" = Depends(deps.get_one_simple),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+    service: PersonsService = PersonsService(
+        session=session
+    )
+    return await service.delete_one(
+        orm_model=orm_model,
+    )
+
 #
 #
 # # 9
