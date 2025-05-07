@@ -1,5 +1,6 @@
 import logging
-from typing import Union, TYPE_CHECKING, Optional
+from fastapi import status
+from typing import Union, TYPE_CHECKING
 
 from fastapi.responses import ORJSONResponse
 
@@ -70,3 +71,29 @@ class SessionPersonsRepository:
     ):
         orm_model: SessionPerson = SessionPerson(**instance.model_dump())
         return orm_model
+
+    async def create_one_empty(
+            self,
+            orm_model: SessionPerson
+    ):
+        if PERSON in self.session_data.data:
+            raise CustomException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                msg=Errors.ALREADY_EXISTS()
+            )
+        session_service: SessionsService = SessionsService()
+
+        result = await session_service.update_session(
+            session_data=self.session_data,
+            data_to_update={
+                PERSON: orm_model.to_dict()
+            },
+            session_id=self.session_data.session_id
+        )
+        if isinstance(result, ORJSONResponse):
+            raise CustomException(
+                status_code=result.status_code,
+                msg=result.content.get("detail")
+            )
+        result = SessionPerson(**result.data[PERSON])
+        return result

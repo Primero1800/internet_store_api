@@ -6,12 +6,12 @@ from fastapi import (
     Depends,
     status,
     Request,
-    Query,
+    Query, Body,
 )
 from fastapi_filter import FilterDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.sessions.fastapi_sessions_config import cookie_or_none
+from src.core.sessions.fastapi_sessions_config import cookie_or_none, verifier_or_none
 from src.scrypts.pagination import paginate_result
 from .service import PersonsService
 from .schemas import (
@@ -19,7 +19,7 @@ from .schemas import (
     PersonShort,
 )
 from .filters import PersonFilter
-from src.api.v1.users.user.dependencies import current_superuser
+from src.api.v1.users.user.dependencies import current_superuser, current_user_or_none
 from src.core.config import DBConfigurer, RateLimiter
 from src.api.v1.users.user.schemas import UserPublicExtended
 from . import dependencies as deps
@@ -31,6 +31,7 @@ if TYPE_CHECKING:
         Person,
     )
     from src.api.v1.orders.person.session_person import SessionPerson
+    from src.core.sessions.fastapi_sessions_config import SessionData
 
 
 RELATIONS_LIST = [
@@ -127,13 +128,17 @@ async def get_all_full(
         request: Request,
         page: int = Query(1, gt=0),
         size: int = Query(10, gt=0),
+        for_registered_users: Optional[bool] = Query(default=None, description="Filter persons of registered users"),
         filter_model: PersonFilter = FilterDepends(PersonFilter),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ):
     service: PersonsService = PersonsService(
         session=session
     )
-    result_full = await service.get_all_full(filter_model=filter_model)
+    result_full = await service.get_all_full(
+        filter_model=filter_model,
+        db_persons=for_registered_users,
+    )
     return await paginate_result(
         query_list=result_full,
         page=page,
@@ -217,6 +222,37 @@ async def get_one_full(
     return await service.get_one_complex(
         user_id=user_id,
         maximized=True
+    )
+
+
+# 7
+@router.post(
+    "",
+    dependencies=[Depends(cookie_or_none),],
+    status_code=status.HTTP_201_CREATED,
+    response_model=PersonRead,
+    description="Create one personal item"
+)
+@RateLimiter.rate_limit()
+async def create_one(
+        request: Request,
+        firstname: str = Form(min_length=2, max_length=50),
+        lastname: Optional[str] = Form(max_length=50, default=None),
+        company_name: Optional[str] = Form(min_length=2, max_length=100, default=None),
+        user: "User" = Depends(current_user_or_none),
+        session_data: "SessionData" = Depends(verifier_or_none),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+
+    service: PersonsService = PersonsService(
+        session=session,
+        session_data=session_data
+    )
+    return await service.create_one(
+        user=user,
+        firstname=firstname,
+        lastname=lastname,
+        company_name=company_name
     )
 
 

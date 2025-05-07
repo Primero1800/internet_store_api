@@ -102,3 +102,19 @@ class PersonsRepository:
     ):
         orm_model: Person = Person(**instance.model_dump())
         return orm_model
+
+    async def create_one_empty(
+            self,
+            orm_model: Person
+    ):
+        try:
+            self.session.add(orm_model)
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+            self.logger.info("%r %r was successfully created" % (CLASS, orm_model))
+        except IntegrityError as error:
+            self.logger.error(f"Error while orm_model creating", exc_info=error)
+            raise CustomException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                msg=Errors.already_exists_id(orm_model.user_id)
+            )

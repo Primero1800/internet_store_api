@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Optional, Iterable, Any, Union
 
 from fastapi import status
 from fastapi.responses import ORJSONResponse
+from fastapi_sessions.backends.session_backend import BackendError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.sessions.fastapi_sessions_config import SessionData
@@ -89,24 +90,23 @@ class PersonsService:
 
     async def get_one(
             self,
-            cart_type: Any = None,
+            obj_type: Any = None,
             user_id: Optional[int] = None,
             to_schema: bool = True
     ):
-        if isinstance(cart_type, ORJSONResponse):
-            return cart_type
-        if cart_type and isinstance(cart_type, SessionData):
+        if isinstance(obj_type, ORJSONResponse):
+            return obj_type
+        if obj_type and isinstance(obj_type, SessionData):
             repository: SessionPersonsRepository = SessionPersonsRepository(
-                session_data=cart_type
+                session_data=obj_type
             )
         else:
             repository: PersonsRepository = PersonsRepository(
                 session=self.session
             )
         try:
-            print('2222 rep 107', cart_type.id if hasattr(cart_type, "id") else user_id, cart_type) #########################################
             returned_orm_model = await repository.get_one(
-                user_id=cart_type.id if hasattr(cart_type, "id") else user_id
+                user_id=obj_type.id if hasattr(obj_type, "id") else user_id
             )
         except CustomException as exc:
             return ORJSONResponse(
@@ -123,16 +123,16 @@ class PersonsService:
     async def get_one_complex(
             self,
             user_id: int = None,
-            cart_type: Any = None,
+            obj_type: Any = None,
             maximized: bool = True,
             relations: list | None = [],
             to_schema: bool = True,
     ):
-        if isinstance(cart_type, ORJSONResponse):
-            return cart_type
-        if cart_type and isinstance(cart_type, SessionData):
+        if isinstance(obj_type, ORJSONResponse):
+            return obj_type
+        if not user_id and obj_type and isinstance(obj_type, SessionData):
             repository: SessionPersonsRepository = SessionPersonsRepository(
-                session_data=cart_type
+                session_data=obj_type
             )
         else:
             repository: PersonsRepository = PersonsRepository(
@@ -140,7 +140,7 @@ class PersonsService:
             )
         try:
             returned_orm_model = await repository.get_one_complex(
-                user_id=cart_type.id if hasattr(cart_type, "id") else user_id,
+                user_id=obj_type.id if hasattr(obj_type, "id") else user_id,
                 maximized=maximized,
                 relations=relations,
             )
@@ -163,3 +163,58 @@ class PersonsService:
                 relations=relations,
             )
         return returned_orm_model
+
+    async def create_one(
+            self,
+            user: Union["User", Any],
+            firstname: str,
+            lastname: Optional[str] = None,
+            company_name: Optional[str] = None,
+            to_schema: bool = True,
+    ):
+        if not user and isinstance(self.session_data, BackendError):
+            return ORJSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": "No authentication or session provided",
+                }
+            )
+
+        if user:
+            repository: PersonsRepository = PersonsRepository(
+                session=self.session
+            )
+        else:
+            repository: SessionPersonsRepository = SessionPersonsRepository(
+                session_data=self.session_data
+            )
+
+        # catching ValidationError in exception_handler
+        instance: PersonCreate = PersonCreate(
+            user_id=user.id if user else None,
+            firstname=firstname,
+            lastname=lastname,
+            company_name=company_name,
+        )
+        orm_model = await repository.get_orm_model_from_schema(instance=instance)
+
+        try:
+            await repository.create_one_empty(
+                orm_model=orm_model
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": exc.msg,
+                }
+            )
+
+        self.logger.info("%s %r was successfully created" % (CLASS, orm_model))
+        return await self.get_one_complex(
+            user_id=orm_model.user_id,
+            obj_type=self.session_data,
+            to_schema=to_schema,
+        )
