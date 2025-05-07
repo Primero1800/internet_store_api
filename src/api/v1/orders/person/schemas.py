@@ -26,13 +26,15 @@ base_company_name_field = Annotated[str | None, Field(
 
 class BasePerson(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+
+    user_id: int | None
     firstname: base_firstname_field
     lastname: base_lastname_field
     company_name: base_company_name_field
 
 
 class PersonShort(BasePerson):
-    user_id: int | None
+    pass
 
 
 class PersonRead(PersonShort):
