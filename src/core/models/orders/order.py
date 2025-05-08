@@ -20,9 +20,8 @@ if TYPE_CHECKING:
 class Order(IDIntPkMixin, Base):
 
     user_id: Mapped[int] = mapped_column(
-        ForeignKey(f"{DBConfigurer.utils.camel2snake('User')}.id", ondelete="CASCADE"),
-        primary_key=True,
-        nullable=False,
+        ForeignKey(f"{DBConfigurer.utils.camel2snake('User')}.id", ondelete="SET NULL"),
+        nullable=True,
     )
 
     user: Mapped['User'] = relationship(
@@ -83,7 +82,7 @@ class Order(IDIntPkMixin, Base):
     )
 
     def __str__(self):
-        return f"{self.__class__.__name__}(id={self.user_id}, phonenumber={self.phonenumber!r})"
+        return f"{self.__class__.__name__}(id={self.id}, phonenumber={self.phonenumber!r})"
 
     def __repr__(self):
         return str(self)
