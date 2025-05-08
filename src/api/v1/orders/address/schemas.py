@@ -1,6 +1,8 @@
 from typing import Optional, Any, Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, EmailStr
+from pydantic import BaseModel, ConfigDict, Field, EmailStr, field_validator
+
+from src.tools.phone_number import AppPhoneNumber, app_phonenumber_json_encode
 
 base_address_field = Annotated[str, Field(
         min_length=6,
@@ -40,7 +42,13 @@ base_phonenumber_field = Annotated[str, Field(
 
 
 class BaseAddress(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        arbitrary_types_allowed=True,
+        json_encoders={
+            AppPhoneNumber: app_phonenumber_json_encode,
+        }
+    )
 
     address: base_address_field
     city: base_city_field
@@ -59,13 +67,19 @@ class AddressRead(AddressShort):
 
 class AddressCreate(BaseAddress):
     user_id: int | None
+    phonenumber: AppPhoneNumber
+
+    @field_validator('phonenumber', mode='before')
+    def check_phonenumbern(cls, value: Any):
+        return AppPhoneNumber.validate(value)
 
 
-class AddressUpdate(BaseAddress):
+class AddressUpdate(AddressCreate):
     user_id: int | None
 
 
-class AddressPartialUpdate(BaseAddress):
-    address: Optional[base_address_field]
-    city: Optional[base_city_field]
-    phonenumber: Optional[base_phonenumber_field]
+class AddressPartialUpdate(AddressCreate):
+    user_id: Optional[int] = None
+    address: Optional[base_address_field] = None
+    city: Optional[base_city_field] = None
+    phonenumber: Optional[AppPhoneNumber] = None

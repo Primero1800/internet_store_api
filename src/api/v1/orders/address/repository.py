@@ -9,6 +9,7 @@ from sqlalchemy.orm import joinedload
 
 from src.core.models import Address
 from src.tools.exceptions import CustomException
+from src.tools.phone_number import AppPhoneNumber
 from .exceptions import Errors
 
 if TYPE_CHECKING:
@@ -100,6 +101,10 @@ class AddressesRepository:
             self,
             instance: Union["AddressCreate", "AddressUpdate", "AddressPartialUpdate"]
     ):
+
+        if hasattr(instance, "phonenumber") and isinstance(instance.phonenumber, AppPhoneNumber):
+            instance.phonenumber = AppPhoneNumber.json_encode(instance.phonenumber)
+
         orm_model: Address = Address(**instance.model_dump())
         return orm_model
 
@@ -143,6 +148,8 @@ class AddressesRepository:
                 exclude_unset=is_partial,
                 exclude_none=is_partial,
         ).items():
+            if key == "phonenumber":
+                val = AppPhoneNumber.json_encode(val)
             setattr(orm_model, key, val)
 
         self.logger.warning(f"Editing %r in database" % orm_model)
