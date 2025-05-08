@@ -14,8 +14,8 @@ from src.tools.status_choices import StatusChoices
 class OrderFilter(Filter):
     order_by: Optional[list[str]] = ['user_id', 'phonenumber', 'total_price', 'time_placed', 'time_delivered', 'id']
 
-    total_price__gte: Optional[Decimal] = Field(default=None, description="Filter by total price greater or equal than", )
-    total_price__lte: Optional[Decimal] = Field(default=None, description="Filter by total price less or equal than", )
+    total_cost__gte: Optional[Decimal] = Field(default=None, description="Filter by total price greater or equal than", )
+    total_cost__lte: Optional[Decimal] = Field(default=None, description="Filter by total price less or equal than", )
 
     time_placed__gte: Optional[datetime] = Field(default=None, description="Filter by time_placed after or equal than", )
     time_placed__lte: Optional[datetime] = Field(default=None, description="Filter by time_placed before or equal than", )

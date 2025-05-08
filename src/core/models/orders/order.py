@@ -34,7 +34,7 @@ class Order(IDIntPkMixin, Base):
         String(20), nullable=False,
     )
 
-    total_price: Mapped[Decimal] = mapped_column(
+    total_cost: Mapped[Decimal] = mapped_column(
         DECIMAL(8, 2)
     )
 
