@@ -10,6 +10,7 @@ from src.core.sessions.fastapi_sessions_config import (
 )
 from src.core.settings import settings
 from src.tools.exceptions import CustomException
+from src.tools.phone_number import AppPhoneNumber
 from . import SessionAddress
 from ..exceptions import Errors
 
@@ -69,6 +70,9 @@ class SessionAddressesRepository:
             self,
             instance: Union["AddressCreate", "AddressUpdate", "AddressPartialUpdate"],
     ):
+        if hasattr(instance, "phonenumber") and isinstance(instance.phonenumber, AppPhoneNumber):
+            instance.phonenumber = AppPhoneNumber.json_encode(instance.phonenumber)
+
         orm_model: SessionAddress = SessionAddress(**instance.model_dump())
         return orm_model
 
@@ -111,6 +115,8 @@ class SessionAddressesRepository:
                 exclude_unset=is_partial,
                 exclude_none=is_partial,
         ).items():
+            if key == "phonenumber":
+                val = AppPhoneNumber.json_encode(val)
             setattr(orm_model, key, val)
 
         self.logger.warning(f"Editing %r in session" % orm_model)
