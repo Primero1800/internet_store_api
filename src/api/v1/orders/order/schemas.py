@@ -64,7 +64,7 @@ class BaseOrder(BaseModel):
 
     order_content: base_order_content_field
     person_content: base_person_content_field
-    address_content: base_order_content_field
+    address_content: base_address_content_field
 
     move_to: base_move_to_field
     payment_conditions: base_payment_conditions_field
@@ -87,6 +87,7 @@ class OrderRead(OrderShort):
 class OrderCreate(BaseOrder):
     time_placed: base_time_placed_field = datetime.now()
     total_cost: base_total_cost_field
+    status: base_status_field = StatusChoices.S_ORDERED
 
 
 class OrderUpdate(OrderCreate):

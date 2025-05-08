@@ -298,15 +298,19 @@ class CartsService:
         if isinstance(cart_type, ORJSONResponse):
             return cart_type
 
-        self.logger.info('Getting %r bound with user_id=%s from database' % (CLASS, user_id))
+        logger_user_id = user_id if user_id else None
+        if not logger_user_id:
+            logger_user_id = cart_type.id if hasattr(cart_type, 'id') else cart_type.user_id
+
+        self.logger.info('Getting %r bound with user_id=%s from database' % (CLASS, logger_user_id))
         sa_orm_model = await self.get_one_complex(
             id=user_id,
             cart_type=cart_type,
             to_schema=False
         )
         if isinstance(sa_orm_model, ORJSONResponse):
-            self.logger.info('No %r bound with user_id=%s in database' % (CLASS, user_id))
-            self.logger.info('Creating %r bound with user_id=%s in database' % (CLASS, user_id))
+            self.logger.info('No %r bound with user_id=%s in database' % (CLASS, logger_user_id))
+            self.logger.info('Creating %r bound with user_id=%s in database' % (CLASS, logger_user_id))
             sa_orm_model = await self.create_one(
                 id=user_id,
                 cart_type=cart_type,
