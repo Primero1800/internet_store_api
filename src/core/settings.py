@@ -25,6 +25,7 @@ class AppSettings(CustomSettings):
     APP_VERSION: str
     APP_DESCRIPTION: str
     APP_TIMEZONE: str
+    APP_ALLOWED_REGIONS: list = ["RU", "BY", "UZ"]
 
     API_PREFIX: str
     API_V1_PREFIX: str
