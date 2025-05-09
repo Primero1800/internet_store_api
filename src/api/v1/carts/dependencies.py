@@ -28,7 +28,7 @@ async def get_one_simple(
     return await service.get_one(id=id, to_schema=False)
 
 
-async def get_one_simple_session(
+async def get_one_complex_session(
         cart_type: Union["User", SessionData, ORJSONResponse] = Depends(user_cookie_or_error),
         session: AsyncSession = Depends(DBConfigurer.session_getter),
         session_data: SessionData = Depends(verifier_or_none),
@@ -37,7 +37,7 @@ async def get_one_simple_session(
         session=session,
         session_data=session_data
     )
-    return await service.get_one(
+    return await service.get_one_complex(
         cart_type=cart_type,
         to_schema=False,
     )
