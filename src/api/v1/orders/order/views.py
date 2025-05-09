@@ -214,6 +214,55 @@ async def get_all_full(
     )
 
 
+# 5
+@router.get(
+    "/{id}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(current_user),],
+    response_model=OrderShort,
+    description="Get item by id (for registered users only)"
+)
+@RateLimiter.rate_limit()
+async def get_one(
+        request: Request,
+        id: int,
+        user: "User" = Depends(current_user),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: OrdersService = OrdersService(
+        session=session
+    )
+    return await service.get_one(
+        user=user,
+        id=id,
+    )
+
+
+# 6
+@router.get(
+    "/{id}/full",
+    dependencies=[Depends(current_user),],
+    status_code=status.HTTP_200_OK,
+    response_model=OrderRead,
+    description="Get full item by id (for registered users only)"
+)
+@RateLimiter.rate_limit()
+async def get_one_full(
+        request: Request,
+        id: int,
+        user: "User" = Depends(current_user),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: OrdersService = OrdersService(
+        session=session
+    )
+    return await service.get_one_complex(
+        id=id,
+        user=user,
+        maximized=True
+    )
+
+
 # 7
 @router.post(
     "",
