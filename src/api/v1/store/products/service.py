@@ -1,6 +1,6 @@
 import logging
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from fastapi import UploadFile, status
 from fastapi.responses import ORJSONResponse
@@ -220,17 +220,18 @@ class ProductsService:
 
     async def edit_one(
             self,
-            title: str,
-            description: str,
-            brand_id: int,
-            start_price: Decimal,
-            available: bool,
-            discount: DiscountChoices,
-            quantity: int,
-            rubric_ids: str | list,
-            image_schemas: list,
-            orm_model: "Product",
-            is_partial: bool = False
+            title: Optional[str] = None,
+            description: Optional[str] = None,
+            brand_id: Optional[int] = None,
+            start_price: Optional[Decimal] = None,
+            available: Optional[bool] = None,
+            discount: Optional[DiscountChoices] = None,
+            quantity: Optional[int] = None,
+            rubric_ids: Optional[str | list] = None,
+            image_schemas: Optional[list] = None,
+            orm_model: Optional["Product"] = None,
+            is_partial: bool = False,
+            return_none: bool = False,
     ):
         if orm_model and isinstance(orm_model, ORJSONResponse):
             return orm_model
@@ -303,7 +304,8 @@ class ProductsService:
             )
 
         self.logger.info("Product %r was successfully edited" % orm_model)
-
+        if return_none:
+            return
         return await self.get_one_complex(
             id=orm_model.id
         )
