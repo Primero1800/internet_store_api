@@ -557,6 +557,7 @@ class CartsService:
         product_orm: "Product" = result["product_orm"] if "product_orm" in result else None
 
         new_quantity = (cart_item.quantity + delta) if delta else absolute
+        new_quantity = min(new_quantity, product_orm.quantity)
         if cart_item.cart_id:
             repository: CartsRepository = CartsRepository(
                 session=self.session
@@ -581,7 +582,6 @@ class CartsService:
                     }
                 )
 
-        new_quantity = min(new_quantity, product_orm.quantity)
         self.logger.info("New CartItem quantity will be set on %s" % new_quantity)
         instance: CartItemPartialUpdate = CartItemPartialUpdate(
             quantity=new_quantity
@@ -696,6 +696,7 @@ class CartsService:
     async def normalize_items_quantity(
             self,
             cart: Union["Cart", "SessionCart"],
+            return_none: bool = True
     ):
         self.logger.warning("Normalizing cart items quantity according product quantity before ordering")
         for cart_item in cart.cart_items:
@@ -709,3 +710,36 @@ class CartsService:
             )
             if isinstance(orm_model, ORJSONResponse):
                 self.logger.error("Error occurred while normalizing item quantity")
+        if return_none:
+            return
+        return await self.get_cart_items(
+            cart_id=cart.user_id,
+            cart_type=self.session_data if not cart.user_id else None,
+        )
+
+    async def get_cart_items(
+            self,
+            cart_id: int | None = None,
+            cart_type: Any = None,
+    ):
+        if not cart_id:
+            repository: SessionCartsRepository = SessionCartsRepository(
+                session_data=cart_type
+            )
+        else:
+            repository: CartsRepository = CartsRepository(
+                session=self.session
+            )
+        try:
+            return await repository.get_cart_items(
+                cart_id=cart_id,
+                cart_type=cart_type,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": exc.msg,
+                }
+            )
