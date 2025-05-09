@@ -125,3 +125,26 @@ class OrdersRepository:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 msg=Errors.DATABASE_ERROR()
             )
+
+    async def edit_one_empty(
+            self,
+            instance:  Union["OrderUpdate", "OrderPartialUpdate"],
+            orm_model: Order,
+            is_partial: bool = False
+    ):
+        for key, val in instance.model_dump(
+                exclude_unset=is_partial,
+                exclude_none=is_partial,
+        ).items():
+            setattr(orm_model, key, val)
+
+        self.logger.warning(f"Editing %r in database" % orm_model)
+        try:
+            await self.session.commit()
+            await self.session.refresh(orm_model)
+        except IntegrityError as exc:
+            self.logger.error("Error occurred while editing data in database", exc_info=exc)
+            raise CustomException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                msg=Errors.DATABASE_ERROR()
+            )

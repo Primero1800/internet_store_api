@@ -230,3 +230,51 @@ class OrdersService:
         if to_schema:
             return await utils.get_schema_from_orm(orm_model)
         return orm_model
+
+    async def edit_one(
+            self,
+            orm_model: "Order",
+            user: "User",
+            move_to: Optional[int] = None,
+            payment_conditions: Optional[int] = None,
+            is_partial: bool = False,
+    ):
+        if isinstance(orm_model, ORJSONResponse):
+            return orm_model
+        if ((not isinstance(move_to, int) and not isinstance(payment_conditions, int)) or
+            (move_to == orm_model.move_to and payment_conditions == orm_model.payment_conditions)):
+            return await utils.get_schema_from_orm(orm_model)
+
+        updating_dictionary = {
+            "move_to": move_to,
+            "payment_conditions": payment_conditions,
+        }
+        if is_partial:
+            instance: OrderPartialUpdate = OrderPartialUpdate(**updating_dictionary)
+        else:
+            instance: OrderUpdate = OrderUpdate(**updating_dictionary)
+
+        repository: OrdersRepository = OrdersRepository(
+            session=self.session,
+        )
+        try:
+            await repository.edit_one_empty(
+                instance=instance,
+                orm_model=orm_model,
+                is_partial=is_partial,
+            )
+        except CustomException as exc:
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": exc.msg,
+                }
+            )
+
+        self.logger.info("%s %r was successfully edited" % (CLASS, orm_model))
+
+        return await self.get_one_complex(
+            user=user,
+            id=orm_model.id,
+        )

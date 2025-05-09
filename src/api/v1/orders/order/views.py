@@ -15,6 +15,8 @@ from src.core.sessions.fastapi_sessions_config import cookie_or_none, SessionDat
 from src.scrypts.pagination import paginate_result
 from src.tools.customer_payment_choices import CustomerPaymentChoices
 from src.tools.moveto_choices import MoveToChoices
+from src.tools.payment_conditions_choices import PaymentChoices
+from src.tools.status_choices import StatusChoices
 from .service import OrdersService
 from .schemas import (
     OrderRead,
@@ -304,4 +306,41 @@ async def create_one(
         move_to=move_to,
         payment_ways=payment_ways,
         to_schema=True,
+    )
+
+
+# 8
+@router.patch(
+    "/{id}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(current_superuser),],
+    response_model=OrderRead,
+    description="Edit one item (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def edit_one(
+        request: Request,
+        order: "Order" = Depends(deps.get_one_complex),
+        user: "User" = Depends(current_user),
+        move_to: Optional[MoveToChoices] = Form(
+            default=None,
+            description="Order's delivery ways"
+        ),
+        payment_conditions: Optional[PaymentChoices] = Form(
+            default=None,
+            description="Order's payment conditions"
+        ),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+
+    service: OrdersService = OrdersService(
+        session=session,
+    )
+    return await service.edit_one(
+        orm_model=order,
+        user=user,
+        move_to=move_to,
+        payment_conditions=payment_conditions,
+        is_partial=True,
     )
