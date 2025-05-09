@@ -31,6 +31,34 @@ class OrdersRepository:
         self.session = session
         self.logger = logging.getLogger(__name__)
 
+    async def get_all(
+            self,
+            filter_model: "OrderFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(Order))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.order_by(Order.id)
+
+        result: Result = await self.session.execute(stmt)
+        return result.unique().scalars().all()
+
+    async def get_all_full(
+            self,
+            filter_model: "OrderFilter",
+    ) -> Sequence:
+
+        query_filter = filter_model.filter(select(Order))
+        stmt_filtered = filter_model.sort(query_filter)
+
+        stmt = stmt_filtered.options(
+            joinedload(Order.user),
+        ).order_by(Order.id)
+
+        result: Result = await self.session.execute(stmt)
+        return result.unique().scalars().all()
+
     async def get_orm_model_from_schema(
             self,
             instance: Union["OrderCreate", "OrderUpdate", "OrderPartialUpdate"]

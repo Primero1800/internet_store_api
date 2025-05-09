@@ -94,63 +94,62 @@ async def get_relations(
     return RELATIONS_LIST
 
 
-# 3
-# @router.get(
-#     "",
-#     dependencies=[Depends(current_superuser),],
-#     response_model=List[OrderShort],
-#     status_code=status.HTTP_200_OK,
-#     description="Get items list (for superuser only)"
-# )
-# # @RateLimiter.rate_limit()
-# # no rate limit for superuser
-# async def get_all(
-#         request: Request,
-#         page: int = Query(1, gt=0),
-#         size: int = Query(10, gt=0),
-#         filter_model: OrderFilter = FilterDepends(OrderFilter),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter)
-# ):
-#     service: OrdersService = OrdersService(
-#         session=session
-#     )
-#     result_full = await service.get_all(
-#         filter_model=filter_model
-#     )
-#     return await paginate_result(
-#         query_list=result_full,
-#         page=page,
-#         size=size,
-#     )
+3
+@router.get(
+    "",
+    dependencies=[Depends(current_superuser),],
+    response_model=List[OrderShort],
+    status_code=status.HTTP_200_OK,
+    description="Get items list (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_all(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        filter_model: OrderFilter = FilterDepends(OrderFilter),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: OrdersService = OrdersService(
+        session=session
+    )
+    result_full = await service.get_all(
+        filter_model=filter_model
+    )
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
 
 
 # 4
-# @router.get(
-#     "/full",
-#     dependencies=[Depends(current_superuser),],
-#     response_model=List[OrderRead],
-#     status_code=status.HTTP_200_OK,
-#     description="Get full items list (for superuser only)"
-# )
-# # @RateLimiter.rate_limit()
-# # no rate limit for superuser
-# async def get_all_full(
-#         request: Request,
-#         page: int = Query(1, gt=0),
-#         size: int = Query(10, gt=0),
-#         user_is_registered: Optional[bool] = Query(default=None, description="Filter carts of registered users"),
-#         filter_model: OrderFilter = FilterDepends(OrderFilter),
-#         session: AsyncSession = Depends(DBConfigurer.session_getter)
-# ):
-#     service: OrdersService = OrdersService(
-#         session=session
-#     )
-#     result_full = await service.get_all_full(filter_model=filter_model, db_carts=user_is_registered)
-#     return await paginate_result(
-#         query_list=result_full,
-#         page=page,
-#         size=size,
-#     )
+@router.get(
+    "/full",
+    dependencies=[Depends(current_superuser),],
+    response_model=List[OrderRead],
+    status_code=status.HTTP_200_OK,
+    description="Get full items list (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def get_all_full(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        filter_model: OrderFilter = FilterDepends(OrderFilter),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: OrdersService = OrdersService(
+        session=session
+    )
+    result_full = await service.get_all_full(filter_model=filter_model)
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
 
 
 # 7
@@ -193,4 +192,5 @@ async def create_one(
         address=address,
         move_to=move_to,
         payment_ways=payment_ways,
+        to_schema=True,
     )

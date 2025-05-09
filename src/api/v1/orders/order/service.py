@@ -53,6 +53,33 @@ class OrdersService:
         self.session_data = session_data
         self.logger = logging.getLogger(__name__)
 
+
+    async def get_all(
+            self,
+            filter_model: "OrderFilter",
+    ):
+        repository: OrdersRepository = OrdersRepository(
+            session=self.session
+        )
+        result = []
+        listed_orm_models = await repository.get_all(filter_model=filter_model)
+        for orm_model in listed_orm_models:
+            result.append(await utils.get_short_schema_from_orm(orm_model=orm_model))
+        return result
+
+    async def get_all_full(
+            self,
+            filter_model: "OrderFilter"
+    ):
+        repository: OrdersRepository = OrdersRepository(
+            session=self.session
+        )
+        result = []
+        listed_orm_models = await repository.get_all_full(filter_model=filter_model)
+        for orm_model in listed_orm_models:
+            result.append(await utils.get_schema_from_orm(orm_model=orm_model))
+        return result
+
     async def create_one(
             self,
             user: Union["User", None],
