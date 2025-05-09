@@ -27,8 +27,6 @@ async def get_schema_from_orm(
 ):
     # BRUTE FORCE VARIANT
 
-    # short_schema: CartShort = await get_short_schema_from_orm(orm_model=orm_model)
-
     dict_to_push_to_schema = orm_model.to_dict()
     if 'user' in dict_to_push_to_schema:
         del dict_to_push_to_schema['user']
@@ -36,7 +34,6 @@ async def get_schema_from_orm(
     cart_items = None
     if maximized or 'products' in relations:
         cart_items = []
-        from ..store.products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
         for cart_item in orm_model.cart_items:
             cart_items.append(
                 await get_item_schema_from_orm(cart_item)
@@ -182,6 +179,24 @@ async def serve_normalize_item_quantity(
         session=session,
         session_data=session_data
     )
-    await service.normalize_items_quantity(
+    result = await service.normalize_items_quantity(
+        cart=cart,
+        return_none=False,
+    )
+    return result
+
+
+# /clear/me-session
+async def clear_cart(
+        cart: Union["Cart", "SessionCart"],
+        session: AsyncSession,
+        session_data: "SessionData",
+):
+    from .service import CartsService
+    service: CartsService = CartsService(
+        session=session,
+        session_data=session_data
+    )
+    await service.clear_cart(
         cart=cart
     )
