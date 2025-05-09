@@ -58,7 +58,7 @@ base_status_field = Annotated[Literal[*StatusChoices.choices()], Field(
 class BaseOrder(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    user_id: int
+    user_id: Optional[int] = None
 
     phonenumber: base_phonenumber_field
 
