@@ -26,6 +26,7 @@ async def get_one_simple(
         to_schema=False
     )
 
+
 async def get_one_complex(
     id: int,
     user: "User" = Depends(current_user),
