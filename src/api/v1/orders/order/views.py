@@ -47,19 +47,7 @@ if TYPE_CHECKING:
     from src.api.v1.orders.address.session_address import SessionAddress
 
 
-
-RELATIONS_LIST = [
-    {
-        "name": "user",
-        "usage": "/me-session/user",
-        "conditions": "public"
-    },
-    {
-        "name": "user",
-        "usage": "/{user_id}/user",
-        "conditions": "private"
-    },
-]
+RELATIONS_LIST = []
 
 
 router = APIRouter()
@@ -287,7 +275,7 @@ async def create_one(
         ),
 
         user: "User" = Depends(current_user_or_none),
-        cart: Union["Cart", "SessionCart"] = Depends(carts_deps.get_or_create_cart_session),
+        cart: Union["Cart", "SessionCart"] = Depends(carts_deps.get_one_complex_session),
         person: Union["Person", "SessionPerson"] = Depends(person_deps.get_one_session),
         address:  Union["Address", "SessionAddress"] = Depends(address_deps.get_one_session),
         session: AsyncSession = Depends(DBConfigurer.session_getter),
