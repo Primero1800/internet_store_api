@@ -20,7 +20,7 @@ from .schemas import (
     OrderRead,
     OrderShort,
 )
-from .filters import OrderFilter
+from .filters import OrderFilter, OrderFilterAdmin
 from src.api.v1.users.user.dependencies import (
     current_superuser,
     current_user, current_user_or_none,
@@ -94,7 +94,7 @@ async def get_relations(
     return RELATIONS_LIST
 
 
-3
+# 3
 @router.get(
     "",
     dependencies=[Depends(current_superuser),],
@@ -108,7 +108,7 @@ async def get_all(
         request: Request,
         page: int = Query(1, gt=0),
         size: int = Query(10, gt=0),
-        filter_model: OrderFilter = FilterDepends(OrderFilter),
+        filter_model: OrderFilter = FilterDepends(OrderFilterAdmin),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ):
     service: OrdersService = OrdersService(
@@ -116,6 +116,37 @@ async def get_all(
     )
     result_full = await service.get_all(
         filter_model=filter_model
+    )
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
+
+
+# 3_1
+@router.get(
+    "/me",
+    dependencies=[Depends(current_user),],
+    response_model=List[OrderShort],
+    status_code=status.HTTP_200_OK,
+    description="Get personal items list (for registered users only)"
+)
+@RateLimiter.rate_limit()
+async def get_all(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        user: "User" = Depends(current_user),
+        filter_model: OrderFilter = FilterDepends(OrderFilter),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: OrdersService = OrdersService(
+        session=session
+    )
+    result_full = await service.get_all(
+        filter_model=filter_model,
+        user_id=user.id
     )
     return await paginate_result(
         query_list=result_full,
@@ -138,13 +169,44 @@ async def get_all_full(
         request: Request,
         page: int = Query(1, gt=0),
         size: int = Query(10, gt=0),
-        filter_model: OrderFilter = FilterDepends(OrderFilter),
+        filter_model: OrderFilter = FilterDepends(OrderFilterAdmin),
         session: AsyncSession = Depends(DBConfigurer.session_getter)
 ):
     service: OrdersService = OrdersService(
         session=session
     )
     result_full = await service.get_all_full(filter_model=filter_model)
+    return await paginate_result(
+        query_list=result_full,
+        page=page,
+        size=size,
+    )
+
+
+# 4_1
+@router.get(
+    "/me/full",
+    dependencies=[Depends(current_user),],
+    response_model=List[OrderRead],
+    status_code=status.HTTP_200_OK,
+    description="Get personal full items list (for registered users only)"
+)
+@RateLimiter.rate_limit()
+async def get_all_full(
+        request: Request,
+        page: int = Query(1, gt=0),
+        size: int = Query(10, gt=0),
+        user: "User" = Depends(current_user),
+        filter_model: OrderFilter = FilterDepends(OrderFilter),
+        session: AsyncSession = Depends(DBConfigurer.session_getter)
+):
+    service: OrdersService = OrdersService(
+        session=session
+    )
+    result_full = await service.get_all_full(
+        filter_model=filter_model,
+        user_id=user.id,
+    )
     return await paginate_result(
         query_list=result_full,
         page=page,

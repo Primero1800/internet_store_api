@@ -57,25 +57,33 @@ class OrdersService:
     async def get_all(
             self,
             filter_model: "OrderFilter",
+            user_id: Optional[int] = None,
     ):
         repository: OrdersRepository = OrdersRepository(
             session=self.session
         )
         result = []
-        listed_orm_models = await repository.get_all(filter_model=filter_model)
+        listed_orm_models = await repository.get_all(
+            filter_model=filter_model,
+            user_id=user_id,
+        )
         for orm_model in listed_orm_models:
             result.append(await utils.get_short_schema_from_orm(orm_model=orm_model))
         return result
 
     async def get_all_full(
             self,
-            filter_model: "OrderFilter"
+            filter_model: "OrderFilter",
+            user_id: Optional[int] = None,
     ):
         repository: OrdersRepository = OrdersRepository(
             session=self.session
         )
         result = []
-        listed_orm_models = await repository.get_all_full(filter_model=filter_model)
+        listed_orm_models = await repository.get_all_full(
+            filter_model=filter_model,
+            user_id=user_id
+        )
         for orm_model in listed_orm_models:
             result.append(await utils.get_schema_from_orm(orm_model=orm_model))
         return result

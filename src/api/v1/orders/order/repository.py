@@ -34,9 +34,12 @@ class OrdersRepository:
     async def get_all(
             self,
             filter_model: "OrderFilter",
+            user_id: Optional[int] = None,
     ) -> Sequence:
 
-        query_filter = filter_model.filter(select(Order))
+        start_query = select(Order).where(Order.user_id == user_id) if user_id else select(Order)
+
+        query_filter = filter_model.filter(start_query)
         stmt_filtered = filter_model.sort(query_filter)
 
         stmt = stmt_filtered.order_by(Order.id)
@@ -47,9 +50,12 @@ class OrdersRepository:
     async def get_all_full(
             self,
             filter_model: "OrderFilter",
+            user_id: Optional[int] = None,
     ) -> Sequence:
 
-        query_filter = filter_model.filter(select(Order))
+        start_query = select(Order).where(Order.user_id == user_id) if user_id else select(Order)
+
+        query_filter = filter_model.filter(start_query)
         stmt_filtered = filter_model.sort(query_filter)
 
         stmt = stmt_filtered.options(

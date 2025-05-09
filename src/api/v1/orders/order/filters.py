@@ -12,7 +12,7 @@ from src.tools.status_choices import StatusChoices
 
 
 class OrderFilter(Filter):
-    order_by: Optional[list[str]] = ['user_id', 'phonenumber', 'total_cost', 'time_placed', 'time_delivered', 'id']
+    order_by: Optional[list[str]] = ['time_placed', ]
 
     total_cost__gte: Optional[Decimal] = Field(default=None, description="Filter by total price greater or equal than", )
     total_cost__lte: Optional[Decimal] = Field(default=None, description="Filter by total price less or equal than", )
@@ -37,3 +37,7 @@ class OrderFilter(Filter):
         model = Order
         search_field_name = "search_for"
         search_model_fields = ["phonenumber", "email",]
+
+
+class OrderFilterAdmin(OrderFilter):
+    user_id: Optional[int] = Field(default=None, description="Filter by user_id", )
