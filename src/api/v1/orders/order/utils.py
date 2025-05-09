@@ -23,8 +23,6 @@ async def get_schema_from_orm(
 ):
 
     # BRUTE FORCE VARIANT
-    short_schema: OrderShort = await get_short_schema_from_orm(orm_model=orm_model)
-
     if maximized or 'user' in relations:
         if orm_model.user:
             from src.api.v1.users.user.utils import get_short_schema_from_orm as get_short_user_schema_from_orm
@@ -35,7 +33,7 @@ async def get_schema_from_orm(
             return user_short
 
     return OrderRead(
-        **short_schema.model_dump(),
+        **orm_model.to_dict(),
         user=user_short
     )
 
@@ -44,9 +42,17 @@ async def get_short_schema_from_orm(
     orm_model: "Order"
 ) -> OrderShort:
 
+    dict_to_push = {**orm_model.to_dict(), 'order_content': [
+        {
+            'quantity': item['quantity'],
+            'price': item['price'],
+            'product_id': item['product']['id']
+        } for item in orm_model.order_content
+    ]}
+
     # BRUTE FORCE VARIANT
     return OrderShort(
-        **orm_model.to_dict(),
+        **dict_to_push
     )
 
 
