@@ -13,14 +13,10 @@ if TYPE_CHECKING:
 async def get_normalized_order_content(
         cart: Union["Cart", "SessionCart"]
 ) -> list[dict]:
-    if not isinstance(cart.cart_items[0], dict):
-        order_content = [jsonable_encoder(item.to_dict()) for item in cart.cart_items]
-    else:
-        order_content = [jsonable_encoder(item) for item in cart.cart_items]
-        for item in order_content:
-            if 'product' in item:
-                del item['product']
-    return order_content
+
+    from src.api.v1.carts import utils as carts_utils
+    cart = await carts_utils.get_schema_from_orm(cart)
+    return [jsonable_encoder(item) for item in cart.cart_items]
 
 
 async def get_normalized_total_cost(
