@@ -272,3 +272,14 @@ class CartsRepository:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 msg=Errors.DATABASE_ERROR()
             )
+
+    async def get_cart_items(
+            self,
+            cart_id: int,
+            cart_type: Any
+    ):
+        stmt = select(CartItem).where(CartItem.cart_id == cart_id).options(
+            joinedload(CartItem.product).joinedload(Product.images)
+        ).order_by(CartItem.id)
+        result: Result = await self.session.execute(stmt)
+        return result.unique().scalars().all()

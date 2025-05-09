@@ -230,3 +230,11 @@ class SessionCartsRepository:
                 status_code=result.status_code,
                 msg=result.content.get("detail")
             )
+
+    async def get_cart_items(
+            self,
+            cart_id: int,
+            cart_type: SessionData,
+    ):
+        cart = cart_type.data[CART]
+        return cart['cart_items'] if 'cart_items' in cart else []
