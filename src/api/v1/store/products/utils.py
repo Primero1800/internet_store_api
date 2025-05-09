@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING, Union
 from fastapi import status
+from fastapi.responses import ORJSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.tools.exceptions import CustomException
 from .schemas import ProductRead, ProductShort
-from ..brands.schemas import BrandShort
-from ..rubrics.schemas import RubricShort
 
 if TYPE_CHECKING:
     from src.core.models import Product
@@ -105,3 +105,30 @@ async def temporary_fragment(ids: str | list):
             status_code=status.HTTP_400_BAD_REQUEST,
             msg="Parameter 'rubric_ids' must contains only valid integers"
         )
+
+
+async def change_quantity(
+        id: int,
+        reserved_quantity: int,
+        session: AsyncSession,
+):
+    from .service import ProductsService
+    service: ProductsService = ProductsService(
+        session=session,
+    )
+    orm_model: "Product" = await service.get_one(
+        id=id,
+        to_schema=False
+    )
+    if isinstance(orm_model, ORJSONResponse):
+        return orm_model
+
+    new_quantity = orm_model.quantity - reserved_quantity
+    result = await service.edit_one(
+        orm_model=orm_model,
+        quantity=new_quantity,
+        return_none=True,
+        is_partial=True,
+    )
+    if isinstance(result, ORJSONResponse):
+        return result
