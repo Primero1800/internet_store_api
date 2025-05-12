@@ -211,6 +211,11 @@ class Tags(CustomSettings):
     ADDRESSES_TAG: str
 
 
+class Telegram(CustomSettings):
+    TELEGRAM_TOKEN: str
+    TELEGRAM_CHAT_ID: str
+
+
 class Users(CustomSettings):
     USERS_PASSWORD_MIN_LENGTH: int
 
@@ -228,6 +233,7 @@ class Settings(CustomSettings):
     rate_limiter: RateLimiter = RateLimiter()
     redis: RedisConf = RedisConf()
     sessions: Sessions = Sessions()
+    telegram: Telegram = Telegram()
 
 
 settings = Settings()
