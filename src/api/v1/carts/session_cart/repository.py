@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Union, TYPE_CHECKING, Optional
 
 from fastapi.responses import ORJSONResponse
@@ -47,8 +48,13 @@ class SessionCartsRepository:
                 msg=f"{CLASS} with {text_error} not found"
             )
         cart = cart_type.data[CART]
-        result = SessionCart(**cart)
-        return result
+        cart_orm_model = SessionCart(**cart)
+        new_items = []
+        for item in cart_orm_model.cart_items:
+            new_item = await self.dict_to_orm(**item)
+            new_items.append(new_item)
+        cart_orm_model.cart_items = new_items
+        return cart_orm_model
 
     async def get_all(
             self,
@@ -94,7 +100,7 @@ class SessionCartsRepository:
                 status_code=result.status_code,
                 msg=result.content.get("detail")
             )
-        result =  SessionCart(**result.data[CART])
+        result = SessionCart(**result.data[CART])
         return result
 
     async def create_one_empty_item(
@@ -161,7 +167,14 @@ class SessionCartsRepository:
     async def dict_to_orm(
             **kwargs
     ):
-        return SessionCartItem(**kwargs)
+        orm_model = SessionCartItem(**kwargs)
+        orm_model.product['start_price'] = Decimal(
+            orm_model.product['start_price']).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP
+                                                       )
+        orm_model.product['price'] = Decimal(
+            orm_model.product['price']).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP
+                                                 )
+        return orm_model
 
     async def edit_cart_item(
             self,
