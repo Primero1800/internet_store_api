@@ -30,8 +30,6 @@ async def send_message(
             token=config.token
         )
         chat_id = config.chat_id
-        print('qqqqqqqqqqqxxxxxxxq tg 33', bot.token) #################################################
-        print('qqqqqqqqqqqwwwwq tg 34', chat_id)  #################################################
         await bot.send_message(chat_id=chat_id, text=message)
         return True
     except Exception as exc:

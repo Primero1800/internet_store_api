@@ -82,12 +82,14 @@ def echo(request: Request, thing: str) -> str:
 @app.get(
     "/tg-bot/{message}",
     tags=[settings.tags.TECH_TAG,],
+    dependencies=[Depends(current_superuser)]
 )
-@RateLimiter.rate_limit()
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
 async def tg_sender(
         request: Request,
         message: str,
-) -> bool:
+) -> Any:
     from src.api.v1.celery_tasks.tasks import task_send_tg_message
     result: AsyncResult = task_send_tg_message.apply_async(args=({'body': message}, ))
     return result.result
