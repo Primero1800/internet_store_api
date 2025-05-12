@@ -102,7 +102,7 @@ class OrderPartialUpdate(BaseOrder):
 
     order_content: Optional[base_order_content_field] = None
     person_content: Optional[base_person_content_field] = None
-    address_content: Optional[base_order_content_field] = None
+    address_content: Optional[base_address_content_field] = None
 
     move_to: Optional[base_move_to_field] = None
     payment_conditions: Optional[base_payment_conditions_field] = None

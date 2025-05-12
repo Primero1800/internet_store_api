@@ -332,3 +332,55 @@ async def edit_one(
         payment_conditions=payment_conditions,
         is_partial=True,
     )
+
+
+# 9_1
+@router.post(
+    "/service/deliver/{id}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(current_superuser),],
+    response_model=OrderRead,
+    description="Serve 'deliver' for one item (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def deliver_one(
+        request: Request,
+        order: "Order" = Depends(deps.get_one_simple),
+        user: "User" = Depends(current_superuser),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+
+    service: OrdersService = OrdersService(
+        session=session,
+    )
+    return await service.deliver_one(
+        user=user,
+        orm_model=order,
+        return_none=False
+    )
+
+
+# 9_2
+@router.post(
+    "/service/deliver/{id}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(current_superuser),],
+    response_model=OrderRead,
+    description="Serve 'cancel' for one item (for superuser only)"
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def cancel_one(
+        request: Request,
+        order: "Order" = Depends(deps.get_one_complex),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+):
+
+    service: OrdersService = OrdersService(
+        session=session,
+    )
+    return await service.cancel_one(
+        orm_model=order,
+
+    )
