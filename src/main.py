@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from typing import Dict, Any
 
 import uvicorn
+from celery.result import AsyncResult
 from fastapi import FastAPI, Request, Depends, Query
 from starlette.staticfiles import StaticFiles
 
@@ -76,6 +77,20 @@ async def top(request: Request) -> str:
 @RateLimiter.rate_limit()
 def echo(request: Request, thing: str) -> str:
     return " ".join([thing for _ in range(3)])
+
+
+@app.get(
+    "/tg-bot/{message}",
+    tags=[settings.tags.TECH_TAG,],
+)
+@RateLimiter.rate_limit()
+async def tg_sender(
+        request: Request,
+        message: str,
+) -> bool:
+    from src.api.v1.celery_tasks.tasks import task_send_tg_message
+    result: AsyncResult = task_send_tg_message.apply_async(args=({'body': message}, ))
+    return result.result
 
 
 @app.get(
