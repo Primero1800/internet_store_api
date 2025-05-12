@@ -369,9 +369,9 @@ class CartsService:
     ):
         if hasattr(cart, "cart_items") and isinstance(cart.cart_items, Iterable):
             for cart_item in cart.cart_items:
-                product_id_to_compare = cart_item.product_id if cart.user_id else cart_item['product_id']
+                product_id_to_compare = cart_item.product_id
                 if product_id_to_compare == product_id:
-                    return cart_item if cart.user_id else await SessionCartsRepository.dict_to_orm(**cart_item)
+                    return cart_item if cart.user_id else await SessionCartsRepository.dict_to_orm(**cart_item.to_dict())
         return ORJSONResponse(
             content={
                 "message": Errors.HANDLER_MESSAGE(),
@@ -653,19 +653,19 @@ class CartsService:
             session_cart: "SessionCart"
     ):
 
-        for dict_item in session_cart.cart_items:
+        for cart_item in session_cart.cart_items:
 
             orm_model_item = await self.get_one_item_complex(
                 cart=user_cart,
-                product_id=dict_item["product_id"],
+                product_id=cart_item.product_id,
             )
 
             if isinstance(orm_model_item, ORJSONResponse):  # Item doesn't exist in Cart
                 orm_model_item = await self.create_one_item(
                     cart=user_cart,
-                    product_id=dict_item['product_id'],
-                    quantity=dict_item["quantity"],
-                    original_price=dict_item["price"],
+                    product_id=cart_item.product_id,
+                    quantity=cart_item.quantity,
+                    original_price=cart_item.price,
                     to_schema=False
                 )
                 if isinstance(orm_model_item, ORJSONResponse):
@@ -675,7 +675,7 @@ class CartsService:
 
             else:           # Item already exists in Cart
                 orm_model_item = await self.change_quantity(
-                    absolute=orm_model_item.quantity + dict_item["quantity"],
+                    absolute=orm_model_item.quantity + cart_item.quantity,
                     cart_item=orm_model_item,
                     to_schema=False
                 )
