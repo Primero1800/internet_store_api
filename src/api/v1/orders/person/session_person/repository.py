@@ -1,3 +1,4 @@
+import json
 import logging
 from fastapi import status
 from typing import Union, TYPE_CHECKING
@@ -96,7 +97,7 @@ class SessionPersonsRepository:
             self.logger.error("Error occurred while creating data in session")
             raise CustomException(
                 status_code=result.status_code,
-                msg=result.content.get("detail")
+                msg=json.loads(result.body.decode()).get('detail')
             )
         result = SessionPerson(**result.data[PERSON])
         return result
@@ -127,7 +128,7 @@ class SessionPersonsRepository:
             self.logger.error("Error occurred while editing data in session")
             raise CustomException(
                 status_code=result.status_code,
-                msg=result.content.get("detail")
+                msg=json.loads(result.body.decode()).get('detail')
             )
         result = SessionPerson(**result.data[PERSON])
         return result

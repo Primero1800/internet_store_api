@@ -1,3 +1,4 @@
+import json
 import logging
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Union, TYPE_CHECKING, Optional
@@ -98,7 +99,7 @@ class SessionCartsRepository:
         if isinstance(result, ORJSONResponse):
             raise CustomException(
                 status_code=result.status_code,
-                msg=result.content.get("detail")
+                msg=json.loads(result.body.decode()).get('detail')
             )
         result = SessionCart(**result.data[CART])
         return result
@@ -123,7 +124,7 @@ class SessionCartsRepository:
         if isinstance(result, ORJSONResponse):
             raise CustomException(
                 status_code=result.status_code,
-                msg=result.content.get("detail")
+                msg=json.loads(result.body.decode()).get('detail')
             )
 
     async def get_one_item_complex(
@@ -159,7 +160,7 @@ class SessionCartsRepository:
         if isinstance(result, ORJSONResponse):
             raise CustomException(
                 status_code=result.status_code,
-                msg=result.content.get("detail")
+                msg=json.loads(result.body.decode()).get('detail')
             )
         return cart
 
@@ -214,7 +215,7 @@ class SessionCartsRepository:
         if isinstance(result, ORJSONResponse):
             raise CustomException(
                 status_code=result.status_code,
-                msg=result.content.get("detail")
+                msg=json.loads(result.body.decode()).get('detail')
             )
 
         return orm_model
@@ -241,7 +242,7 @@ class SessionCartsRepository:
         if isinstance(result, ORJSONResponse):
             raise CustomException(
                 status_code=result.status_code,
-                msg=result.content.get("detail")
+                msg=json.loads(result.body.decode()).get('detail')
             )
 
     async def get_cart_items(
