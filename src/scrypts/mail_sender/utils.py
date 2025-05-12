@@ -2,7 +2,7 @@ from logging import Logger, getLogger
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema
 
-from src.api.v1.email_sender.schemas import CustomMessageSchema
+from src.api.v1.message_senders import CustomMessageSchema
 
 
 logger = getLogger(__name__)

@@ -5,7 +5,7 @@ from typing import Optional, Dict, Any, Union, TYPE_CHECKING
 from fastapi_users import BaseUserManager, IntegerIDMixin, schemas, models, exceptions, InvalidPasswordException
 from sqlalchemy import Integer
 
-from src.api.v1.email_sender.schemas import CustomMessageSchema
+from src.api.v1.message_senders import CustomMessageSchema
 from src.core.settings import settings
 
 if TYPE_CHECKING:
