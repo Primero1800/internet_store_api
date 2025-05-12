@@ -371,7 +371,7 @@ class CartsService:
             for cart_item in cart.cart_items:
                 product_id_to_compare = cart_item.product_id
                 if product_id_to_compare == product_id:
-                    return cart_item if cart.user_id else await SessionCartsRepository.dict_to_orm(**cart_item.to_dict())
+                    return cart_item
         return ORJSONResponse(
             content={
                 "message": Errors.HANDLER_MESSAGE(),
@@ -700,9 +700,6 @@ class CartsService:
     ):
         self.logger.warning("Normalizing cart items quantity according product quantity before ordering")
         for cart_item in cart.cart_items:
-            if isinstance(cart_item, dict):
-                cart_item = await SessionCartsRepository.dict_to_orm(**cart_item)
-
             orm_model = await self.change_quantity(
                 cart_item=cart_item,
                 absolute=cart_item.quantity,
