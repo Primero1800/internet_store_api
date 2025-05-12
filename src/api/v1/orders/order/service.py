@@ -1,11 +1,9 @@
 import json
 import logging
 from datetime import datetime
-from decimal import Decimal
-from typing import TYPE_CHECKING, Optional, Iterable, Any, Union
+from typing import TYPE_CHECKING, Optional, Any, Union
 
 from fastapi import status
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,22 +18,17 @@ from .schemas import (
     OrderPartialUpdate,
 )
 from .exceptions import Errors
-from .validators import ValidRelationsInspector
-
 
 if TYPE_CHECKING:
     from src.core.models import (
         User,
         Cart,
-        CartItem,
         Address,
         Person,
         Order,
-        Product,
     )
     from src.api.v1.carts.session_cart import (
         SessionCart,
-        SessionCartItem,
     )
     from ..address.session_address import SessionAddress
     from ..person.session_person import SessionPerson
@@ -54,7 +47,6 @@ class OrdersService:
         self.session = session
         self.session_data = session_data
         self.logger = logging.getLogger(__name__)
-
 
     async def get_all(
             self,
@@ -208,12 +200,12 @@ class OrdersService:
             )
 
         # Expecting if OrderCreate data valid
-                # catching ValidationError in exception_handler
+        # catching ValidationError in exception_handler
         order_content = await utils.get_normalized_order_content(new_items)
         total_cost = await utils.get_normalized_total_cost(cart)
 
         instance: OrderCreate = OrderCreate(
-            user_id = user.id if user else None,
+            user_id=user.id if user else None,
             total_cost=total_cost,
             phonenumber=address.phonenumber,
             order_content=order_content,
@@ -270,7 +262,7 @@ class OrdersService:
         if isinstance(orm_model, ORJSONResponse):
             return orm_model
         if ((not isinstance(move_to, int) and not isinstance(payment_conditions, int)) or
-            (move_to == orm_model.move_to and payment_conditions == orm_model.payment_conditions)):
+                (move_to == orm_model.move_to and payment_conditions == orm_model.payment_conditions)):
             return await utils.get_schema_from_orm(orm_model)
 
         updating_dictionary = {
@@ -351,7 +343,7 @@ class OrdersService:
             )
 
         # Expecting if OrderPartialUpdate data valid
-                # catching ValidationError in exception_handler
+        # catching ValidationError in exception_handler
         instance: OrderPartialUpdate = OrderPartialUpdate(
             **orm_model.to_dict()
         )
@@ -362,7 +354,6 @@ class OrdersService:
             {item['product']['id']: item['quantity']} for item in orm_model.order_content
         ]
         result = await self.serve_deliver(
-            user=user,
             products_content_list=products_content_list,
         )
         if isinstance(result, ORJSONResponse):
@@ -397,7 +388,6 @@ class OrdersService:
 
     async def serve_deliver(
             self,
-            user: "User",
             products_content_list: list[Any]
     ):
         from src.api.v1.store.sale_information.service import SaleInfoService
@@ -423,6 +413,105 @@ class OrdersService:
                         to_schema=False,
                     )
                     if isinstance(sa_orm_modified, ORJSONResponse):
-                        self.logger.error("Error occurred while serving 'delivery': %s" % json.loads(sa_orm.body.decode()).get('detail'))
+                        self.logger.error("Error occurred while serving 'delivery': %s"
+                                          % json.loads(sa_orm_modified.body.decode()).get('detail'))
+                    # return sa_orm_modified
+        return True
+
+    async def cancel_one(
+            self,
+            user: "User",
+            orm_model: "Order",
+            return_none: bool = True,
+            to_schema: bool = True,
+    ):
+        if isinstance(orm_model, ORJSONResponse):
+            return orm_model
+
+        if orm_model.status != StatusChoices.S_ORDERED:
+            self.logger.error("Attempt to serve 'cancel' for %s with id=%s with status=%s" % (
+                CLASS, orm_model.id, orm_model.status)
+                              )
+            return ORJSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": "%s with id=%s and status=%s is unacceptable for chosen service, "
+                              "because already processed" % (CLASS, orm_model.id, orm_model.status),
+                }
+            )
+
+        # Expecting if OrderPartialUpdate data valid
+        # catching ValidationError in exception_handler
+        instance: OrderPartialUpdate = OrderPartialUpdate(
+            **orm_model.to_dict()
+        )
+        instance.time_delivered = datetime.now()
+        instance.status = StatusChoices.S_CANCELLED
+
+        products_content_list = [
+            {item['product']['id']: item['quantity']} for item in orm_model.order_content
+        ]
+        result = await self.serve_cancel(
+            products_content_list=products_content_list,
+        )
+        if isinstance(result, ORJSONResponse):
+            return result
+
+        repository: OrdersRepository = OrdersRepository(
+            session=self.session
+        )
+        try:
+            await repository.edit_one_empty(
+                instance=instance,
+                orm_model=orm_model,
+                is_partial=True
+            )
+        except CustomException as exc:
+            self.logger.error('Error occurred while editing %s in database' % CLASS, exc_info=exc)
+            return ORJSONResponse(
+                status_code=exc.status_code,
+                content={
+                    "message": Errors.HANDLER_MESSAGE(),
+                    "detail": exc.msg,
+                }
+            )
+
+        if return_none:
+            return
+        return await self.get_one_complex(
+            user=user,
+            id=orm_model.id,
+            to_schema=to_schema
+        )
+
+    async def serve_cancel(
+            self,
+            products_content_list: list[Any]
+    ):
+        from src.api.v1.store.products.service import ProductsService
+        p_service: ProductsService = ProductsService(
+            session=self.session
+        )
+        for item in products_content_list:
+            for product_id, back_quantity in item.items():
+                orm_model = await p_service.get_one(
+                    id=product_id,
+                    to_schema=False
+                )
+                if isinstance(orm_model, ORJSONResponse):
+                    self.logger.error(
+                        "Error occurred while serving 'delivery': %s" % json.loads(orm_model.body.decode()).get('detail'),
+                    )
+                    # return orm_model
+                else:
+                    orm_model_modified = await p_service.edit_one(
+                        orm_model=orm_model,
+                        quantity=orm_model.quantity + back_quantity,
+                        is_partial=True,
+                    )
+                    if isinstance(orm_model_modified, ORJSONResponse):
+                        self.logger.error("Error occurred while serving 'delivery': %s"
+                                          % json.loads(orm_model_modified.body.decode()).get('detail'))
                     # return sa_orm_modified
         return True

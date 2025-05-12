@@ -363,7 +363,7 @@ async def deliver_one(
 
 # 9_2
 @router.post(
-    "/service/deliver/{id}",
+    "/service/cancel/{id}",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(current_superuser),],
     response_model=OrderRead,
@@ -373,7 +373,8 @@ async def deliver_one(
 # no rate limit for superuser
 async def cancel_one(
         request: Request,
-        order: "Order" = Depends(deps.get_one_complex),
+        order: "Order" = Depends(deps.get_one_simple),
+        user: "User" = Depends(current_superuser),
         session: AsyncSession = Depends(DBConfigurer.session_getter),
 ):
 
@@ -381,6 +382,7 @@ async def cancel_one(
         session=session,
     )
     return await service.cancel_one(
+        user=user,
         orm_model=order,
-
+        return_none=False
     )

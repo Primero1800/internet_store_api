@@ -271,8 +271,9 @@ class ProductsRepository:
 
             await self.session.commit()
             await self.session.refresh(orm_model)
-            self.logger.info("%r %r was successfully edited" % (CLASS, orm_model))
-            self.logger.info("Rubrics list was successfully edited")
+            self.logger.info("%s %r was successfully edited" % (CLASS, orm_model))
+            if rubric_orms:
+                self.logger.info("Rubrics list was successfully edited")
         except IntegrityError as exc:
             self.logger.error("Error occurred while editing data in database", exc_info=exc)
             raise CustomException(
