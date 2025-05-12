@@ -182,7 +182,21 @@ class OrdersService:
             return person
         if isinstance(address, ORJSONResponse):
             return address
-        if not cart.cart_items:
+
+        from src.api.v1.carts.utils import (
+            serve_normalize_item_quantity,
+            clear_cart
+        )
+        new_items = await serve_normalize_item_quantity(
+            cart=cart,
+            session=self.session,
+            session_data=self.session_data
+        )
+        if isinstance(new_items, ORJSONResponse):
+            return new_items
+
+        # if not cart.cart_items:
+        if not new_items:
             return ORJSONResponse(
                 status_code=status.HTTP_403_FORBIDDEN,
                 content={
@@ -193,7 +207,7 @@ class OrdersService:
 
         # Expecting if OrderCreate data valid
                 # catching ValidationError in exception_handler
-        order_content = await utils.get_normalized_order_content(cart)
+        order_content = await utils.get_normalized_order_content(new_items)
         total_cost = await utils.get_normalized_total_cost(cart)
 
         instance: OrderCreate = OrderCreate(
@@ -207,6 +221,18 @@ class OrdersService:
             payment_conditions=payment_ways,
             time_placed=datetime.now(),
         )
+
+        result = await self.reserve_products_from_cart(cart_items=new_items)
+        if isinstance(result, ORJSONResponse):
+            return result
+
+        cleared_cart = await clear_cart(
+            cart=cart,
+            session=self.session,
+            session_data=self.session_data,
+        )
+        if isinstance(cleared_cart, ORJSONResponse):
+            return cleared_cart
 
         repository: OrdersRepository = OrdersRepository(
             session=self.session,
@@ -278,3 +304,23 @@ class OrdersService:
             user=user,
             id=orm_model.id,
         )
+
+    async def reserve_products_from_cart(
+            self,
+            cart_items: list[Any],
+            cart: Optional[Union["Cart", "SessionCart"]] = None,
+    ):
+        if cart:
+            cart_items = cart.cart_items
+
+        self.logger.info("Reserving products from cart for order")
+        from src.api.v1.store.products.utils import change_quantity
+        for item in cart_items:
+            result = await change_quantity(
+                id=item.product_id if hasattr(item, "product_id") else item['product_id'],
+                reserved_quantity=item.quantity if hasattr(item, 'quantity') else item['quantity'],
+                session=self.session
+            )
+            if isinstance(result, ORJSONResponse):
+                self.logger.error('Error occurred while reserving products from cart')
+                return result
