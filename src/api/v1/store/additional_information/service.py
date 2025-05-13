@@ -89,7 +89,7 @@ class AddInfoService:
             self,
             product_id: int = None,
             maximized: bool = True,
-            relations: list | None = [],
+            relations: list | None = None,
             to_schema: bool = True,
     ):
         repository: AddInfoRepository = AddInfoRepository(

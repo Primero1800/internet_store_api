@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.core.models import AdditionalInformation, Product, ProductImage
+from src.core.models import AdditionalInformation, Product
 from src.tools.exceptions import CustomException
 from .exceptions import Errors
 
@@ -48,10 +48,10 @@ class AddInfoRepository:
             self,
             product_id: int = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None
     ):
         stmt = select(AdditionalInformation).where(AdditionalInformation.product_id == product_id)
-        if maximized or "product" in relations:
+        if maximized or (relations and "product" in relations):
             stmt = stmt.options(
                 joinedload(AdditionalInformation.product).joinedload(Product.images),
             )
