@@ -35,13 +35,13 @@ class PersonsRepository:
             self,
             user_id: int = None,
             maximized: bool = True,
-            relations: list = [],
+            relations: list | None = None,
     ):
         stmt_filter = select(Person).where(Person.user_id == user_id)
 
         options_list = []
 
-        if maximized or "user" in relations:
+        if maximized or (relations and "user" in relations):
             options_list.append(joinedload(Person.user))
 
         stmt = stmt_filter.options(*options_list)

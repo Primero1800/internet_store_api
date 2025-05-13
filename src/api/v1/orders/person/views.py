@@ -25,7 +25,7 @@ from . import dependencies as deps
 from . import utils
 
 if TYPE_CHECKING:
-    from src.core.models import(
+    from src.core.models import (
         User,
         Person,
     )

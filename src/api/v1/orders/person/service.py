@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING, Optional, Iterable, Any, Union
+from typing import TYPE_CHECKING, Optional, Any, Union
 
 from fastapi import status
 from fastapi.responses import ORJSONResponse
@@ -125,7 +125,7 @@ class PersonsService:
             user_id: int = None,
             obj_type: Any = None,
             maximized: bool = True,
-            relations: list | None = [],
+            relations: list | None = None,
             to_schema: bool = True,
     ):
         if isinstance(obj_type, ORJSONResponse):
