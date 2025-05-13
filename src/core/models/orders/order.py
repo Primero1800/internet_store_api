@@ -13,6 +13,7 @@ from src.tools.moveto_choices import MoveToChoices
 from src.tools.payment_conditions_choices import PaymentChoices
 from src.tools.status_choices import StatusChoices
 
+
 if TYPE_CHECKING:
     from src.core.models import User
 

@@ -1,15 +1,17 @@
 import logging
+
 from fastapi import status
 from typing import Sequence, TYPE_CHECKING, Union, Optional
 
-from sqlalchemy import select, Result
+from sqlalchemy import select, Result, event
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.core.models import Order, User, Product, ProductImage
+from src.core.models import Order
 from src.tools.exceptions import CustomException
 from .exceptions import Errors
+from . import events
 
 if TYPE_CHECKING:
     from .schemas import (
