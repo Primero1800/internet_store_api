@@ -11,25 +11,25 @@ if TYPE_CHECKING:
 async def get_schema_from_orm(
         orm_model: "User",
         maximized: bool = True,
-        relations: list | None = [],
+        relations: list | None = None,
 ):
 
     # BRUTE FORCE VARIANT
 
     vote_shorts = []
-    if maximized or "votes" in relations:
+    if maximized or (relations and "votes" in relations):
         from ...store.votes.utils import get_short_schema_from_orm as get_short_vote_schema_from_orm
         for vote in orm_model.votes:
             vote_shorts.append(await get_short_vote_schema_from_orm(vote))
-        if "votes" in relations:
+        if relations and "votes" in relations:
             return sorted(vote_shorts, key=lambda x: x.id)
 
     post_shorts = []
-    if maximized or "posts" in relations:
+    if maximized or (relations and "posts" in relations):
         from ...posts.post.utils import get_short_schema_from_orm as get_short_post_schema_from_orm
         for post in orm_model.posts:
             post_shorts.append(await get_short_post_schema_from_orm(post))
-        if "posts" in relations:
+        if relations and "posts" in relations:
             return sorted(post_shorts, key=lambda x: x.id)
 
     return UserReadExtended(

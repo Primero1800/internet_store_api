@@ -30,16 +30,16 @@ class UsersRepository:
             self,
             id: int = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None
     ):
         stmt_filter = select(User).where(User.id == id)
 
         options_list = []
 
-        if maximized or "votes" in relations:
+        if maximized or (relations and "votes" in relations):
             options_list.append(joinedload(User.votes))
 
-        if maximized or "posts" in relations:
+        if maximized or (relations and "posts" in relations):
             options_list.append(joinedload(User.posts))
 
         stmt = stmt_filter.options(*options_list)
