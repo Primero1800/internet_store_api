@@ -10,6 +10,8 @@ from sqlalchemy.orm import joinedload
 from src.core.models import Post, Product
 from src.tools.exceptions import CustomException
 from .exceptions import Errors
+from . import events
+
 
 if TYPE_CHECKING:
     from .schemas import (
