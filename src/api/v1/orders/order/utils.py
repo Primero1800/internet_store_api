@@ -19,16 +19,16 @@ if TYPE_CHECKING:
 async def get_schema_from_orm(
         orm_model: "Order",
         maximized: bool = True,
-        relations: list | None = [],
+        relations: list | None = None,
 ):
 
     # BRUTE FORCE VARIANT
     user_short = None
-    if maximized or 'user' in relations:
+    if maximized or (relations and 'user' in relations):
         if orm_model.user:
             from src.api.v1.users.user.utils import get_short_schema_from_orm as get_short_user_schema_from_orm
             user_short = await get_short_user_schema_from_orm(orm_model.user)
-        if 'user' in relations:
+        if relations and 'user' in relations:
             return user_short
 
     return OrderRead(

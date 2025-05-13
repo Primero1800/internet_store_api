@@ -16,7 +16,6 @@ from src.scrypts.pagination import paginate_result
 from src.tools.customer_payment_choices import CustomerPaymentChoices
 from src.tools.moveto_choices import MoveToChoices
 from src.tools.payment_conditions_choices import PaymentChoices
-from src.tools.status_choices import StatusChoices
 from .service import OrdersService
 from .schemas import (
     OrderRead,
@@ -32,7 +31,6 @@ from . import dependencies as deps
 from ..person import dependencies as person_deps
 from ..address import dependencies as address_deps
 from ...carts import dependencies as carts_deps
-from . import utils
 
 if TYPE_CHECKING:
     from src.core.models import (

@@ -3,7 +3,7 @@ import logging
 from fastapi import status
 from typing import Sequence, TYPE_CHECKING, Union, Optional
 
-from sqlalchemy import select, Result, event
+from sqlalchemy import select, Result
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -37,13 +37,13 @@ class OrdersRepository:
             self,
             id: int = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None
     ):
         stmt_filter = select(Order).where(Order.id == id)
 
         options_list = []
 
-        if maximized or "user" in relations:
+        if maximized or (relations and "user" in relations):
             options_list.append(joinedload(Order.user))
 
         stmt = stmt_filter.options(*options_list)

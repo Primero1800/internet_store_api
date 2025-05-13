@@ -120,7 +120,7 @@ class OrdersService:
             user: "User",
             id: int = None,
             maximized: bool = True,
-            relations: list | None = [],
+            relations: list | None = None,
             to_schema: bool = True,
     ):
         repository: OrdersRepository = OrdersRepository(
@@ -501,7 +501,8 @@ class OrdersService:
                 )
                 if isinstance(orm_model, ORJSONResponse):
                     self.logger.error(
-                        "Error occurred while serving 'delivery': %s" % json.loads(orm_model.body.decode()).get('detail'),
+                        "Error occurred while serving 'delivery': %s" %
+                        json.loads(orm_model.body.decode()).get('detail'),
                     )
                     # return orm_model
                 else:

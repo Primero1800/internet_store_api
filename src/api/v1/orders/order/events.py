@@ -18,5 +18,5 @@ def after_order_insert(mapper, connection, target):
             {
                 'subject': f"{CLASS.upper()} CREATED",
                 'body': json.dumps(jsonable_encoder(target.to_dict()), ensure_ascii=False)
-            }
-        ,))
+            },
+        ))
