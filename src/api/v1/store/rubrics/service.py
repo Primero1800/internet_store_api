@@ -88,7 +88,7 @@ class RubricsService:
             id: int = None,
             slug: str = None,
             maximized: bool = True,
-            relations: list | None = [],
+            relations: list | None = None,
             to_schema: bool = True,
     ):
         repository: RubricsRepository = RubricsRepository(
@@ -113,11 +113,13 @@ class RubricsService:
             return await utils.get_short_schema_from_orm(
                 returned_orm_model
             )
-        return await utils.get_schema_from_orm(
-            returned_orm_model,
-            maximized=maximized,
-            relations=relations,
-        )
+        if to_schema:
+            return await utils.get_schema_from_orm(
+                returned_orm_model,
+                maximized=maximized,
+                relations=relations,
+            )
+        return returned_orm_model
 
     async def create_one(
             self,

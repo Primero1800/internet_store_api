@@ -35,7 +35,7 @@ class RubricsRepository:
             id: int = None,
             slug: str = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None
     ):
         stmt_select = select(Rubric)
         if id:
@@ -47,7 +47,7 @@ class RubricsRepository:
             joinedload(Rubric.image)
         ]
 
-        if maximized or "products" in relations:
+        if maximized or (relations and "products" in relations):
             options_list.append(joinedload(Rubric.products).joinedload(Product.images))
 
         stmt = stmt_filter.options(*options_list)
@@ -132,8 +132,9 @@ class RubricsRepository:
             file: str,
             orm_model: Rubric
     ):
+        image: RubricImage | None = None
         try:
-            image: RubricImage | None = RubricImage(file=file, rubric_id=orm_model.id)
+            image = RubricImage(file=file, rubric_id=orm_model.id)
             self.session.add(image)
             await self.session.commit()
             self.logger.info("%sImage %r was successfully created" % (CLASS, image))
