@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 async def get_schema_from_orm(
         orm_model: Union["Cart", "SessionCart"],
         maximized: bool = True,
-        relations: list | None = [],
+        relations: list | None = None,
 ):
     # BRUTE FORCE VARIANT
 
@@ -32,21 +32,21 @@ async def get_schema_from_orm(
         del dict_to_push_to_schema['user']
 
     cart_items = None
-    if maximized or 'products' in relations:
+    if maximized or (relations and 'products' in relations):
         cart_items = []
         for cart_item in orm_model.cart_items:
             cart_items.append(
                 await get_item_schema_from_orm(cart_item)
             )
-        if 'products' in relations:
+        if relations and 'products' in relations:
             return cart_items
 
     user_short = None
-    if maximized or 'user' in relations:
+    if maximized or (relations and 'user' in relations):
         if orm_model.user:
             from src.api.v1.users.user.utils import get_short_schema_from_orm as get_short_user_schema_from_orm
             user_short = await get_short_user_schema_from_orm(orm_model.user)
-        if 'user' in relations:
+        if relations and 'user' in relations:
             return user_short
 
     return CartRead(
@@ -77,13 +77,13 @@ async def get_short_schema_from_orm(
 
 
 async def get_short_item_schema_from_orm(
-        orm_model: Union["CartItem",dict]
+        orm_model: Union["CartItem", "SessionCartItem", dict]
 ) -> CartItemShort | ORJSONResponse:
 
     if isinstance(orm_model, ORJSONResponse):
         return orm_model
 
-    if isinstance(orm_model, dict): # For SessionCartItem
+    if isinstance(orm_model, dict):  # For SessionCartItem
         return CartItemShort(
             **orm_model
         )
@@ -101,10 +101,10 @@ async def get_item_schema_from_orm(
     if isinstance(orm_model, ORJSONResponse):
         return orm_model
 
-    if isinstance(orm_model, dict): # For SessionCartItem straight as dict
+    if isinstance(orm_model, dict):  # For SessionCartItem straight as dict
         dict_to_push = orm_model
         product = dict_to_push.pop("product")
-    elif not orm_model.cart_id: # For SessionCartItem
+    elif not orm_model.cart_id:  # For SessionCartItem
         dict_to_push = orm_model.to_dict()
         product = dict_to_push.pop("product")
     else:

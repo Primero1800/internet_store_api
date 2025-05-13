@@ -41,9 +41,9 @@ class SessionCartsRepository:
             cart_type: SessionData,
             id: int = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None,
     ):
-        if not CART in cart_type.data:
+        if CART not in cart_type.data:
             text_error = f"user_id={id}"
             raise CustomException(
                 msg=f"{CLASS} with {text_error} not found"
@@ -51,7 +51,7 @@ class SessionCartsRepository:
         cart = cart_type.data[CART]
         cart_orm_model = SessionCart(**cart)
         new_items = []
-        for item in cart_orm_model.cart_items:
+        for item in cart['cart_items']:
             new_item = await self.dict_to_orm(**item)
             new_items.append(new_item)
         cart_orm_model.cart_items = new_items

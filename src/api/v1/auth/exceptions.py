@@ -10,7 +10,6 @@ class Errors(ErrorsBase):
     def HANDLER_MESSAGE(cls):
         return f"Handled by Auth exception handler"
 
-
     @staticmethod
     def user_not_exists_mailed(email: str):
         return f"Email {email!r} isn't bound to any user"
@@ -48,6 +47,3 @@ class Errors(ErrorsBase):
     @staticmethod
     def INVALID_RESET_PASSWORD_TOKEN():
         return "Invalid reset password token"
-
-
-

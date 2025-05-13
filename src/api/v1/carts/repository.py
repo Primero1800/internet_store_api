@@ -39,7 +39,7 @@ class CartsRepository:
             id: int = None,
             cart_type: Any = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None
     ):
         id = id if id else cart_type.id
 
@@ -47,10 +47,10 @@ class CartsRepository:
 
         options_list = []
 
-        if maximized or "products" in relations:
+        if maximized or (relations and "products" in relations):
             options_list.append(joinedload(Cart.cart_items).joinedload(CartItem.product).joinedload(Product.images))
 
-        if maximized or "user" in relations:
+        if maximized or (relations and "user" in relations):
             options_list.append(joinedload(Cart.user))
 
         stmt = stmt_filter.options(*options_list)

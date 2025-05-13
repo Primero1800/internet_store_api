@@ -122,7 +122,7 @@ class CartsService:
             id: int = None,
             cart_type: Any = None,
             maximized: bool = True,
-            relations: list | None = [],
+            relations: list | None = None,
             to_schema: bool = True,
     ):
         if isinstance(cart_type, ORJSONResponse):
@@ -426,7 +426,7 @@ class CartsService:
             to_schema: bool = True,
             original_price: Optional[Decimal] = None
     ):
-        if not cart.user_id is None:
+        if cart.user_id is not None:
             repository: CartsRepository = CartsRepository(
                 session=self.session
             )
