@@ -20,14 +20,14 @@ async def get_schema_from_orm(
 
     if maximized or (relations and "add_info" in relations):
         from ..additional_information.utils import get_short_schema_from_orm as get_short_add_info_schema_from_orm
-        if "add_info" in relations:
+        if relations and "add_info" in relations:
             if not orm_model.add_info:
                 return None
             return await get_short_add_info_schema_from_orm(orm_model.add_info)
 
     if maximized or (relations and "sale_info" in relations):
         from ..sale_information.utils import get_short_schema_from_orm as get_short_sale_info_schema_from_orm
-        if "sale_info" in relations:
+        if relations and "sale_info" in relations:
             if not orm_model.sale_info:
                 return None
             return await get_short_sale_info_schema_from_orm(orm_model.sale_info)
