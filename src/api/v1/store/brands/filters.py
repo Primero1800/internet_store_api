@@ -25,4 +25,3 @@ class BrandFilterComplex(BrandFilter):
 
     class Constants(BrandFilter.Constants):
         search_model_fields = ["product__title", "product__description"]
-

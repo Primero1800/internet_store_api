@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 async def get_schema_from_orm(
         orm_model: "Brand",
         maximized: bool = True,
-        relations: list | None = [],
+        relations: list | None = None,
 ):
 
     # BRUTE FORCE VARIANT
@@ -17,12 +17,12 @@ async def get_schema_from_orm(
     short_schema: BrandShort = await get_short_schema_from_orm(orm_model=orm_model)
 
     products_shorts = []
-    if maximized or 'products' in relations:
+    if maximized or (relations and 'products' in relations):
         from ..products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
         for product in orm_model.products:
             products_shorts.append(await get_short_product_schema_from_orm(product))
-    if 'products' in relations:
-        return sorted(products_shorts, key= lambda x: x.id)
+    if relations and 'products' in relations:
+        return sorted(products_shorts, key=lambda x: x.id)
 
     return BrandRead(
         **short_schema.model_dump(),

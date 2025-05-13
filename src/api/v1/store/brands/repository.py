@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 CLASS = "Brand"
 
+
 class BrandsRepository:
     def __init__(
             self,
@@ -34,7 +35,7 @@ class BrandsRepository:
             id: int = None,
             slug: str = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None
     ):
         stmt_select = select(Brand)
         if id:
@@ -46,7 +47,7 @@ class BrandsRepository:
             joinedload(Brand.image)
         ]
 
-        if maximized or "products" in relations:
+        if maximized or (relations and "products" in relations):
             options_list.append(joinedload(Brand.products).joinedload(Product.images))
 
         stmt = stmt_filter.options(*options_list)
@@ -131,8 +132,9 @@ class BrandsRepository:
             file: str,
             orm_model: Brand
     ):
+        image: BrandImage | None = None
         try:
-            image: BrandImage | None = BrandImage(file=file, brand_id=orm_model.id)
+            image = BrandImage(file=file, brand_id=orm_model.id)
             self.session.add(image)
             await self.session.commit()
             self.logger.info("%sImage %r was successfully created" % (CLASS, image))

@@ -87,7 +87,7 @@ class BrandsService:
             id: int = None,
             slug: str = None,
             maximized: bool = True,
-            relations: list | None = [],
+            relations: list | None = None,
             to_schema: bool = True,
     ):
         repository: BrandsRepository = BrandsRepository(

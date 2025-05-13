@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 async def inspecting_brand_exists(
         brand_id: int,
-        inspector: "ValidRelationsInspectorBase" ,
+        inspector: "ValidRelationsInspectorBase",
         errors: Type["ErrorsBase"] = Errors,
 ):
     # Expecting if chosen brand exists
