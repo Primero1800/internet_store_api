@@ -48,9 +48,8 @@ app.include_router(
 SwaggerConfigurer.config_swagger(app, settings.app.APP_TITLE)
 
 
-# uncomment, if need custom exception_handler
+# uncomment if is need custom exception_handler
 ExceptionHandlerConfigurer.config_exception_handler(app)
-
 
 
 ######################################################################
