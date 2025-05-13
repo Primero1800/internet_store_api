@@ -51,9 +51,10 @@ class SessionCartsRepository:
         cart = cart_type.data[CART]
         cart_orm_model = SessionCart(**cart)
         new_items = []
-        for item in cart['cart_items']:
-            new_item = await self.dict_to_orm(**item)
-            new_items.append(new_item)
+        if 'cart_items' in cart:
+            for item in cart['cart_items']:
+                new_item = await self.dict_to_orm(**item)
+                new_items.append(new_item)
         cart_orm_model.cart_items = new_items
         return cart_orm_model
 
