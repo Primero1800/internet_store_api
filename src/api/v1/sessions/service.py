@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 from uuid import uuid4
 
 from fastapi import status, Response
@@ -73,7 +73,6 @@ class SessionsService:
         #     return session_data
         return session_data
 
-
     async def create_session(
             self,
             user: Any,
@@ -84,7 +83,7 @@ class SessionsService:
         data = SessionData(
             user_id=user.id if user else None,
             user_email=user.email if user else None,
-            session_id = session_id,
+            session_id=session_id,
             data={
                 "time": datetime.now(tz=pytz.timezone(current_timezone))
             })
@@ -154,7 +153,7 @@ class SessionsService:
         session_data.data.update(data_to_update)
         try:
             await backend.update(session_id, session_data)
-        except BackendError as exc:
+        except BackendError:
             self.logger.warning("%r, %r" % (Errors.UPDATING_NOT_EXISTS_SESSION(), session_id))
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -177,7 +176,7 @@ class SessionsService:
         session_data.data.clear()
         try:
             await backend.update(session_id, session_data)
-        except BackendError as exc:
+        except BackendError:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
