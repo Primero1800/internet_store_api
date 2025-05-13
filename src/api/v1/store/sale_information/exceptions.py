@@ -1,5 +1,3 @@
-from typing import Any
-
 from src.tools.errors_base import ErrorsBase
 
 

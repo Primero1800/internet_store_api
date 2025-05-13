@@ -48,10 +48,10 @@ class SaleInfoRepository:
             self,
             product_id: int = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None
     ):
         stmt = select(SaleInformation).where(SaleInformation.product_id == product_id)
-        if maximized or "product" in relations:
+        if maximized or (relations and "product" in relations):
             stmt = stmt.options(
                 joinedload(SaleInformation.product).joinedload(Product.images),
             )
@@ -151,7 +151,7 @@ class SaleInfoRepository:
             raise CustomException(
                 msg="Division by zero: voted_count=0"
             )
-        except UnreachableValueError as exc:
+        except UnreachableValueError:
             self.logger.error("Error occurred while editing data in database. Rating can't be more than 5")
             raise CustomException(
                 msg="Rating must be not more than 5"

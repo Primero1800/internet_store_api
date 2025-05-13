@@ -89,7 +89,7 @@ class SaleInfoService:
             self,
             product_id: int = None,
             maximized: bool = True,
-            relations: list | None = [],
+            relations: list | None = None,
             to_schema: bool = True,
     ):
         repository: SaleInfoRepository = SaleInfoRepository(
@@ -128,7 +128,7 @@ class SaleInfoService:
         self.repository = repository
 
         # Expecting if ProductCreate data valid
-                # catching ValidationError in exception_handler
+        # catching ValidationError in exception_handler
         instance: SaleInfoCreate = SaleInfoCreate(
             product_id=product_id,
         )
@@ -287,7 +287,7 @@ class SaleInfoService:
             delta = vote_add - vote_del
             if not delta:
                 return []
-            orm_model = await self.get_or_create(
+            orm_model: "SaleInformation" = await self.get_or_create(
                 product_id=product_id_vote_add,
             )
             if isinstance(orm_model, ORJSONResponse):
@@ -306,7 +306,7 @@ class SaleInfoService:
         orm_models = []
 
         if product_id_vote_add:
-            if vote_add is None :
+            if vote_add is None:
                 self.logger.error("Error while changing rating: Value 'vote_add' must be valid integer")
                 return ORJSONResponse(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -333,7 +333,7 @@ class SaleInfoService:
             orm_models.append(orm_model)
 
         if product_id_vote_del:
-            if vote_del is None :
+            if vote_del is None:
                 return ORJSONResponse(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     content={
@@ -366,7 +366,7 @@ class SaleInfoService:
             count: int = 1,
             action: str = 'view'
     ):
-        orm_model = await self.get_or_create(
+        orm_model: "SaleInformation" = await self.get_or_create(
             product_id=product_id,
         )
         if isinstance(orm_model, ORJSONResponse):
@@ -388,6 +388,3 @@ class SaleInfoService:
             return orm_model
         self.logger.info('SaleInformation was successfully edited')
         return orm_model
-
-
-

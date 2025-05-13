@@ -31,7 +31,7 @@ async def get_short_schema_from_orm(
 async def get_schema_from_orm(
     orm_model: "SaleInformation",
     maximized: bool = True,
-    relations: list | None = [],
+    relations: list | None = None,
 ) -> SaleInfoRead | Any:
 
     # BRUTE FORCE VARIANT
@@ -39,9 +39,9 @@ async def get_schema_from_orm(
     short_schema: SaleInfoShort = await get_short_schema_from_orm(orm_model=orm_model) if maximized else {}
 
     product_short = None
-    if maximized or 'product' in relations:
+    if maximized or (relations and 'product' in relations):
         product_short = await get_short_product_schema_from_orm(orm_model.product)
-    if 'product' in relations:
+    if relations and 'product' in relations:
         return product_short
 
     return SaleInfoRead(
