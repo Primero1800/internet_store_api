@@ -1,3 +1,4 @@
+import json
 import re
 from typing import AsyncGenerator
 
@@ -35,6 +36,7 @@ class DBConfigurerInitializer:
             url=self.connection_path,
             echo=echo,
             pool_size=pool_size,
+            json_serializer=lambda obj: json.dumps(obj, ensure_ascii=False)
         )
         self.Session: async_sessionmaker[AsyncSession] = async_sessionmaker(
             bind=self.engine,
