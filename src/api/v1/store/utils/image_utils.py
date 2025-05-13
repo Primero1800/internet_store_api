@@ -19,7 +19,7 @@ async def save_image(
     if cleaning:
         await del_directory(directory=directory)
 
-    os.makedirs(directory, exist_ok=True)                                               # Создаем директорию, если она не существует
+    os.makedirs(directory, exist_ok=True)  # Создаем директорию, если она не существует
 
     extension = os.path.splitext(image_object.filename)[1]
     new_file_name = f"{name}{extension}"

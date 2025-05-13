@@ -26,7 +26,7 @@ from src.api.v1.users.user.schemas import UserPublicExtended
 from . import dependencies as deps
 
 if TYPE_CHECKING:
-    from src.core.models import(
+    from src.core.models import (
         User,
         Vote,
     )
