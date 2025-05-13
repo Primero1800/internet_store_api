@@ -37,7 +37,7 @@ async def get_short_schema_from_orm(
 async def get_schema_from_orm(
     orm_model: "UserTools",
     maximized: bool = True,
-    relations: list | None = [],
+    relations: list | None = None,
 ) -> UserToolsRead | Any:
 
     # BRUTE FORCE VARIANT
@@ -45,9 +45,9 @@ async def get_schema_from_orm(
     short_schema: UserToolsShort = await get_short_schema_from_orm(orm_model=orm_model) if maximized else {}
 
     user_short = None
-    if maximized or 'user' in relations:
+    if maximized or (relations and 'user' in relations):
         user_short = await get_short_user_schema_from_orm(orm_model.user)
-    if 'user' in relations:
+    if relations and 'user' in relations:
         return user_short
 
     return UserToolsRead(

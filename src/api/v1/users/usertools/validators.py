@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.tools.inspector import (

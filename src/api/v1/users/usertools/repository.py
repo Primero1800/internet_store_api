@@ -48,10 +48,10 @@ class UserToolsRepository:
             self,
             user_id: int = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None
     ):
         stmt = select(UserTools).where(UserTools.user_id == user_id)
-        if maximized or "user" in relations:
+        if maximized or (relations and "user" in relations):
             stmt = stmt.options(
                 joinedload(UserTools.user),
             )
@@ -173,7 +173,7 @@ class UserToolsRepository:
                 max_length=usertools.max_length_c,
                 verb="comparison_list"
             )
-        else: # add_to == 'rv
+        else:  # add_to == 'rv
             usertools.recently_viewed = await self.operate_dict(
                 content=content,
                 operation_dict=usertools.recently_viewed,
@@ -221,7 +221,7 @@ class UserToolsRepository:
         elif del_from == 'c':
             item_to_remove = usertools.comparison.pop(product_id, None)
             verb = "comparison list"
-        else: # add_to == 'rv
+        else:  # add_to == 'rv
             item_to_remove = usertools.recently_viewed.pop(product_id, None)
             verb = "recently viewed"
 

@@ -1,13 +1,8 @@
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, computed_field
 
 from src.tools.usertools_content import ToolsContent
-
-if TYPE_CHECKING:
-    from src.api.v1.store.products.schemas import (
-        ProductShort,
-    )
 
 
 class BaseUserTools(BaseModel):
@@ -44,10 +39,6 @@ class UserToolsShort(BaseUserTools):
 
 
 class UserToolsRead(UserToolsShort):
-    # recently_viewed: list["ProductShort"]
-    # wishlist: list["ProductShort"]
-    # comparison: list["ProductShort"]
-
     user: Any
 
 

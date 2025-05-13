@@ -90,7 +90,7 @@ class UserToolsService:
             self,
             user_id: int = None,
             maximized: bool = True,
-            relations: list | None = [],
+            relations: list | None = None,
             to_schema: bool = True,
     ):
         repository: UserToolsRepository = UserToolsRepository(
