@@ -1,13 +1,12 @@
 import logging
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import ORJSONResponse
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError, DatabaseError
 
-from src.core.settings import settings
 from src.tools.exceptions import CustomException
 
 
@@ -27,7 +26,7 @@ class ExceptionHandlerConfigurer:
     ]
 
     @staticmethod
-    def add_simple_exception_handler(exc_class, app:FastAPI):
+    def add_simple_exception_handler(exc_class, app: FastAPI):
         @app.exception_handler(exc_class)
         async def simple_exception_handler(request, exc: exc_class):
             exc_argument = exc.errors() if hasattr(exc, "errors") else exc
