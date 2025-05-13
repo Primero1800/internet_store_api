@@ -23,12 +23,11 @@ async def get_schema_from_orm(
 ):
 
     # BRUTE FORCE VARIANT
+    user_short = None
     if maximized or 'user' in relations:
         if orm_model.user:
             from src.api.v1.users.user.utils import get_short_schema_from_orm as get_short_user_schema_from_orm
             user_short = await get_short_user_schema_from_orm(orm_model.user)
-        else:
-            user_short = None
         if 'user' in relations:
             return user_short
 

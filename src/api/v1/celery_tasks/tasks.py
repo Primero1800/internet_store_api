@@ -1,5 +1,4 @@
 import logging
-from typing import TYPE_CHECKING
 import asyncio
 
 from celery.exceptions import MaxRetriesExceededError
