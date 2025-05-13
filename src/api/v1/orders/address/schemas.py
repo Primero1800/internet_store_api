@@ -11,7 +11,7 @@ base_address_field = Annotated[str, Field(
         description="Customer's address"
     )]
 
-base_city_field = Annotated[str , Field(
+base_city_field = Annotated[str, Field(
         min_length=2,
         max_length=50,
         title="City",
@@ -70,7 +70,7 @@ class AddressCreate(BaseAddress):
     phonenumber: AppPhoneNumber
 
     @field_validator('phonenumber', mode='before')
-    def check_phonenumbern(cls, value: Any):
+    def check_phonenumbern(self, value: Any):
         return AppPhoneNumber.validate(value)
 
 

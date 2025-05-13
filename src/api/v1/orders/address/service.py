@@ -125,7 +125,7 @@ class AddressesService:
             user_id: int = None,
             obj_type: Any = None,
             maximized: bool = True,
-            relations: list | None = [],
+            relations: list | None = None,
             to_schema: bool = True,
     ):
         if isinstance(obj_type, ORJSONResponse):

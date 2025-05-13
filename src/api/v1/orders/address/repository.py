@@ -36,13 +36,13 @@ class AddressesRepository:
             self,
             user_id: int = None,
             maximized: bool = True,
-            relations: list = [],
+            relations: list | None = None,
     ):
         stmt_filter = select(Address).where(Address.user_id == user_id)
 
         options_list = []
 
-        if maximized or "user" in relations:
+        if maximized or (relations and "user" in relations):
             options_list.append(joinedload(Address.user))
 
         stmt = stmt_filter.options(*options_list)

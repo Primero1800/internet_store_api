@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 async def get_schema_from_orm(
         orm_model: Union["Address", "SessionAddress", ORJSONResponse],
         maximized: bool = True,
-        relations: list | None = [],
+        relations: list | None = None,
 ) -> Any:
     # BRUTE FORCE VARIANT
 
@@ -31,7 +31,7 @@ async def get_schema_from_orm(
         del dict_to_push_to_schema['user']
 
     user_short = None
-    if maximized or 'user' in relations:
+    if maximized or (relations and 'user' in relations):
         if orm_model.user:
             from src.api.v1.users.user.utils import get_short_schema_from_orm as get_short_user_schema_from_orm
             user_short = await get_short_user_schema_from_orm(orm_model.user)

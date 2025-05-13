@@ -25,7 +25,7 @@ from . import dependencies as deps
 from . import utils
 
 if TYPE_CHECKING:
-    from src.core.models import(
+    from src.core.models import (
         User,
         Address,
     )
@@ -296,7 +296,7 @@ async def patch_one(
         request: Request,
 
         address: Optional[str] = Form(min_length=6, max_length=100, default=None),
-        city:Optional[str] = Form(min_length=2, max_length=50, default=None),
+        city: Optional[str] = Form(min_length=2, max_length=50, default=None),
         postcode: Optional[str] = Form(max_length=16, default=None),
         email: Optional[str] = Form(min_length=6, max_length=320, default=None),
         phonenumber: Optional[str] = Form(min_length=5, max_length=20, default=None),

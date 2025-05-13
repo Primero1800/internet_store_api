@@ -38,9 +38,9 @@ class SessionAddressesRepository:
             self,
             user_id: int = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None
     ):
-        if not ADDRESS in self.session_data.data:
+        if ADDRESS not in self.session_data.data:
             text_error = f"user_id={user_id}"
             raise CustomException(
                 msg=f"{CLASS} with {text_error} not found"
