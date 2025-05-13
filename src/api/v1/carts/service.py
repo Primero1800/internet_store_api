@@ -652,6 +652,8 @@ class CartsService:
             user_cart: "Cart",
             session_cart: "SessionCart"
     ):
+        if isinstance(session_cart, ORJSONResponse):
+            return
 
         for cart_item in session_cart.cart_items:
 
