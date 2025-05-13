@@ -11,26 +11,26 @@ if TYPE_CHECKING:
 async def get_schema_from_orm(
         orm_model: "Post",
         maximized: bool = True,
-        relations: list | None = [],
+        relations: list | None = None,
 ):
 
     # BRUTE FORCE VARIANT
 
     short_schema: PostShort = await get_short_schema_from_orm(orm_model=orm_model)
 
-    if maximized or 'product' in relations:
+    product_short = None
+    if maximized or (relations and 'product' in relations):
         from ...store.products.utils import get_short_schema_from_orm as get_short_product_schema_from_orm
         product_short = await get_short_product_schema_from_orm(orm_model.product)
-        if 'product' in relations:
+        if relations and 'product' in relations:
             return product_short
 
-    if maximized or 'user' in relations:
+    user_short = None
+    if maximized or (relations and 'user' in relations):
         if orm_model.user:
             from src.api.v1.users.user.utils import get_short_schema_from_orm as get_short_user_schema_from_orm
             user_short = await get_short_user_schema_from_orm(orm_model.user)
-        else:
-            user_short = None
-        if 'user' in relations:
+        if relations and 'user' in relations:
             return user_short
 
     return PostRead(

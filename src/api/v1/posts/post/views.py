@@ -25,7 +25,7 @@ from src.api.v1.users.user.schemas import UserPublicExtended
 from . import dependencies as deps
 
 if TYPE_CHECKING:
-    from src.core.models import(
+    from src.core.models import (
         User,
         Post,
     )
@@ -217,7 +217,7 @@ async def create_one(
 async def delete_one(
         request: Request,
         user: "User" = Depends(current_user),
-        orm_model: "Vote" = Depends(deps.get_one_simple),
+        orm_model: "Post" = Depends(deps.get_one_simple),
         session: AsyncSession = Depends(DBConfigurer.session_getter),
 ):
     service: PostsService = PostsService(

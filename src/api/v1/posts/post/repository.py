@@ -37,16 +37,16 @@ class PostsRepository:
             self,
             id: int = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None
     ):
         stmt_filter = select(Post).where(Post.id == id)
 
         options_list = []
 
-        if maximized or "product" in relations:
+        if maximized or (relations and "product" in relations):
             options_list.append(joinedload(Post.product).joinedload(Product.images))
 
-        if maximized or "user" in relations:
+        if maximized or (relations and "user" in relations):
             options_list.append(joinedload(Post.user))
 
         stmt = stmt_filter.options(*options_list)
