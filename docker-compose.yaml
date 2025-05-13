@@ -8,6 +8,17 @@ services:
     ports:
       - "6379:6379"
 
+  db:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+#      POSTGRES_DB: f4_el
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   webapp:
     restart: unless-stopped
     build:
@@ -17,9 +28,11 @@ services:
     environment:
       REDIS_HOST: redis
       CELERY_BROKER_HOST: redis
-      DB_HOST: host.docker.internal
+      DB_HOST: db
+      DB_NAME: postgres
     depends_on:
         - redis
+        - db
     volumes:
       - ./alembic:/app/alembic
       - ./celery_home:/app/celery_home
@@ -27,7 +40,6 @@ services:
       - ./src:/app/src
       - ./static:/app/static
       - ./alembic.ini:/app/alembic.ini
-    # command: [ "run", "alembic", "upgrade", "head", "&&", "uvicorn", "src.main:app", "--host", "0.0.0.0:8000", "--reload" ]
     command: ["sh", "-c", "poetry run alembic upgrade head && poetry run uvicorn src.main:app --host 0.0.0.0 --reload"]
     
   celery-worker:
@@ -41,7 +53,6 @@ services:
       - ./static:/app/static
     environment:
       CELERY_BROKER_HOST: redis
-    # command: [ "celery", "--workdir=./celery_home/config.app_celery", "-A", "4_el_worker", "worker", "-l", "INFO" ]
     command: ["sh", "-c", "poetry run celery -A celery_home.config.app_celery worker --loglevel=info"]
 
   celery-beat:
@@ -67,3 +78,5 @@ services:
       CELERY_BROKER_HOST: redis
     command: ["sh", "-c", "poetry run celery -A celery_home.config.app_celery flower"]
 
+volumes:
+  postgres_data:
