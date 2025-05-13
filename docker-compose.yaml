@@ -1,0 +1,69 @@
+version: "3.9"
+
+services:
+
+  redis:
+    image: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  webapp:
+    restart: unless-stopped
+    build:
+      context: ./
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_HOST: redis
+      CELERY_BROKER_HOST: redis
+      DB_HOST: host.docker.internal
+    depends_on:
+        - redis
+    volumes:
+      - ./alembic:/app/alembic
+      - ./celery_home:/app/celery_home
+      - ./media:/app/media
+      - ./src:/app/src
+      - ./static:/app/static
+      - ./alembic.ini:/app/alembic.ini
+    # command: [ "run", "alembic", "upgrade", "head", "&&", "uvicorn", "src.main:app", "--host", "0.0.0.0:8000", "--reload" ]
+    command: ["sh", "-c", "poetry run alembic upgrade head && poetry run uvicorn src.main:app --host 0.0.0.0 --reload"]
+    
+  celery-worker:
+    restart: unless-stopped
+    build:
+      context: ./
+    volumes:
+      - ./celery_home:/app/celery_home
+      - ./media:/app/media
+      - ./src:/app/src
+      - ./static:/app/static
+    environment:
+      CELERY_BROKER_HOST: redis
+    # command: [ "celery", "--workdir=./celery_home/config.app_celery", "-A", "4_el_worker", "worker", "-l", "INFO" ]
+    command: ["sh", "-c", "poetry run celery -A celery_home.config.app_celery worker --loglevel=info"]
+
+  celery-beat:
+    restart: unless-stopped
+    build:
+      context: ./
+    volumes:
+      - ./celery_home:/app/celery_home
+      - ./media:/app/media
+      - ./src:/app/src
+      - ./static:/app/static
+    environment:
+      CELERY_BROKER_HOST: redis
+    command: ["sh", "-c", "poetry run celery -A celery_home.config.app_celery beat --loglevel=info"]
+
+  flower:
+    restart: unless-stopped
+    build:
+      context: ./
+    ports:
+      - "5555:5555"
+    environment:
+      CELERY_BROKER_HOST: redis
+    command: ["sh", "-c", "poetry run celery -A celery_home.config.app_celery flower"]
+
