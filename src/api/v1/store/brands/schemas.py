@@ -34,7 +34,8 @@ class BrandShort(BaseBrand):
     slug: str
 
     @model_validator(mode="before")
-    def image_file_getter(self, obj: Any, info: ValidationInfo) -> Any:
+    @classmethod
+    def image_file_getter(cls, obj: Any, info: ValidationInfo) -> Any:
         if not hasattr(obj, "image_file") and info.context:
             setattr(obj, 'image_file', info.context.get('image_file', ''))
         return obj

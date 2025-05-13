@@ -190,7 +190,7 @@ async def get_relations_votes(
         user: models.UP = Depends(current_user),
         session: AsyncSession = Depends(DBConfigurer.session_getter),
         user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
-) -> list[VoteShort] | ORJSONResponse:
+) -> list[VoteShort]:
     service: UsersService = UsersService(
         session=session,
         user_manager=user_manager
@@ -225,7 +225,7 @@ async def get_relations_votes_by_id(
         size: int = Query(10, gt=0),
         session: AsyncSession = Depends(DBConfigurer.session_getter),
         user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
-) -> list[VoteShort] | ORJSONResponse:
+) -> list[VoteShort]:
     service: UsersService = UsersService(
         session=session,
         user_manager=user_manager
@@ -258,7 +258,7 @@ async def get_relations_posts(
         user: models.UP = Depends(current_user),
         session: AsyncSession = Depends(DBConfigurer.session_getter),
         user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
-) -> list[PostShort] | ORJSONResponse:
+) -> list[PostShort]:
     service: UsersService = UsersService(
         session=session,
         user_manager=user_manager
@@ -293,7 +293,7 @@ async def get_relations_posts_by_id(
         size: int = Query(10, gt=0),
         session: AsyncSession = Depends(DBConfigurer.session_getter),
         user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
-) -> list[PostShort] | ORJSONResponse:
+) -> list[PostShort]:
     service: UsersService = UsersService(
         session=session,
         user_manager=user_manager

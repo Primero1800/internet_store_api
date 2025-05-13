@@ -70,7 +70,8 @@ class AddressCreate(BaseAddress):
     phonenumber: AppPhoneNumber
 
     @field_validator('phonenumber', mode='before')
-    def check_phonenumbern(self, value: Any):
+    @classmethod
+    def check_phonenumbern(cls, value: Any):
         return AppPhoneNumber.validate(value)
 
 
