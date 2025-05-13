@@ -36,7 +36,7 @@ class ProductsRepository:
             id: int = None,
             slug: str = None,
             maximized: bool = True,
-            relations: list = []
+            relations: list | None = None
     ):
         stmt_select = select(Product)
         if id:
@@ -50,16 +50,16 @@ class ProductsRepository:
             joinedload(Product.rubrics).joinedload(Rubric.image),
         ]
 
-        if maximized or "add_info" in relations:
+        if maximized or (relations and "add_info" in relations):
             options_list.append(joinedload(Product.add_info))
 
-        if maximized or "sale_info" in relations:
+        if maximized or (relations and "sale_info" in relations):
             options_list.append(joinedload(Product.sale_info))
 
-        if maximized or "votes" in relations:
+        if maximized or (relations and "votes" in relations):
             options_list.append(joinedload(Product.votes))
 
-        if maximized or "posts" in relations:
+        if maximized or (relations and "posts" in relations):
             options_list.append(joinedload(Product.posts))
 
         stmt = stmt_filter.options(*options_list)
@@ -192,8 +192,9 @@ class ProductsRepository:
             file: str,
             orm_model: Product
     ):
+        image: ProductImage | None = None
         try:
-            image: ProductImage | None = ProductImage(file=file, product_id=orm_model.id)
+            image = ProductImage(file=file, product_id=orm_model.id)
             self.session.add(image)
             await self.session.commit()
             self.logger.info("%sImage %r was successfully created" % (CLASS, image))

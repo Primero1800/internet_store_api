@@ -93,7 +93,7 @@ class ProductsService:
             id: int = None,
             slug: str = None,
             maximized: bool = True,
-            relations: list | None = [],
+            relations: list | None = None,
             to_schema: bool = True,
     ):
         repository: ProductsRepository = ProductsRepository(
@@ -140,7 +140,7 @@ class ProductsService:
         self.repository = repository
 
         # Expecting if ProductCreate data valid
-                # catching ValidationError in exception_handler
+        # catching ValidationError in exception_handler
         instance: ProductCreate = ProductCreate(
             title=title,
             description=description,

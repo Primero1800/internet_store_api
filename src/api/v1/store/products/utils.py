@@ -13,39 +13,39 @@ if TYPE_CHECKING:
 async def get_schema_from_orm(
         orm_model: "Product",
         maximized: bool = True,
-        relations: list | None = [],
+        relations: list | None = None,
 ):
 
     # BRUTE FORCE VARIANT
 
-    if maximized or "add_info" in relations:
+    if maximized or (relations and "add_info" in relations):
         from ..additional_information.utils import get_short_schema_from_orm as get_short_add_info_schema_from_orm
         if "add_info" in relations:
             if not orm_model.add_info:
                 return None
             return await get_short_add_info_schema_from_orm(orm_model.add_info)
 
-    if maximized or "sale_info" in relations:
+    if maximized or (relations and "sale_info" in relations):
         from ..sale_information.utils import get_short_schema_from_orm as get_short_sale_info_schema_from_orm
         if "sale_info" in relations:
             if not orm_model.sale_info:
                 return None
             return await get_short_sale_info_schema_from_orm(orm_model.sale_info)
 
-    if maximized or "votes" in relations:
+    if maximized or (relations and "votes" in relations):
         vote_shorts = []
         from ..votes.utils import get_short_schema_from_orm as get_short_vote_schema_from_orm
         for vote in orm_model.votes:
             vote_shorts.append(await get_short_vote_schema_from_orm(vote))
-        if "votes" in relations:
+        if relations and "votes" in relations:
             return sorted(vote_shorts, key=lambda x: x.id)
 
-    if maximized or "posts" in relations:
+    if maximized or (relations and "posts" in relations):
         post_shorts = []
         from ...posts.post.utils import get_short_schema_from_orm as get_short_post_schema_from_orm
         for post in orm_model.posts:
             post_shorts.append(await get_short_post_schema_from_orm(post))
-        if "posts" in relations:
+        if relations and "posts" in relations:
             return sorted(post_shorts, key=lambda x: x.id)
 
     rubrics_shorts = []
