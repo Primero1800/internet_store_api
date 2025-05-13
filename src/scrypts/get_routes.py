@@ -1,5 +1,4 @@
 from fastapi import FastAPI, APIRouter
-from fastapi.encoders import jsonable_encoder
 
 
 async def get_routes(application: FastAPI | APIRouter, path=True, tags=True, methods=True, deps=False, desc=False):
