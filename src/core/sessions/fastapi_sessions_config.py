@@ -1,4 +1,3 @@
-
 from typing import Annotated, Optional, Dict, Any
 from uuid import UUID
 
@@ -35,7 +34,7 @@ cookie_params = CustomCookieParameters()
 current_timezone = settings.app.APP_TIMEZONE
 
 
-        # Uses UUID
+# Uses UUID
 cookie = SessionCookie(
     cookie_name="x-session-id",
     identifier="general_verifier",

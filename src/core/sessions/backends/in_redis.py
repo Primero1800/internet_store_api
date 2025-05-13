@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Generic, Any
+from typing import Generic, Any
 
 import redis
 from fastapi.encoders import jsonable_encoder
@@ -85,10 +85,9 @@ class InRedisBackend(Generic[ID, SessionModel], SessionBackend[ID, SessionModel]
     async def get_all(self) -> list[SessionModel]:
         """Getting all existing sessions from redis-server, available for superuser"""
         async with self.service as client:
-            session_keys= await client.keys(pattern=self.prefix + '*')
+            session_keys = await client.keys(pattern=self.prefix + '*')
             result = []
             for session_key in session_keys:
                 data = await self.read_by_key(session_key)
                 result.append(data)
             return result
-

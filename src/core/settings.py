@@ -59,7 +59,7 @@ class Auth(CustomSettings):
     AUTH_VERIFICATION_TOKEN_LIFETIME_SECONDS: int
     AUTH_RESET_PASSWORD_TOKEN_LIFETIME_SECONDS: int
 
-    def get_url(selfself, purpose: str, version: str = "v1"):
+    def get_url(self, purpose: str, version: str = "v1"):
         PURPOSE = ''
         SECOND_PARAM = "unversioned"
 
