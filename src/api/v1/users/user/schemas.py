@@ -65,3 +65,4 @@ class UserPublicExtended(UserPublic):
 
 class UserReadExtended(UserRead):
     votes: list[Any]
+    posts: list[Any]

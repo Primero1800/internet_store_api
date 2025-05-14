@@ -1,9 +1,10 @@
 from typing import Dict, Any
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, Query, Request, status, Form
 from fastapi.responses import ORJSONResponse
 from fastapi_filter import FilterDepends
 from fastapi_users import BaseUserManager, models, schemas
+from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.v1.auth.backend import fastapi_users as fastapi_users_custom
@@ -14,6 +15,7 @@ from .dependencies import (
 from .schemas import (
     UserRead,
     UserUpdate,
+    UserReadExtended,
 )
 from src.core.config import DBConfigurer, RateLimiter
 from src.scrypts.pagination import paginate_result
@@ -309,4 +311,32 @@ async def get_relations_posts_by_id(
         query_list=result_full,
         page=page,
         size=size,
+    )
+
+
+# 6
+@router.post(
+    "/default-superuser",
+    dependencies=[Depends(current_superuser,)],
+    status_code=status.HTTP_201_CREATED,
+    response_model=UserReadExtended,
+    description="Creating default superuser if not exists (for superuser only",
+)
+# @RateLimiter.rate_limit()
+# no rate limit for superuser
+async def create_default_superuser(
+        request: Request,
+        email: EmailStr | None = Form(default=None),
+        password: str | None = Form(min_length=8, default=None),
+        session: AsyncSession = Depends(DBConfigurer.session_getter),
+        user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+):
+    service: UsersService = UsersService(
+        session=session,
+        user_manager=user_manager
+    )
+    return await service.create_default_superuser(
+        email=email,
+        password=password,
+        return_none=False,
     )

@@ -1,20 +1,25 @@
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 from fastapi import status, Request
 from fastapi.responses import ORJSONResponse
 from fastapi_users import BaseUserManager, models, exceptions
+from pydantic import EmailStr
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.settings import settings
 from src.tools.exceptions import CustomException
 from . import utils
 from .repository import UsersRepository
 from .exceptions import NoSessionException, Errors
 from src.api.v1.auth.exceptions import Errors as Auth_Errors
+from .schemas import UserCreate
+
 
 if TYPE_CHECKING:
     from .filters import UserFilter
+    from src.core.models import User
 
 
 class UsersService:
@@ -119,3 +124,61 @@ class UsersService:
                 relations=relations
             )
         return returned_orm_model
+
+    async def create_default_superuser(
+            self,
+            email: EmailStr,
+            password: str,
+            to_schema: bool = True,
+            return_none: bool = True,
+    ):
+        repository: UsersRepository = UsersRepository(
+            session=self.session,
+            user_manager=self.user_manager
+        )
+
+        orm_model: Union["User", None] = None
+        self.logger.warning("Inspecting if default superuser exists")
+        try:
+            orm_model = await repository.get_one_complex_by_email(
+                email=email
+            )
+            self.logger.info("Default superuser already exists")
+        except CustomException:
+            self.logger.warning("Found no default superuser in current db. Creating new one")
+
+        if not orm_model:
+
+            # Expecting if ProductCreate data valid
+            # catching ValidationError in exception_handler
+            instance: UserCreate = UserCreate(
+                firstname=None,
+                lastname=None,
+                email=email or settings.users.SUPERUSER_DEFAULT_EMAIL,
+                password=password or settings.users.SUPERUSER_DEFAULT_PASSWORD,
+                is_active=True,
+                is_superuser=True,
+                is_verified=True,
+            )
+
+            orm_model = await repository.get_orm_model_from_schema(instance=instance)
+            try:
+                await repository.create_one_empty(
+                    orm_model=orm_model,
+                )
+            except CustomException as exc:
+                return ORJSONResponse(
+                    status_code=exc.status_code,
+                    content={
+                        "message": Errors.HANDLER_MESSAGE(),
+                        "detail": exc.msg,
+                    }
+                )
+
+        if return_none:
+            return
+
+        return await self.get_one_complex(
+            id=orm_model.id,
+            to_schema=to_schema
+        )
