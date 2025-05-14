@@ -10,7 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 class BaseCustomSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=(
-            BASE_DIR / '.env.template',
+            BASE_DIR / '.env.secret.template',
+            BASE_DIR / '.env.secret',
             BASE_DIR / '.env',
         ),
         case_sensitive=False,
@@ -25,8 +26,8 @@ class BaseCustomSettings(BaseSettings):
         env_files = list(cls.model_config["env_file"])
 
         for app_name in app_names:
-            env_files.append(BASE_DIR / f'{app_name}/.env.template')
-            env_files.append(BASE_DIR / f'{app_name}/.env')
+            env_files.append(BASE_DIR / f'{app_name}/.env.secret.template')
+            env_files.append(BASE_DIR / f'{app_name}/.env.secret')
 
         cls.model_config["env_file"] = (
             *env_files,
