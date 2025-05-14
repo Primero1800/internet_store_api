@@ -86,7 +86,7 @@ class UsersRepository:
         orm_model: User | None = result.unique().scalar_one_or_none()
 
         if not orm_model:
-            text_error = f"id={id}"
+            text_error = f"email={email}"
             raise CustomException(
                 msg=f"{CLASS} with {text_error} not found"
             )
@@ -128,13 +128,14 @@ class UsersRepository:
             self,
             orm_model: User
     ):
+        email_for_logging = orm_model.email
         try:
             self.session.add(orm_model)
             await self.session.commit()
             await self.session.refresh(orm_model)
             self.logger.info("%r %r was successfully created" % (CLASS, orm_model))
         except IntegrityError as error:
-            self.logger.error(f"Error while orm_model creating", exc_info=error)
+            self.logger.error(f"Error while orm_model creating")
             raise CustomException(
-                msg=Errors.already_exists_email(orm_model.email)
+                msg=Errors.already_exists_email(email_for_logging)
             )

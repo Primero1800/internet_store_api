@@ -1,5 +1,8 @@
 from typing import TYPE_CHECKING
 
+from fastapi_users import BaseUserManager, models
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.api.v1.users.user.schemas import UserPublicExtended, UserReadExtended
 
 if TYPE_CHECKING:
@@ -48,3 +51,15 @@ async def get_short_schema_from_orm(
     return UserPublicExtended(
         **orm_model.to_dict()
     )
+
+
+async def create_default_superuser(
+    session: AsyncSession,
+    user_manager: BaseUserManager[models.UP, models.ID],
+):
+    from .service import UsersService
+    service: UsersService = UsersService(
+        session=session,
+        user_manager=user_manager
+    )
+    return await service.create_default_superuser()

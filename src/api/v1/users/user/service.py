@@ -127,11 +127,14 @@ class UsersService:
 
     async def create_default_superuser(
             self,
-            email: EmailStr,
-            password: str,
+            email: str | None = None,
+            password: str | None = None,
             to_schema: bool = True,
             return_none: bool = True,
     ):
+        email = email or settings.users.SUPERUSER_DEFAULT_EMAIL
+        password = password or settings.users.SUPERUSER_DEFAULT_PASSWORD
+
         repository: UsersRepository = UsersRepository(
             session=self.session,
             user_manager=self.user_manager
@@ -154,8 +157,8 @@ class UsersService:
             instance: UserCreate = UserCreate(
                 firstname=None,
                 lastname=None,
-                email=email or settings.users.SUPERUSER_DEFAULT_EMAIL,
-                password=password or settings.users.SUPERUSER_DEFAULT_PASSWORD,
+                email=email,
+                password=password,
                 is_active=True,
                 is_superuser=True,
                 is_verified=True,
@@ -166,7 +169,9 @@ class UsersService:
                 await repository.create_one_empty(
                     orm_model=orm_model,
                 )
+                self.logger.info("Default superuser was successfully created")
             except CustomException as exc:
+                self.logger.error('Error occurred while creating default superuser')
                 return ORJSONResponse(
                     status_code=exc.status_code,
                     content={
