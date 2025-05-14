@@ -6,7 +6,7 @@ from fastapi_filter import FilterDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import DBConfigurer, RateLimiter
-from src.scrypts.pagination import paginate_result
+from src.scripts.pagination import paginate_result
 from src.tools.stars_choices import StarsChoices
 from .schemas import (
     SaleInfoShort,
@@ -45,7 +45,7 @@ router = APIRouter()
 async def get_routes(
         request: Request,
 ) -> list[Dict[str, Any]]:
-    from src.scrypts.get_routes import get_routes as scrypt_get_routes
+    from src.scripts.get_routes import get_routes as scrypt_get_routes
     return await scrypt_get_routes(
         application=router,
         tags=False,

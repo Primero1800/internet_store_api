@@ -15,7 +15,7 @@ from fastapi.responses import ORJSONResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.scrypts.pagination import paginate_result
+from src.scripts.pagination import paginate_result
 from src.tools.discount_choices import DiscountChoices
 from .service import ProductsService
 from .schemas import (
@@ -72,7 +72,7 @@ router = APIRouter()
 async def get_routes(
         request: Request,
 ) -> list[Dict[str, Any]]:
-    from src.scrypts.get_routes import get_routes as scrypt_get_routes
+    from src.scripts.get_routes import get_routes as scrypt_get_routes
     return await scrypt_get_routes(
         application=router,
         tags=False,

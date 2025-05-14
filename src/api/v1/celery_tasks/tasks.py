@@ -23,7 +23,7 @@ def task_send_mail(
     self.update_state(meta={'task_name': self.name})
     from src.api.v1.message_senders import CustomMessageSchema
     schema = CustomMessageSchema(**schema)
-    from src.scrypts.mail_sender.utils import send_mail
+    from src.scripts.mail_sender.utils import send_mail
     result: bool = False
 
     try:
@@ -57,7 +57,7 @@ def task_send_tg_message(
     from src.api.v1.message_senders import CustomTgMessageSchema
 
     schema = CustomTgMessageSchema(**schema)
-    from src.scrypts.telegram_message_sender.utils import send_tg_bot_message
+    from src.scripts.telegram_message_sender.utils import send_tg_bot_message
     result: bool = False
 
     try:

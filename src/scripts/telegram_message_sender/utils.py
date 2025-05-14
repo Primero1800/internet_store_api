@@ -7,7 +7,7 @@ from fastapi import BackgroundTasks
 from src.api.v1.message_senders import CustomTgMessageSchema
 
 if TYPE_CHECKING:
-    from src.scrypts.telegram_message_sender.connection_config import TgConnectionConfig
+    from src.scripts.telegram_message_sender.connection_config import TgConnectionConfig
 
 logger = getLogger(__name__)
 

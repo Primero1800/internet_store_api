@@ -16,7 +16,7 @@ from src.core.config import (
     ExceptionHandlerConfigurer,
 )
 from src.api import router as router_api
-from src.scrypts.pagination import paginate_result
+from src.scripts.pagination import paginate_result
 
 
 @asynccontextmanager

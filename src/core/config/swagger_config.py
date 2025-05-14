@@ -17,7 +17,7 @@ class SwaggerConfigurer:
 
     @staticmethod
     async def get_routes(application: FastAPI):
-        from src.scrypts.get_routes import get_routes as scrypt_get_routes
+        from src.scripts.get_routes import get_routes as scrypt_get_routes
         return await scrypt_get_routes(
             application=application,
             path=True,

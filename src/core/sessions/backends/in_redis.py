@@ -11,7 +11,7 @@ from fastapi_sessions.backends.session_backend import (
 from fastapi_sessions.frontends.session_frontend import ID
 
 from src.core.settings import settings
-from src.scrypts.conver_dates_back import convert_dates
+from src.scripts.conver_dates_back import convert_dates
 
 
 class InRedisBackend(Generic[ID, SessionModel], SessionBackend[ID, SessionModel]):

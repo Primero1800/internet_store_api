@@ -14,7 +14,7 @@ from src.core.sessions.fastapi_sessions_config import (
     cookie,
     verifier,
 )
-from src.scrypts.pagination import paginate_result
+from src.scripts.pagination import paginate_result
 from .service import SessionsService
 
 
