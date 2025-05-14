@@ -218,6 +218,8 @@ class Telegram(CustomSettings):
 
 class Users(CustomSettings):
     USERS_PASSWORD_MIN_LENGTH: int
+    SUPERUSER_DEFAULT_EMAIL: str
+    SUPERUSER_DEFAULT_PASSWORD: str
 
 
 class Settings(CustomSettings):
