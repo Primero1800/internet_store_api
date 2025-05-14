@@ -40,7 +40,9 @@ services:
       - ./src:/app/src
       - ./static:/app/static
       - ./alembic.ini:/app/alembic.ini
-    command: ["sh", "-c", "poetry run alembic upgrade head && poetry run uvicorn src.main:app --host 0.0.0.0 --reload"]
+    command: ["sh", "-c", "poetry run alembic upgrade head &&
+                                              PYTHONPATH=/app poetry run python src/scripts/create_default_superuser.py && 
+                                              poetry run uvicorn src.main:app --host 0.0.0.0 --reload"]
     
   celery-worker:
     restart: unless-stopped
