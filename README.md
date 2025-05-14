@@ -45,34 +45,35 @@
 4. В файле .env.template необходимо заполнить собственные пользовательские настройки, заменив символы "**************" на собственные значения.
 Или создать в этом же каталоге новый файл .env с новыми значениями
 
-  Заполнить необходимо:
-    # AccessToken Settings - секретные значения, необходимые для изменения паролей и подтверждения регистрации новых пользователей. Пример заполнения:
+	Заполнить необходимо:
 
-		AUTH_RESET_PASSWORD_TOKEN_SECRET=reset_password_token_secret_640659753e41ee47b9161eb754115358d232
-		AUTH_VERIFICATION_TOKEN_SECRET=verification_token_secret_5edcd13303247511c2c115147b7cbc5f2101a8b760
+    AccessToken Settings - секретные значения, необходимые для изменения паролей и подтверждения регистрации новых пользователей. Пример заполнения:
 
-	# smtp email server - настройки сервера и почтового ящика для рассылки сообщений. Пример заполнения:
+			AUTH_RESET_PASSWORD_TOKEN_SECRET=reset_password_token_secret_640659753e41ee47b9161eb754115358d232
+			AUTH_VERIFICATION_TOKEN_SECRET=verification_token_secret_5edcd13303247511c2c115147b7cbc5f2101a8b760
 
-		MAIL_HOST=smtp.mail.ru
-		MAIL_USERNAME=Primero@inbox.ru
-		MAIL_PASSWORD=EMSJDqrtyuekkkx56sgx8xV
-		MAIL_PORT=2525
-		MAIL_FROM=primero@inbox.ru
-	Пример не будет работать, так как настройки почтовой службы индивидуальны
+	smtp email server - настройки сервера и почтового ящика для рассылки сообщений. Пример заполнения:
 
-
-	# Sessions - секретные значения, необходимые для работы с сессиями. Пример заполнения:
-
-		SESSIONS_SECRET_KEY=session_secret_5edcd13303247511c2c115147b7cbc5f2101a8b760e9a770589b6c63f437bad7
+			MAIL_HOST=smtp.mail.ru
+			MAIL_USERNAME=Primero@inbox.ru
+			MAIL_PASSWORD=EMSJDqrtyuekkkx56sgx8xV
+			MAIL_PORT=2525
+			MAIL_FROM=primero@inbox.ru
+		Пример не будет работать, так как настройки почтовой службы индивидуальны
 
 
-	# TELEGRAM - настройки телеграм-бота. Пример заполнения:
+	Sessions - секретные значения, необходимые для работы с сессиями. Пример заполнения:
+
+			SESSIONS_SECRET_KEY=session_secret_5edcd13303247511c2c115147b7cbc5f2101a8b760e9a770589b6c63f437bad7
+
+
+	TELEGRAM - настройки телеграм-бота. Пример заполнения:
 	
-		TELEGRAM_TOKEN=79453252ук667:ве77урnWD9RpkBY
-		TELEGRAM_CHAT_ID=-67784539057
-	Пример не будет работать, так как настройки индивидуальны
+			TELEGRAM_TOKEN=79453252ук667:ве77урnWD9RpkBY
+			TELEGRAM_CHAT_ID=-67784539057
+		Пример не будет работать, так как настройки индивидуальны
 
-	# USERS - регистрационные данные суперпользователя по умолчанию, создаваемого при первичной инициализации базы данных. Пример заполнения:
+	USERS - регистрационные данные суперпользователя по умолчанию, создаваемого при первичной инициализации базы данных. Пример заполнения:
 
 		SUPERUSER_DEFAULT_EMAIL=super@admin.com
 		SUPERUSER_DEFAULT_PASSWORD=12345678
