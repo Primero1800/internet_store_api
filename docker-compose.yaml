@@ -13,14 +13,13 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: postgres
-#      POSTGRES_DB: f4_el
+      POSTGRES_DB: f4_el
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   webapp:
-#    image: primero1800/4_el:latest
     restart: unless-stopped
     build:
       context: ./
