@@ -20,6 +20,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   webapp:
+#    image: primero1800/4_el:latest
     restart: unless-stopped
     build:
       context: ./
