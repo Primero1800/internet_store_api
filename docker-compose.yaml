@@ -20,6 +20,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   webapp:
+    image: primero1800/f4_el:latest
     restart: unless-stopped
     build:
       context: ./
@@ -29,7 +30,7 @@ services:
       REDIS_HOST: redis
       CELERY_BROKER_HOST: redis
       DB_HOST: db
-      DB_NAME: postgres
+      DB_NAME: f4_el
     depends_on:
         - redis
         - db
